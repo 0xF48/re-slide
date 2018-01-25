@@ -1,0 +1,13 @@
+sudo: true
+language: node_js
+os: linux
+node_js: "8"
+git:
+  depth: false
+branches:
+  only:
+    - master
+os: linux
+install:
+  - npm i
+script: node test.js

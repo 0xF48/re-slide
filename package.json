@@ -1,0 +1,42 @@
+{
+  "name": "preact-slide",
+  "version": "0.0.1",
+  "description": "recursive slide component for preact",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --config site.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/arxii/preact-slide.git"
+  },
+  "keywords": [
+    "preact",
+    "slide",
+    "component"
+  ],
+  "author": "arxii",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arxii/preact-slide/issues"
+  },
+  "homepage": "https://github.com/arxii/preact-slide#readme",
+  "peerDependencies": {
+    "preact": "8.x"
+  },
+  "devDependencies": {
+    "coffee-loader": "^0.9.0",
+    "coffeescript": "^2.1.1",
+    "css-loader": "^0.28.9",
+    "glsl-template-loader": "^1.1.0",
+    "node-sass": "^4.7.2",
+    "preact": "^8.2.7",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.1",
+    "webpack": "^3.10.0"
+  },
+  "dependencies": {
+    "shader-box": "^1.1.1"
+  }
+}

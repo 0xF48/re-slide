@@ -1,0 +1,63 @@
+body{
+	background: white;
+	color: #1E1E1E ;
+	font-family: monospace;
+}
+
+
+// title/header
+.header{
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+}
+.canvas{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+.title{
+	position: absolute;
+	height: 100%;
+	width: 100%;
+}
+
+
+// about/description
+
+
+// props
+.props{
+	background: #F5F5F5
+}
+.prop{
+	width: auto;
+	padding: 5px;
+	// border: 1px solid #EDEDED;
+	background: white;
+	// border-radius: 3px;
+	// display: inline-flex;
+	// background: #252525;
+	margin: 1px 0px;
+	div{
+		padding: 4px 6px;
+		margin: 2px;
+		display: inline-block;
+		// border-radius: 3px;
+	}
+	.prop-name{
+		background: #505050;
+		margin-right: 0px;
+		color: white;
+	}
+	.prop-default{
+		margin-left: 0px;
+		background: #E0E0E0;
+
+	}
+	.prop-text{
+		display: block;
+	}
+}

@@ -1,15 +1,41 @@
+@import url('https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Swanky+and+Moo+Moo');
+
 body{
 	background: white;
-	color: #1E1E1E ;
-	font-family: monospace;
+    color: #1E1E1E;
+    line-height: 1.428571429;
+    font-size: 16px;
+    line-height: 18px;
+    font-family: 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.center{
+	align-items : center;
+	display   : flex;
+	align-content : center;
+	justify-content: center;  
 }
 
 
+.gradient-link{
+    position: absolute;
+    z-index: 10;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.3);
+    left: 0;
+    top: 0;
+    padding: 10px;
+}
 // title/header
 .header{
 	position: relative;
 	width: 100vw;
 	height: 100vh;
+
 }
 .canvas{
 	position: absolute;
@@ -22,7 +48,76 @@ body{
 	position: absolute;
 	height: 100%;
 	width: 100%;
+	flex-direction: column;
 }
+.title-name{
+	font-family: 'Swanky and Moo Moo', cursive;
+	font-size: 50px;
+}
+
+
+.github-link{
+	padding: 10px;
+	// background: white;
+	img{
+		width: 40px;
+		height: 40px;
+		opacity: 0.5;
+	}
+}
+
+.title-snippet{
+	margin: 10px;
+	font-family: 'Inconsolata', monospace;
+	color: rgba(0, 0, 0, 0.5215686274509804);
+	width: 340px;
+	height: 30px;
+	// border: 1px solid rgba(0, 0, 0, 0.09019607843137255);
+	// background: white;
+	// color:  
+	// .dark{
+	// 	background: black;
+	// 	color: white;
+	// }
+}
+
+.title-snippet-text{
+	text-align: left;
+	padding: 6px 8px;
+	display: inline-block;
+	// width: 100%;
+}
+
+
+// .snippet{
+// 	font-family: 'Inconsolata', monospace;
+// 	color: rgba(0, 0, 0, 0.5215686274509804);
+// 	border: 1px solid rgba(0, 0, 0, 0.09019607843137255);
+// 	padding: 6px 8px;
+// }
+
+.header-description{
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	padding: 20px 10px;
+	width: 100%;
+	p{
+		position: relative;
+		margin: 20px auto;
+		max-width: 600px;
+		// margin: 10px 5px;
+	}
+
+}
+.shields{
+	margin: 10px 0px;
+	a{
+		margin-right: 4px;
+	}
+}
+
+
 
 
 // about/description
@@ -30,34 +125,44 @@ body{
 
 // props
 .props{
-	background: #F5F5F5
+	max-width: 600px;
+	padding: 0px 10px;
+	margin: 0px auto;
 }
 .prop{
-	width: auto;
-	padding: 5px;
-	// border: 1px solid #EDEDED;
-	background: white;
-	// border-radius: 3px;
-	// display: inline-flex;
-	// background: #252525;
-	margin: 1px 0px;
+    width: auto;
+    background: white;
+    font-size: 14px;
+    margin: 30px 0px;
 	div{
-		padding: 4px 6px;
-		margin: 2px;
+		padding: 0px 2px;
+		/* font-size: 12px; */
+		/* margin: 0px 10px; */
 		display: inline-block;
-		// border-radius: 3px;
 	}
 	.prop-name{
-		background: #505050;
 		margin-right: 0px;
-		color: white;
+		font-weight: 600;
+		font-size: 18px;
+		color: #35405b;
+		border-left: 4px solid #f1f1f1;
+		padding-left: 5px;
+		line-height: 18px;
 	}
 	.prop-default{
 		margin-left: 0px;
-		background: #E0E0E0;
+		opacity: 0.5;
+		font-size: 12px;
 
 	}
 	.prop-text{
+		margin-top: 0px;
+		font-size: 14px;
 		display: block;
+		padding-top: 0px;
+		color: #3e3e3e;
+		p{
+			margin-top: 0px;
+		}
 	}
 }

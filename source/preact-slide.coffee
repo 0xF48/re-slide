@@ -120,6 +120,7 @@ class Slide extends Component
 		addRem: @addRem
 		dim: if @props.vert then @outer_rect.width else @outer_rect.height
 		slide: @context.slide || @props.slide
+		_i_slide: true
 
 
 	###
@@ -359,6 +360,8 @@ class Slide extends Component
 	get beta dimention variable for the slide, either in pixels or percentages.
 	###
 	getBeta: ()=>
+		if !@props.beta
+			throw new Error 'props.beta == 0 | null'
 
 		# split along horizontal
 		if !@is_root && @context.outer_width && !@context.vert && @context.slide
@@ -445,9 +448,9 @@ class Slide extends Component
 			ph = ph || @getBeta()
 		else
 			pw = pw || @getBeta()
-			ph = ph || '' #CSS is weird...
-
-		#return new {}
+			ph = ph || '100%' #CSS is weird...
+		# console.log ph,pw,@props.className
+		
 		height: ph
 		width: pw
 
@@ -479,16 +482,18 @@ class Slide extends Component
 		class_fixed = ( (@props.square || @props.dim || @props.w || @props.h) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
+		class_auto = @props.auto && ' -i-s-auto' || ''
 		inner_props = 
 			ref: @inner_ref
 			style:
 				transition: @state.transition
 				transform: @state.transform
-			className: "-i-s-inner"+class_vert+inner_c_name+class_center+class_reverse
+			className: "-i-s-inner"+class_vert+inner_c_name+class_center+class_reverse+class_auto
 		slide_props = @pass_props
 		slide_props.ref = @outer_ref
 		slide_props.className = "-i-s-outer"+c_name+class_fixed
-		slide_props.style = @getOuterHW()
+		if @context._i_slide
+			slide_props.style = @getOuterHW()
 	
 	
 		h 'div',
@@ -513,7 +518,8 @@ class Slide extends Component
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		outer_props = @pass_props
-		outer_props.style = @getOuterHW()
+		if @context._i_slide
+			outer_props.style = @getOuterHW()
 		outer_props.className = "-i-s-static"+c_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
 		outer_props.id = @props.id
 		outer_props.ref = @outer_ref

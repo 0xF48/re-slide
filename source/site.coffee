@@ -1,6 +1,7 @@
 {h,render,Component} = require 'preact'
 Slide = require './preact-slide.coffee'
 {Box,Shader} = require 'shader-box'
+Markdown = require 'preact-markdown'
 require './site-style.scss'
 
 
@@ -39,7 +40,7 @@ PROPS = [
 	['pos','0','if slide is set to true, then setting this will slide to child in that index, setting to a float will create an interpolated offset.']
 	['auto','false','if set to true, component will resize based on content inside.']
 	['scroll','false','if set to true, outer wrapper will be scrollable.']
-	['oclassName','false','When *slide* property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.']
+	['oclassName','false','When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.']
 	['iclassName','false','same as oclassName but for the inner element. if only one element, this class will be used']
 	['ratio','0','set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced']
 ]
@@ -49,6 +50,12 @@ class Props
 
 
 class Header extends Component
+	constructor: ->
+		super()
+		@state =
+			title_snippet_pos_a: 0
+			title_snippet_pos_b: 1
+	
 	componentDidMount: ->
 		@box = new Box
 			canvas: @_canvas
@@ -63,11 +70,35 @@ class Header extends Component
 				pos:
 					type:'2fv'
 					val: [0.5,0.5]
+				seed:
+					type:'3fv'
+					val: [1.1,1.3,1.2]
+				speed:
+					type:'1f'
+					val:1.0
+				fade:
+					type:'1f'
+					val:1.0
 				iTime:
 					type:'1f'
 					val: 0.4
+
 		@box.add(@gradient)
-		@tick()
+		@tick(0)
+		setInterval @switchTitleSnippetTextA,1000
+		setInterval @switchTitleSnippetTextB,2000
+
+	
+	switchTitleSnippetTextA: =>
+		@setState
+			title_snippet_pos_a: 1-@state.title_snippet_pos_a
+	switchTitleSnippetTextB: =>
+		@setState
+			title_snippet_pos_b: 1-@state.title_snippet_pos_b
+		
+	
+		
+
 
 
 	tick: (t)=>
@@ -82,16 +113,59 @@ class Header extends Component
 				className: 'canvas'
 				ref: (el)=>
 					@_canvas = el
+			h 'a',
+				className: 'gradient-link center'
+				href: 'https://github.com/arxii/shader-box-gradient'
+				'?'
+
 			h 'div',
-				className: 'title'
+				className: 'title center'
 				h 'div',
-					className: 'title-main'
+					className: 'title-name'
 					'Slide'
-				h 'div',
-					className: 'title-sub'
-					h 'span',{},'[build]'
-					h 'span',{},'[npm]'
-					h 'span',{},'[github]'
+
+				h Slide,
+					className: 'title-snippet'
+					vert: true
+					pos: @state.title_snippet_pos_b
+					slide: true
+					h Slide,
+						className: 'dark center'
+						h Slide,
+							# beta:50
+							className: 'center'
+							h 'div',
+								className: 'title-snippet-text'
+								'npm i preact preact-slide'
+					h Slide,
+						className: 'center'
+						h 'div',
+							className: 'title-snippet-text'
+							"var Slide = require('preact-slide')"
+				h 'a',
+					href: "https://github.com/arxii/preact-slide"
+					className: 'center github-link'
+					h 'img',
+						src: 'https://unpkg.com/simple-icons@latest/icons/github.svg'
+			h 'div',
+				className: 'header-description',
+				h 'p',
+					className:'header-description-text'
+					'A recursive slide component for preact helping you create elegant UI/UX experiences. scroll down for examples and prop descriptions. or go straight to the repo.'
+					h 'div',
+						className: 'shields'
+						h 'a',
+							href:'https://npmjs.com/package/preact-slide'
+							h 'img',
+								src: 'https://img.shields.io/badge/npm-0.2.0-orange.svg?style=flat-square'
+						h 'a',
+							href:'https://github.com/developit/preact'
+							h 'img',
+								src: 'https://img.shields.io/badge/preact-v5.x-blue.svg?style=flat-square'
+						h 'a',
+							href:'https://github.com/developit/preact'
+							h 'img',
+								src: 'https://img.shields.io/badge/build-passing-green.svg?style=flat-square'
 
 
 
@@ -111,9 +185,11 @@ class Docs
 						h 'div',
 							className: 'prop-default'
 							prop[1]
-						h 'div',
-							className: 'prop-text'
-							prop[2]
+						h Markdown,
+							markdown: prop[2]
+							markupOpts:
+								className: 'prop-text'
+							
 
 
 

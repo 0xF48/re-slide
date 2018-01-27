@@ -1,4 +1,4 @@
-require './module-style.scss'
+require './preact-slide.scss'
 {h,Component} = require 'preact'
 
 DEFAULT_PROPS = 
@@ -70,6 +70,7 @@ class Slide extends Component
 	componentDidMount: ()=>
 		@is_root = !@_outer.parentNode.className.match('-i-s-static|-i-s-inner')
 		@_outer.style.visibility = null
+		setTimeout @onSlideDone.bind(@),0
 		if @is_root
 			@forceUpdate()
 			addEventListener 'resize',@resizeEvent
@@ -152,11 +153,11 @@ class Slide extends Component
 		if props.height
 			props.h = props.height
 
-		if props.innerClassName?
-			props.iclass = props.innerClassName
+		if props.iclassName?
+			props.iclass = props.iclassName
 
-		if props.outerClassName?
-			props.class = props.outerClassName
+		if props.oclassName?
+			props.class = props.oclassName
 
 		if props.className?
 			props.class = props.className
@@ -212,7 +213,7 @@ class Slide extends Component
 		if !@props.slide
 			return false
 
-		pos = @getIndexXY(@props.pos)
+		pos =@getIndexXY(@props.pos)
 		
 		if @props.pos != p_props.pos || @props.posOffset != p_props.posOffset || @props.posOffsetBeta != p_props.posOffsetBeta
 			return @toXY pos
@@ -285,6 +286,13 @@ class Slide extends Component
 
 		return d
 
+	getChildHeight: (c)->
+		b = c.attributes.beta || 100
+		c.attributes.height || (@outer_rect.height / 100 * b)
+
+	getChildWidth: (c)->
+		b = c.attributes.beta || 100
+		c.attributes.width || (@outer_rect.width / 100 * b)
 
 	###
 	@getIndexXY method
@@ -299,40 +307,32 @@ class Slide extends Component
 		x = 0
 		y = 0
 		
-		cc = @_inner.children[index]
-		cc_rect = cc.getBoundingClientRect()
+		cc = @_inner.children[Math.floor(index)]
+		_cc = @props.children[Math.floor(index)]
+		# cc_rect = cc.getBoundingClientRect()
 	
+		
 
 		if @props.vert
 			y = cc.offsetTop
+			if (index % 1) != 0
+				y += (Math.round((index % 1) * @getChildHeight(_cc))) * (@props.inverse && -1 || 1)
 		else
 			x = cc.offsetLeft
+			if (index % 1) != 0
+				x += Math.round((index % 1) * @getChildWidth(_cc)) * (@props.inverse && -1 || 1)
 
 		
-		if @props.posOffset?
-			if @props.vert
-				y += @props.posOffset
-			else
-				x += @props.posOffset
-		
-		if @props.posOffsetBeta?
-			if @props.vert
-				y += @outer_rect.height/100*@props.posOffsetBeta
-			else
-				x += @outer_rect.width/100*@props.posOffsetBeta
-
-
 		d = 0
 		for c in @props.children
+			c.attributes.beta = c.attributes.beta || 100
+
 			if @props.vert
-				d += c.attributes.beta && (@outer_rect.height / 100 * c.attributes.beta) || c.attributes.h
+				d += @getChildHeight(c)
 			else
-				d += c.attributes.beta && (@outer_rect.width / 100 * c.attributes.beta) || c.attributes.w
+				d += @getChildWidth(c)
 		
 		
-		
-
-
 		if @props.vert
 			d -= @outer_rect.height
 		else 
@@ -347,9 +347,10 @@ class Slide extends Component
 		else if x > d && d > 0
 			x = d 
 
+	
 		
-		x: x
-		y: y
+		x: x || 0
+		y: y || 0
 
 	# 201 = 100.5 * 100.5
 	# 101 (rem .5)
@@ -489,11 +490,19 @@ class Slide extends Component
 				transition: @state.transition
 				transform: @state.transform
 			className: "-i-s-inner"+class_vert+inner_c_name+class_center+class_reverse+class_auto
+		if @props.innerStyle
+			inner_props.style = Object.assign inner_props.style,@props.innerStyle
 		slide_props = @pass_props
+		
 		slide_props.ref = @outer_ref
 		slide_props.className = "-i-s-outer"+c_name+class_fixed
-		if @context._i_slide
+
+
+		if @context._i_slide || @props.height || @props.width
 			slide_props.style = @getOuterHW()
+
+		if @props.oStyle || @props.style
+			slide_props.style = Object.assign slide_props.style,(@props.outerStyle || @props.style)
 	
 	
 		h 'div',
@@ -518,11 +527,15 @@ class Slide extends Component
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		outer_props = @pass_props
-		if @context._i_slide
+		if @context._i_slide || @props.height || @props.width
 			outer_props.style = @getOuterHW()
 		outer_props.className = "-i-s-static"+c_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
 		outer_props.id = @props.id
 		outer_props.ref = @outer_ref
+
+		if @props.oStyle || @props.style
+			outer_props.style = Object.assign outer_props.style,(@props.outerStyle || @props.style)
+	
 	
 
 		h 'div',

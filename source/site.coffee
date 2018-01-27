@@ -2,7 +2,8 @@
 Slide = require './preact-slide.coffee'
 {Box,Shader} = require 'shader-box'
 Markdown = require 'preact-markdown'
-require './site-style.scss'
+Markup = require 'preact-markup'
+require './site.scss'
 
 
 class Card extends Component
@@ -45,6 +46,7 @@ PROPS = [
 	['ratio','0','set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced']
 ]
 
+
 class Props
 	render: ->
 
@@ -84,27 +86,27 @@ class Header extends Component
 					val: 0.4
 
 		@box.add(@gradient)
-		@tick(0)
-		setInterval @switchTitleSnippetTextA,1000
+		@box.clear().draw(@gradient)
+		# @tick(0)
+		# setInterval @switchTitleSnippetTextA,1000
 		setInterval @switchTitleSnippetTextB,2000
 
 	
 	switchTitleSnippetTextA: =>
 		@setState
 			title_snippet_pos_a: 1-@state.title_snippet_pos_a
+	
+
 	switchTitleSnippetTextB: =>
 		@setState
 			title_snippet_pos_b: 1-@state.title_snippet_pos_b
 		
 	
-		
-
-
-
 	tick: (t)=>
 		requestAnimationFrame(@tick)
 		@gradient.uniforms.iTime.val = t
 		@box.clear().draw(@gradient)
+
 
 	render: ->
 		h 'div',
@@ -151,7 +153,10 @@ class Header extends Component
 				className: 'header-description',
 				h 'p',
 					className:'header-description-text'
-					'A recursive slide component for preact helping you create elegant UI/UX experiences. scroll down for examples and prop descriptions. or go straight to the repo.'
+					'Experimental technology.'
+				h 'p',
+					className:'header-description-text'
+					'A universal layout component which can be used as a foundation for creating animated modular interfaces and widgets.'
 					h 'div',
 						className: 'shields'
 						h 'a',
@@ -169,11 +174,41 @@ class Header extends Component
 
 
 
+
+
+SimpleMenuExample = require './examples/SimpleMenuExample.coffee'
+LayoutExample = require './examples/LayoutExample.coffee'
+ButtonsExample = require './examples/ButtonsExample.coffee'
+CarouselExample = require './examples/CarouselExample.coffee'
+
+
+
+
+EXAMPLES = [
+	['Layout',require('./html/layout.html'),LayoutExample]
+	['Simple Menu',require('./html/simple-menu.html'),SimpleMenuExample],
+	['Buttons',require('./html/buttons.html'),ButtonsExample],
+	['Carousel',require('./html/buttons.html'),CarouselExample],
+]
+
+ABOUT = require './html/about.html'
+
 class Docs 
 	render: ->
 		h 'div',
 			className: 'docs'
 			h Header
+
+			
+			h 'div',
+				className: 'section'
+				h 'div',
+					className: 'section-title'
+					'About'
+				h Markup,
+					className: 'section-text'
+					markup: ABOUT
+			
 			h 'div',
 				className: 'props'
 				PROPS.map (prop)->
@@ -189,7 +224,20 @@ class Docs
 							markdown: prop[2]
 							markupOpts:
 								className: 'prop-text'
-							
+
+			h 'div',
+				className: 'examples'
+				EXAMPLES.map (example)->
+					h 'div',
+						className: 'section'
+						h 'div',
+							className: 'section-title'
+							example[0]
+						h Markup,
+							markup: example[1]
+							className: 'section-text'
+						h example[2]
+
 
 
 
@@ -197,3 +245,6 @@ class Docs
 @docs_el = null
 render(h(Docs),document.body,@docs_el)
 # hljs.initHighlightingOnLoad()
+
+
+

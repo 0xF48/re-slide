@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/site/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1086,6 +1086,906 @@ var preact = {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component, DEFAULT_PROPS, EVENT_REGEX, Slide, h,
+  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
+
+__webpack_require__(7);
+
+({h, Component} = __webpack_require__(0));
+
+DEFAULT_PROPS = {
+  vert: null, //css flex direction column
+  beta: 100, //beta variable
+  slide: false, //slides through children, if disabled will return a simplified wrapper
+  pos: 0, //position of the slide
+  auto: false, //auto dim based on content
+  dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
+  animate: false, //transitions
+  ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
+  ease_dur: 0.4, //slide easing duration
+  w: 0, //slide width manual override
+  h: 0, //slide height manual override
+  offset: 0, //offset in pixels
+  offset_beta: 0, //offset in beta
+  posOffset: 0,
+  posOffsetBeta: 0,
+  square: false, //square dim helper
+  center: false, //css flex center
+  inverse: false, //css flex direction inverse
+  scroll: false //css scroll overflow
+};
+
+EVENT_REGEX = new RegExp('^on[A-Z]');
+
+/*
+@Slide class
+universal slide layout component.
+*/
+Slide = class Slide extends Component {
+  constructor(props) {
+    super(props);
+    /*
+    @componentDidMount method
+    */
+    this.componentDidMount = this.componentDidMount.bind(this);
+    /*
+    @componentWillUpdate method
+    */
+    this.componentWillUpdate = this.componentWillUpdate.bind(this);
+    /*
+    @componentWillUnmount method
+    */
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    this.addRem = this.addRem.bind(this);
+    /*
+    @getChildContext method
+    */
+    this.getChildContext = this.getChildContext.bind(this);
+    /*
+    @updateVisibility method
+    update the visibility of slides that are not in the scrolled view
+    */
+    this.updateVisibility = this.updateVisibility.bind(this);
+    /*
+    @onSlideDone method
+    when slide animation is complete, this function is triggered.
+    */
+    this.onSlideDone = this.onSlideDone.bind(this);
+    /*
+    @onSlideStart method
+    right before a slide animation starts, this function is triggered.
+    */
+    this.onSlideStart = this.onSlideStart.bind(this);
+    // 201 = 100.5 * 100.5
+    // 101 (rem .5)
+    // round(100.5 - .5) = 100
+    /*
+    @getBeta method
+    get beta dimention variable for the slide, either in pixels or percentages.
+    */
+    this.getBeta = this.getBeta.bind(this);
+    /*
+    @getOuterHW method
+    get outer height and width.
+    */
+    this.getOuterHW = this.getOuterHW.bind(this);
+    //resize event
+    this.resizeEvent = this.resizeEvent.bind(this);
+    //ref to inner div
+    this.inner_ref = this.inner_ref.bind(this);
+    //ref to outer div
+    this.outer_ref = this.outer_ref.bind(this);
+    /*
+    @renderSlide method
+    render component as a slideable, when props.slide is enabled, an extra div is rendered for panning/sliding.
+    */
+    this.renderSlide = this.renderSlide.bind(this);
+    /*
+    @renderStatic method
+    render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
+    */
+    this.renderStatic = this.renderStatic.bind(this);
+    /*
+    @render method
+    */
+    this.render = this.render.bind(this);
+    this.state = {
+      x: 0, //x pos of _inner
+      y: 0, //y pos of _inner
+      dim: 0 //width/height of _outer
+    };
+    this.rem = 0;
+    this.outer_rect = {
+      width: 0, //width of _outer
+      height: 0 //height of _outer
+    };
+  }
+
+  checkProps(props) {}
+
+  // if props.inverse && props.slide
+  // 	console.warn 'inverted slides are not supported'
+  /*
+  @componentWillMount method
+  */
+  componentWillMount() {
+    this.passProps(this.props); //do stuff with props 
+    this.legacyProps(this.props); //legacy props support
+    return this.checkProps(this.props);
+  }
+
+  componentDidMount() {
+    boundMethodCheck(this, Slide);
+    this.is_root = !this._outer.parentNode.className.match('-i-s-static|-i-s-inner');
+    this._outer.style.visibility = null;
+    setTimeout(this.onSlideDone.bind(this), 0);
+    if (this.is_root) {
+      this.forceUpdate();
+      return addEventListener('resize', this.resizeEvent);
+    }
+  }
+
+  componentWillUpdate() {
+    boundMethodCheck(this, Slide);
+    return this.calculateBounds(); //recalculate bounds for further processing...
+  }
+
+  /*
+  @componentDidUpdate method
+  */
+  componentDidUpdate(p_props) {
+    return this.checkSlideUpdate(p_props);
+  }
+
+  componentWillUnmount() {
+    boundMethodCheck(this, Slide);
+    return removeEventListener('resize', this.resizeEvent);
+  }
+
+  /*
+  @componentWillReceiveProps method
+  */
+  componentWillReceiveProps(props) {
+    this.passProps(props);
+    this.legacyProps(props);
+    return this.checkProps(props);
+  }
+
+  addRem(rem) {
+    boundMethodCheck(this, Slide);
+    return log('add rem', rem);
+  }
+
+  getChildContext() {
+    boundMethodCheck(this, Slide);
+    return {
+      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.outer_rect.width,
+      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
+      vert: this.props.vert || this.props.vert || false,
+      addRem: this.addRem,
+      dim: this.props.vert ? this.outer_rect.width : this.outer_rect.height,
+      slide: this.context.slide || this.props.slide,
+      _i_slide: true
+    };
+  }
+
+  /*
+  @calculateBounds method
+  calculate and store position and size.
+  */
+  calculateBounds() {
+    this.prev_rect_width = this.outer_rect.width;
+    this.prev_rect_height = this.outer_rect.height;
+    return this.outer_rect = this._outer.getBoundingClientRect();
+  }
+
+  /*
+  @legacyProps method
+  support for different option keys
+  */
+  legacyProps(props) {
+    if (props.size != null) {
+      props.dim = props.size;
+    }
+    if (props.vertical != null) {
+      props.vert = props.vertical;
+    }
+    if (props.width) {
+      props.w = props.width;
+    }
+    if (props.height) {
+      props.h = props.height;
+    }
+    if (props.iclassName != null) {
+      props.iclass = props.iclassName;
+    }
+    if (props.oclassName != null) {
+      props.class = props.oclassName;
+    }
+    if (props.className != null) {
+      return props.class = props.className;
+    }
+  }
+
+  /*
+  @inViewBounds method
+  check to see if a line that starts at p with length d is overlapping a line starting at op with length od
+  */
+  inViewBounds(p, d, op, od) {
+    return p + d > op && p < op + od;
+  }
+
+  updateVisibility(x, y, force_hide) {
+    var child, i, len, rect, ref, results;
+    boundMethodCheck(this, Slide);
+    ref = this._inner.children;
+    results = [];
+    for (i = 0, len = ref.length; i < len; i++) {
+      child = ref[i];
+      rect = child.getBoundingClientRect();
+      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
+        results.push(child.style.visibility = null);
+      } else if (force_hide) {
+        results.push(child.style.visibility = 'hidden');
+      } else {
+        results.push(void 0);
+      }
+    }
+    return results;
+  }
+
+  onSlideDone() {
+    var base;
+    boundMethodCheck(this, Slide);
+    this.calculateBounds();
+    this.updateVisibility(0, 0, true);
+    this.state.in_transition = false;
+    return typeof (base = this.props).onSlideDone === "function" ? base.onSlideDone(this.props.pos) : void 0;
+  }
+
+  onSlideStart(x, y) {
+    boundMethodCheck(this, Slide);
+    this.calculateBounds();
+    return this.updateVisibility(x, y, false);
+  }
+
+  /*
+  @checkSlideUpdate method
+  check if slide needs update, and update it if nessesary.
+  */
+  checkSlideUpdate(p_props) {
+    var pos;
+    if (!this.props.slide) {
+      return false;
+    }
+    pos = this.getIndexXY(this.props.pos);
+    if (this.props.pos !== p_props.pos || this.props.posOffset !== p_props.posOffset || this.props.posOffsetBeta !== p_props.posOffsetBeta) {
+      return this.toXY(pos);
+    }
+    if (this.state.x !== pos.x || this.state.y !== pos.y) {
+      return this.setXY(pos);
+    }
+  }
+
+  /*
+  @getTransition method
+  CSS transition easing/duration.
+  */
+  getTransition() {
+    return 'transform ' + this.props.ease_dur + 's ' + this.props.ease;
+  }
+
+  /*
+  @toXY method
+  CSS translate inner div to pos <x,y>
+  */
+  toXY(pos) {
+    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(this.onSlideDone, this.props.ease_dur * 1000);
+    return this.setState({
+      in_transition: true,
+      transition: this.getTransition(),
+      transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
+      x: pos.x,
+      y: pos.y
+    });
+  }
+
+  /*
+  @setXY method
+  same as toXY but instant.
+  */
+  setXY(pos) {
+    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(this.onSlideDone, 0);
+    return this.setState({
+      in_transition: false,
+      transition: '',
+      transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
+      x: pos.x,
+      y: pos.y
+    });
+  }
+
+  /*
+  @passProps method
+  Extract events from props and pass them down to underlying div if nessesary.
+  */
+  passProps(props) {
+    var prop, prop_name, results;
+    this.pass_props = {};
+    results = [];
+    for (prop_name in props) {
+      prop = props[prop_name];
+      if (EVENT_REGEX.test(prop_name)) {
+        results.push(this.pass_props[prop_name] = prop);
+      } else {
+        results.push(void 0);
+      }
+    }
+    return results;
+  }
+
+  roundDim(d) {
+    var rd;
+    rd = Math.round(d) - d;
+    if (rd > -0.5 && rd < 0) {
+      d = Math.round(d + 0.5);
+    } else {
+      d = Math.round(d);
+    }
+    return d;
+  }
+
+  getChildHeight(c) {
+    var b;
+    b = c.attributes.beta || 100;
+    return c.attributes.height || (this.outer_rect.height / 100 * b);
+  }
+
+  getChildWidth(c) {
+    var b;
+    b = c.attributes.beta || 100;
+    return c.attributes.width || (this.outer_rect.width / 100 * b);
+  }
+
+  /*
+  @getIndexXY method
+  Get the index x and y position of where we want to slide/pan
+  */
+  getIndexXY(index) {
+    var _cc, c, cc, d, i, len, ref, x, y;
+    if (index == null) {
+      throw new Error('index position is undefined');
+    }
+    if (index >= this.props.children.length) {
+      throw new Error('index position out of bounds');
+    }
+    x = 0;
+    y = 0;
+    cc = this._inner.children[Math.floor(index)];
+    _cc = this.props.children[Math.floor(index)];
+    // cc_rect = cc.getBoundingClientRect()
+    if (this.props.vert) {
+      y = cc.offsetTop;
+      if ((index % 1) !== 0) {
+        y += (Math.round((index % 1) * this.getChildHeight(_cc))) * (this.props.inverse && -1 || 1);
+      }
+    } else {
+      x = cc.offsetLeft;
+      if ((index % 1) !== 0) {
+        x += Math.round((index % 1) * this.getChildWidth(_cc)) * (this.props.inverse && -1 || 1);
+      }
+    }
+    d = 0;
+    ref = this.props.children;
+    for (i = 0, len = ref.length; i < len; i++) {
+      c = ref[i];
+      c.attributes.beta = c.attributes.beta || 100;
+      if (this.props.vert) {
+        d += this.getChildHeight(c);
+      } else {
+        d += this.getChildWidth(c);
+      }
+    }
+    if (this.props.vert) {
+      d -= this.outer_rect.height;
+    } else {
+      d -= this.outer_rect.width;
+    }
+    d = this.roundDim(d); //round off max width/height based on rounding algorithm 
+    if (this.props.vert && y > d && d > 0) {
+      y = d;
+    } else if (x > d && d > 0) {
+      x = d;
+    }
+    return {
+      x: x || 0,
+      y: y || 0
+    };
+  }
+
+  getBeta() {
+    var beta, d, offs, sign;
+    boundMethodCheck(this, Slide);
+    if (!this.props.beta) {
+      throw new Error('props.beta == 0 | null');
+    }
+    if (!this.is_root && this.context.outer_width && !this.context.vert && this.context.slide) {
+      d = this.context.outer_width / 100 * this.props.beta + this.props.offset + this.context.outer_width / 100 * this.props.offset_beta;
+      this.state.dim = this.roundDim(d);
+      return this.state.dim + 'px';
+    } else if (!this.is_root && this.context.outer_height && this.context.vert && this.context.slide) {
+      d = this.context.outer_height / 100 * this.props.beta + this.props.offset + this.context.outer_height / 100 * this.props.offset_beta;
+      this.state.dim = this.roundDim(d);
+      return this.state.dim + 'px';
+    }
+    
+    // base case scenario, this is legacy fallback for relative betas using css % 
+    // CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
+    beta = this.props.beta + '%';
+    if (this.props.offset) {
+      sign = this.props.offset < 0 && '-' || '+';
+      offs = Math.abs(this.props.offset) + 'px';
+    } else if (this.props.offset_beta) {
+      sign = this.props.offset_beta < 0 && '-' || '+';
+      offs = Math.abs(this.props.offset_beta) + '%';
+    }
+    if (offs) {
+      return 'calc(#{beta} #{sign} #{offs})';
+    } else {
+      return beta;
+    }
+  }
+
+  getOuterHW() {
+    var dim, height, ph, pw, vert, width;
+    boundMethodCheck(this, Slide);
+    // square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
+    if (this.props.square) {
+      dim = {};
+      if (this.context.vert) {
+        dim.height = this.context.dim;
+        dim.width = '100%';
+      } else {
+        //dim.height = '100%' CSS is weird...
+        dim.width = this.context.dim;
+      }
+      return dim;
+    }
+    // w/h passed down from props override
+    if (this.context.vert) {
+      width = this.props.w || null;
+      height = this.props.dim || this.props.h || null;
+    } else {
+      width = this.props.dim || this.props.w || null;
+      height = this.props.h || null;
+    }
+    if (this.props.vert == null) {
+      vert = this.context.vert;
+    } else {
+      vert = this.props.vert;
+    }
+    if (vert && this.props.auto) {
+      ph = 'auto';
+    } else if (height) {
+      ph = height + 'px';
+    }
+    if (!vert && this.props.auto) {
+      pw = 'auto';
+    } else if (width) {
+      pw = width + 'px';
+    }
+    
+    // insert calculated beta
+    if (this.context.vert) {
+      pw = pw || '100%';
+      ph = ph || this.getBeta();
+    } else {
+      pw = pw || this.getBeta();
+      ph = ph || '100%'; //CSS is weird...
+    }
+    return {
+      // console.log ph,pw,@props.className
+      height: ph,
+      width: pw
+    };
+  }
+
+  resizeEvent() {
+    boundMethodCheck(this, Slide);
+    return this.forceUpdate();
+  }
+
+  inner_ref(e) {
+    boundMethodCheck(this, Slide);
+    return this._inner = e;
+  }
+
+  outer_ref(e) {
+    boundMethodCheck(this, Slide);
+    return this._outer = e;
+  }
+
+  renderSlide() {
+    var c_name, class_auto, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, inner_props, slide_props;
+    boundMethodCheck(this, Slide);
+    inner_c_name = this.props.iclass && (" " + this.props.iclass) || '';
+    c_name = this.props.class && (" " + this.props.class) || '';
+    class_center = this.props.center && ' -i-s-center' || '';
+    class_vert = this.props.vert && ' -i-s-vertical' || '';
+    class_fixed = ((this.props.square || this.props.dim || this.props.w || this.props.h) && ' -i-s-fixed') || '';
+    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
+    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
+    class_auto = this.props.auto && ' -i-s-auto' || '';
+    inner_props = {
+      ref: this.inner_ref,
+      style: {
+        transition: this.state.transition,
+        transform: this.state.transform
+      },
+      className: "-i-s-inner" + class_vert + inner_c_name + class_center + class_reverse + class_auto
+    };
+    if (this.props.innerStyle) {
+      inner_props.style = Object.assign(inner_props.style, this.props.innerStyle);
+    }
+    slide_props = this.pass_props;
+    slide_props.ref = this.outer_ref;
+    slide_props.className = "-i-s-outer" + c_name + class_fixed;
+    if (this.context._i_slide || this.props.height || this.props.width) {
+      slide_props.style = this.getOuterHW();
+    }
+    if (this.props.oStyle || this.props.style) {
+      slide_props.style = Object.assign(slide_props.style, this.props.outerStyle || this.props.style);
+    }
+    return h('div', slide_props, h('div', inner_props, this.props.children), this.props.outer_children);
+  }
+
+  renderStatic() {
+    var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, outer_props;
+    boundMethodCheck(this, Slide);
+    inner_c_name = this.props.iclass && (" " + this.props.iclass) || '';
+    c_name = this.props.class && (" " + this.props.class) || '';
+    class_center = this.props.center && ' -i-s-center' || '';
+    class_vert = this.props.vert && ' -i-s-vertical' || '';
+    class_fixed = ((this.props.square || this.props.dim || this.props.w || this.props.h) && ' -i-s-fixed') || '';
+    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
+    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
+    outer_props = this.pass_props;
+    if (this.context._i_slide || this.props.height || this.props.width) {
+      outer_props.style = this.getOuterHW();
+    }
+    outer_props.className = "-i-s-static" + c_name + class_fixed + class_vert + class_center + class_reverse + class_scroll;
+    outer_props.id = this.props.id;
+    outer_props.ref = this.outer_ref;
+    if (this.props.oStyle || this.props.style) {
+      outer_props.style = Object.assign(outer_props.style, this.props.outerStyle || this.props.style);
+    }
+    return h('div', outer_props, this.props.children, this.props.outer_children);
+  }
+
+  render() {
+    boundMethodCheck(this, Slide);
+    if (this.props.slide) {
+      return this.renderSlide();
+    } else {
+      return this.renderStatic();
+    }
+  }
+
+};
+
+Slide.defaultProps = DEFAULT_PROPS;
+
+module.exports = Slide;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+(function (global, factory) {
+   true ? module.exports = factory(__webpack_require__(0)) :
+  typeof define === 'function' && define.amd ? define(['preact'], factory) :
+  (global.preactMarkup = factory(global.preact));
+}(this, function (preact) { 'use strict';
+
+  var parserDoc = void 0;
+
+  function parseMarkup(markup, type) {
+  	var doc = void 0,
+  	    mime = type === 'html' ? 'text/html' : 'application/xml',
+  	    parserError = void 0,
+  	    wrappedMarkup = void 0,
+  	    tag = void 0;
+
+  	if (type === 'html') {
+  		tag = 'body';
+  		wrappedMarkup = '<!DOCTYPE html>\n<html><body>' + markup + '</body></html>';
+  	} else {
+  		tag = 'xml';
+  		wrappedMarkup = '<?xml version="1.0" encoding="UTF-8"?>\n<xml>' + markup + '</xml>';
+  	}
+
+  	try {
+  		doc = new DOMParser().parseFromString(wrappedMarkup, mime);
+  	} catch (err) {
+  		parserError = err;
+  	}
+
+  	if (!doc && type === 'html') {
+  		doc = parserDoc || (parserDoc = buildParserFrame());
+  		doc.open();
+  		doc.write(wrappedMarkup);
+  		doc.close();
+  	}
+
+  	if (!doc) return;
+
+  	var out = doc.getElementsByTagName(tag)[0],
+  	    fc = out.firstChild;
+
+  	if (markup && !fc) {
+  		out.error = 'Document parse failed.';
+  	}
+
+  	if (fc && String(fc.nodeName).toLowerCase() === 'parsererror') {
+  		fc.removeChild(fc.firstChild);
+  		fc.removeChild(fc.lastChild);
+  		out.error = fc.textContent || fc.nodeValue || parserError || 'Unknown error';
+
+  		out.removeChild(fc);
+  	}
+
+  	return out;
+  }
+
+  function buildParserFrame() {
+  	if (document.implementation && document.implementation.createHTMLDocument) {
+  		return document.implementation.createHTMLDocument('');
+  	}
+  	var frame = document.createElement('iframe');
+  	frame.style.cssText = 'position:absolute; left:0; top:-999em; width:1px; height:1px; overflow:hidden;';
+  	frame.setAttribute('sandbox', 'allow-forms');
+  	document.body.appendChild(frame);
+  	return frame.contentWindow.document;
+  }
+
+  var EMPTY_OBJ$1 = {};
+
+  function toVdom(node, visitor, h, options) {
+  	walk.visitor = visitor;
+  	walk.h = h;
+  	walk.options = options || EMPTY_OBJ$1;
+  	return walk(node);
+  }
+
+  function walk(n, index, arr) {
+  	if (n.nodeType === 3) {
+  		var text = 'textContent' in n ? n.textContent : n.nodeValue || '';
+
+  		if (walk.options.trim !== false) {
+  			var isFirstOrLast = index === 0 || index === arr.length - 1;
+
+  			if (text.match(/^[\s\n]+$/g) && walk.options.trim !== 'all') {
+  				text = ' ';
+  			} else {
+  				text = text.replace(/(^[\s\n]+|[\s\n]+$)/g, walk.options.trim === 'all' || isFirstOrLast ? '' : ' ');
+  			}
+
+  			if ((!text || text === ' ') && arr.length > 1 && isFirstOrLast) return null;
+  		}
+  		return text;
+  	}
+  	if (n.nodeType !== 1) return null;
+  	var nodeName = String(n.nodeName).toLowerCase();
+
+  	if (nodeName === 'script' && !walk.options.allowScripts) return null;
+
+  	var out = walk.h(nodeName, getProps(n.attributes), walkChildren(n.childNodes));
+  	if (walk.visitor) walk.visitor(out);
+  	return out;
+  }
+
+  function getProps(attrs) {
+  	var len = attrs && attrs.length;
+  	if (!len) return null;
+  	var props = {};
+  	for (var i = 0; i < len; i++) {
+  		var _attrs$i = attrs[i];
+  		var name = _attrs$i.name;
+  		var value = _attrs$i.value;
+
+  		if (value === '') value = true;
+  		if (name.substring(0, 2) === 'on' && walk.options.allowEvents) {
+  			value = new Function(value);
+  		}
+  		props[name] = value;
+  	}
+  	return props;
+  }
+
+  function walkChildren(children) {
+  	var c = children && Array.prototype.map.call(children, walk).filter(exists);
+  	return c && c.length ? c : null;
+  }
+
+  var exists = function (x) {
+  	return x;
+  };
+
+  var EMPTY_OBJ = {};
+
+  function markupToVdom(markup, type, reviver, map, options) {
+  	var dom = parseMarkup(markup, type);
+
+  	if (dom && dom.error) {
+  		throw new Error(dom.error);
+  	}
+
+  	var body = dom && dom.body || dom;
+  	visitor.map = map || EMPTY_OBJ;
+  	var vdom = body && toVdom(body, visitor, reviver, options);
+  	visitor.map = null;
+
+  	return vdom && vdom.children || null;
+  }
+
+  function toCamelCase(name) {
+  	return name.replace(/-(.)/g, function (match, letter) {
+  		return letter.toUpperCase();
+  	});
+  }
+
+  function visitor(node) {
+  	var name = node.nodeName.toLowerCase(),
+  	    map = visitor.map;
+  	if (map && map.hasOwnProperty(name)) {
+  		node.nodeName = map[name];
+  		node.attributes = Object.keys(node.attributes || {}).reduce(function (attrs, attrName) {
+  			attrs[toCamelCase(attrName)] = node.attributes[attrName];
+  			return attrs;
+  		}, {});
+  	} else {
+  		node.nodeName = name.replace(/[^a-z0-9-]/i, '');
+  	}
+  }
+
+  var classCallCheck = function (instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  };
+
+  var inherits = function (subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  };
+
+  var objectWithoutProperties = function (obj, keys) {
+    var target = {};
+
+    for (var i in obj) {
+      if (keys.indexOf(i) >= 0) continue;
+      if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+      target[i] = obj[i];
+    }
+
+    return target;
+  };
+
+  var possibleConstructorReturn = function (self, call) {
+    if (!self) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+  };
+
+  var customReviver = void 0;
+
+  var Markup = function (_Component) {
+  	inherits(Markup, _Component);
+
+  	function Markup() {
+  		classCallCheck(this, Markup);
+  		return possibleConstructorReturn(this, _Component.apply(this, arguments));
+  	}
+
+  	Markup.setReviver = function setReviver(h) {
+  		customReviver = h;
+  	};
+
+  	Markup.prototype.shouldComponentUpdate = function shouldComponentUpdate(_ref) {
+  		var wrap = _ref.wrap;
+  		var type = _ref.type;
+  		var markup = _ref.markup;
+
+  		var p = this.props;
+  		return wrap !== p.wrap || type !== p.type || markup !== p.markup;
+  	};
+
+  	Markup.prototype.setComponents = function setComponents(components) {
+  		this.map = {};
+  		if (components) {
+  			for (var i in components) {
+  				if (components.hasOwnProperty(i)) {
+  					var name = i.replace(/([A-Z]+)([A-Z][a-z0-9])|([a-z0-9]+)([A-Z])/g, '$1$3-$2$4').toLowerCase();
+  					this.map[name] = components[i];
+  				}
+  			}
+  		}
+  	};
+
+  	Markup.prototype.render = function render(_ref2) {
+  		var _ref2$wrap = _ref2.wrap;
+  		var wrap = _ref2$wrap === undefined ? true : _ref2$wrap;
+  		var type = _ref2.type;
+  		var markup = _ref2.markup;
+  		var components = _ref2.components;
+  		var reviver = _ref2.reviver;
+  		var onError = _ref2.onError;
+  		var allowScripts = _ref2['allow-scripts'];
+  		var allowEvents = _ref2['allow-events'];
+  		var trim = _ref2.trim;
+  		var props = objectWithoutProperties(_ref2, ['wrap', 'type', 'markup', 'components', 'reviver', 'onError', 'allow-scripts', 'allow-events', 'trim']);
+
+  		var h = reviver || this.reviver || this.constructor.prototype.reviver || customReviver || preact.h,
+  		    vdom = void 0;
+
+  		this.setComponents(components);
+
+  		var options = {
+  			allowScripts: allowScripts,
+  			allowEvents: allowEvents,
+  			trim: trim
+  		};
+
+  		try {
+  			vdom = markupToVdom(markup, type, h, this.map, options);
+  		} catch (error) {
+  			if (onError) {
+  				onError({ error: error });
+  			} else if (typeof console !== 'undefined' && console.error) {
+  				console.error('preact-markup: ' + error);
+  			}
+  		}
+
+  		if (wrap === false) return vdom && vdom[0] || null;
+
+  		var c = props.hasOwnProperty('className') ? 'className' : 'class',
+  		    cl = props[c];
+  		if (!cl) props[c] = 'markup';else if (cl.splice) cl.splice(0, 0, 'markup');else if (typeof cl === 'string') props[c] += ' markup';else if (typeof cl === 'object') cl.markup = true;
+
+  		return h('div', props, vdom || null);
+  	};
+
+  	return Markup;
+  }(preact.Component);
+
+  return Markup;
+
+}));
+//# sourceMappingURL=preact-markup.js.map
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports) {
 
 /*
@@ -1167,7 +2067,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -1223,7 +2123,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(7);
+var	fixUrls = __webpack_require__(9);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -1539,21 +2439,29 @@ function updateLink (link, options, obj) {
 
 
 /***/ }),
-/* 3 */
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = "<p>create buttons!</p>"
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Box, Card, Component, Docs, Header, Markdown, PROPS, Props, Shader, Slide, h, render,
+var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, Header, LayoutExample, Markdown, Markup, PROPS, Props, Shader, SimpleMenuExample, Slide, h, render,
   boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
 
 ({h, render, Component} = __webpack_require__(0));
 
-Slide = __webpack_require__(4);
+Slide = __webpack_require__(1);
 
-({Box, Shader} = __webpack_require__(8));
+({Box, Shader} = __webpack_require__(10));
 
-Markdown = __webpack_require__(9);
+Markdown = __webpack_require__(11);
 
-__webpack_require__(13);
+Markup = __webpack_require__(2);
+
+__webpack_require__(14);
 
 Card = class Card extends Component {
   componentWillMount() {
@@ -1614,7 +2522,7 @@ Header = class Header extends Component {
       }
     });
     this.gradient = new Shader({
-      code: __webpack_require__(15)(),
+      code: __webpack_require__(16)(),
       uniforms: {
         pos: {
           type: '2fv',
@@ -1639,8 +2547,9 @@ Header = class Header extends Component {
       }
     });
     this.box.add(this.gradient);
-    this.tick(0);
-    setInterval(this.switchTitleSnippetTextA, 1000);
+    this.box.clear().draw(this.gradient);
+    // @tick(0)
+    // setInterval @switchTitleSnippetTextA,1000
     return setInterval(this.switchTitleSnippetTextB, 2000);
   }
 
@@ -1705,7 +2614,9 @@ Header = class Header extends Component {
       className: 'header-description'
     }, h('p', {
       className: 'header-description-text'
-    }, 'A recursive slide component for preact helping you create elegant UI/UX experiences. scroll down for examples and prop descriptions. or go straight to the repo.', h('div', {
+    }, 'Experimental technology.'), h('p', {
+      className: 'header-description-text'
+    }, 'A universal layout component which can be used as a foundation for creating animated modular interfaces and widgets.', h('div', {
       className: 'shields'
     }, h('a', {
       href: 'https://npmjs.com/package/preact-slide'
@@ -1724,11 +2635,30 @@ Header = class Header extends Component {
 
 };
 
+SimpleMenuExample = __webpack_require__(17);
+
+LayoutExample = __webpack_require__(19);
+
+ButtonsExample = __webpack_require__(20);
+
+CarouselExample = __webpack_require__(21);
+
+EXAMPLES = [['Layout', __webpack_require__(22), LayoutExample], ['Simple Menu', __webpack_require__(23), SimpleMenuExample], ['Buttons', __webpack_require__(5), ButtonsExample], ['Carousel', __webpack_require__(5), CarouselExample]];
+
+ABOUT = __webpack_require__(24);
+
 Docs = class Docs {
   render() {
     return h('div', {
       className: 'docs'
     }, h(Header), h('div', {
+      className: 'section'
+    }, h('div', {
+      className: 'section-title'
+    }, 'About'), h(Markup, {
+      className: 'section-text',
+      markup: ABOUT
+    })), h('div', {
       className: 'props'
     }, PROPS.map(function(prop) {
       return h('div', {
@@ -1743,6 +2673,17 @@ Docs = class Docs {
           className: 'prop-text'
         }
       }));
+    })), h('div', {
+      className: 'examples'
+    }, EXAMPLES.map(function(example) {
+      return h('div', {
+        className: 'section'
+      }, h('div', {
+        className: 'section-title'
+      }, example[0]), h(Markup, {
+        markup: example[1],
+        className: 'section-text'
+      }), h(example[2]));
     })));
   }
 
@@ -1756,597 +2697,13 @@ render(h(Docs), document.body, this.docs_el);
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Component, DEFAULT_PROPS, EVENT_REGEX, Slide, h,
-  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
-
-__webpack_require__(5);
-
-({h, Component} = __webpack_require__(0));
-
-DEFAULT_PROPS = {
-  vert: null, //css flex direction column
-  beta: 100, //beta variable
-  slide: false, //slides through children, if disabled will return a simplified wrapper
-  pos: 0, //position of the slide
-  auto: false, //auto dim based on content
-  dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
-  animate: false, //transitions
-  ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
-  ease_dur: 0.4, //slide easing duration
-  w: 0, //slide width manual override
-  h: 0, //slide height manual override
-  offset: 0, //offset in pixels
-  offset_beta: 0, //offset in beta
-  posOffset: 0,
-  posOffsetBeta: 0,
-  square: false, //square dim helper
-  center: false, //css flex center
-  inverse: false, //css flex direction inverse
-  scroll: false //css scroll overflow
-};
-
-EVENT_REGEX = new RegExp('^on[A-Z]');
-
-/*
-@Slide class
-universal slide layout component.
-*/
-Slide = class Slide extends Component {
-  constructor(props) {
-    super(props);
-    /*
-    @componentDidMount method
-    */
-    this.componentDidMount = this.componentDidMount.bind(this);
-    /*
-    @componentWillUpdate method
-    */
-    this.componentWillUpdate = this.componentWillUpdate.bind(this);
-    /*
-    @componentWillUnmount method
-    */
-    this.componentWillUnmount = this.componentWillUnmount.bind(this);
-    this.addRem = this.addRem.bind(this);
-    /*
-    @getChildContext method
-    */
-    this.getChildContext = this.getChildContext.bind(this);
-    /*
-    @updateVisibility method
-    update the visibility of slides that are not in the scrolled view
-    */
-    this.updateVisibility = this.updateVisibility.bind(this);
-    /*
-    @onSlideDone method
-    when slide animation is complete, this function is triggered.
-    */
-    this.onSlideDone = this.onSlideDone.bind(this);
-    /*
-    @onSlideStart method
-    right before a slide animation starts, this function is triggered.
-    */
-    this.onSlideStart = this.onSlideStart.bind(this);
-    // 201 = 100.5 * 100.5
-    // 101 (rem .5)
-    // round(100.5 - .5) = 100
-    /*
-    @getBeta method
-    get beta dimention variable for the slide, either in pixels or percentages.
-    */
-    this.getBeta = this.getBeta.bind(this);
-    /*
-    @getOuterHW method
-    get outer height and width.
-    */
-    this.getOuterHW = this.getOuterHW.bind(this);
-    //resize event
-    this.resizeEvent = this.resizeEvent.bind(this);
-    //ref to inner div
-    this.inner_ref = this.inner_ref.bind(this);
-    //ref to outer div
-    this.outer_ref = this.outer_ref.bind(this);
-    /*
-    @renderSlide method
-    render component as a slideable, when props.slide is enabled, an extra div is rendered for panning/sliding.
-    */
-    this.renderSlide = this.renderSlide.bind(this);
-    /*
-    @renderStatic method
-    render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
-    */
-    this.renderStatic = this.renderStatic.bind(this);
-    /*
-    @render method
-    */
-    this.render = this.render.bind(this);
-    this.state = {
-      x: 0, //x pos of _inner
-      y: 0, //y pos of _inner
-      dim: 0 //width/height of _outer
-    };
-    this.rem = 0;
-    this.outer_rect = {
-      width: 0, //width of _outer
-      height: 0 //height of _outer
-    };
-  }
-
-  checkProps(props) {}
-
-  // if props.inverse && props.slide
-  // 	console.warn 'inverted slides are not supported'
-  /*
-  @componentWillMount method
-  */
-  componentWillMount() {
-    this.passProps(this.props); //do stuff with props 
-    this.legacyProps(this.props); //legacy props support
-    return this.checkProps(this.props);
-  }
-
-  componentDidMount() {
-    boundMethodCheck(this, Slide);
-    this.is_root = !this._outer.parentNode.className.match('-i-s-static|-i-s-inner');
-    this._outer.style.visibility = null;
-    if (this.is_root) {
-      this.forceUpdate();
-      return addEventListener('resize', this.resizeEvent);
-    }
-  }
-
-  componentWillUpdate() {
-    boundMethodCheck(this, Slide);
-    return this.calculateBounds(); //recalculate bounds for further processing...
-  }
-
-  /*
-  @componentDidUpdate method
-  */
-  componentDidUpdate(p_props) {
-    return this.checkSlideUpdate(p_props);
-  }
-
-  componentWillUnmount() {
-    boundMethodCheck(this, Slide);
-    return removeEventListener('resize', this.resizeEvent);
-  }
-
-  /*
-  @componentWillReceiveProps method
-  */
-  componentWillReceiveProps(props) {
-    this.passProps(props);
-    this.legacyProps(props);
-    return this.checkProps(props);
-  }
-
-  addRem(rem) {
-    boundMethodCheck(this, Slide);
-    return log('add rem', rem);
-  }
-
-  getChildContext() {
-    boundMethodCheck(this, Slide);
-    return {
-      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.outer_rect.width,
-      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
-      vert: this.props.vert || this.props.vert || false,
-      addRem: this.addRem,
-      dim: this.props.vert ? this.outer_rect.width : this.outer_rect.height,
-      slide: this.context.slide || this.props.slide,
-      _i_slide: true
-    };
-  }
-
-  /*
-  @calculateBounds method
-  calculate and store position and size.
-  */
-  calculateBounds() {
-    this.prev_rect_width = this.outer_rect.width;
-    this.prev_rect_height = this.outer_rect.height;
-    return this.outer_rect = this._outer.getBoundingClientRect();
-  }
-
-  /*
-  @legacyProps method
-  support for different option keys
-  */
-  legacyProps(props) {
-    if (props.size != null) {
-      props.dim = props.size;
-    }
-    if (props.vertical != null) {
-      props.vert = props.vertical;
-    }
-    if (props.width) {
-      props.w = props.width;
-    }
-    if (props.height) {
-      props.h = props.height;
-    }
-    if (props.innerClassName != null) {
-      props.iclass = props.innerClassName;
-    }
-    if (props.outerClassName != null) {
-      props.class = props.outerClassName;
-    }
-    if (props.className != null) {
-      return props.class = props.className;
-    }
-  }
-
-  /*
-  @inViewBounds method
-  check to see if a line that starts at p with length d is overlapping a line starting at op with length od
-  */
-  inViewBounds(p, d, op, od) {
-    return p + d > op && p < op + od;
-  }
-
-  updateVisibility(x, y, force_hide) {
-    var child, i, len, rect, ref, results;
-    boundMethodCheck(this, Slide);
-    ref = this._inner.children;
-    results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      child = ref[i];
-      rect = child.getBoundingClientRect();
-      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
-        results.push(child.style.visibility = null);
-      } else if (force_hide) {
-        results.push(child.style.visibility = 'hidden');
-      } else {
-        results.push(void 0);
-      }
-    }
-    return results;
-  }
-
-  onSlideDone() {
-    var base;
-    boundMethodCheck(this, Slide);
-    this.calculateBounds();
-    this.updateVisibility(0, 0, true);
-    this.state.in_transition = false;
-    return typeof (base = this.props).onSlideDone === "function" ? base.onSlideDone(this.props.pos) : void 0;
-  }
-
-  onSlideStart(x, y) {
-    boundMethodCheck(this, Slide);
-    this.calculateBounds();
-    return this.updateVisibility(x, y, false);
-  }
-
-  /*
-  @checkSlideUpdate method
-  check if slide needs update, and update it if nessesary.
-  */
-  checkSlideUpdate(p_props) {
-    var pos;
-    if (!this.props.slide) {
-      return false;
-    }
-    pos = this.getIndexXY(this.props.pos);
-    if (this.props.pos !== p_props.pos || this.props.posOffset !== p_props.posOffset || this.props.posOffsetBeta !== p_props.posOffsetBeta) {
-      return this.toXY(pos);
-    }
-    if (this.state.x !== pos.x || this.state.y !== pos.y) {
-      return this.setXY(pos);
-    }
-  }
-
-  /*
-  @getTransition method
-  CSS transition easing/duration.
-  */
-  getTransition() {
-    return 'transform ' + this.props.ease_dur + 's ' + this.props.ease;
-  }
-
-  /*
-  @toXY method
-  CSS translate inner div to pos <x,y>
-  */
-  toXY(pos) {
-    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
-    clearTimeout(this.timer);
-    this.timer = setTimeout(this.onSlideDone, this.props.ease_dur * 1000);
-    return this.setState({
-      in_transition: true,
-      transition: this.getTransition(),
-      transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
-      x: pos.x,
-      y: pos.y
-    });
-  }
-
-  /*
-  @setXY method
-  same as toXY but instant.
-  */
-  setXY(pos) {
-    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
-    clearTimeout(this.timer);
-    this.timer = setTimeout(this.onSlideDone, 0);
-    return this.setState({
-      in_transition: false,
-      transition: '',
-      transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
-      x: pos.x,
-      y: pos.y
-    });
-  }
-
-  /*
-  @passProps method
-  Extract events from props and pass them down to underlying div if nessesary.
-  */
-  passProps(props) {
-    var prop, prop_name, results;
-    this.pass_props = {};
-    results = [];
-    for (prop_name in props) {
-      prop = props[prop_name];
-      if (EVENT_REGEX.test(prop_name)) {
-        results.push(this.pass_props[prop_name] = prop);
-      } else {
-        results.push(void 0);
-      }
-    }
-    return results;
-  }
-
-  roundDim(d) {
-    var rd;
-    rd = Math.round(d) - d;
-    if (rd > -0.5 && rd < 0) {
-      d = Math.round(d + 0.5);
-    } else {
-      d = Math.round(d);
-    }
-    return d;
-  }
-
-  /*
-  @getIndexXY method
-  Get the index x and y position of where we want to slide/pan
-  */
-  getIndexXY(index) {
-    var c, cc, cc_rect, d, i, len, ref, x, y;
-    if (index == null) {
-      throw new Error('index position is undefined');
-    }
-    if (index >= this.props.children.length) {
-      throw new Error('index position out of bounds');
-    }
-    x = 0;
-    y = 0;
-    cc = this._inner.children[index];
-    cc_rect = cc.getBoundingClientRect();
-    if (this.props.vert) {
-      y = cc.offsetTop;
-    } else {
-      x = cc.offsetLeft;
-    }
-    if (this.props.posOffset != null) {
-      if (this.props.vert) {
-        y += this.props.posOffset;
-      } else {
-        x += this.props.posOffset;
-      }
-    }
-    if (this.props.posOffsetBeta != null) {
-      if (this.props.vert) {
-        y += this.outer_rect.height / 100 * this.props.posOffsetBeta;
-      } else {
-        x += this.outer_rect.width / 100 * this.props.posOffsetBeta;
-      }
-    }
-    d = 0;
-    ref = this.props.children;
-    for (i = 0, len = ref.length; i < len; i++) {
-      c = ref[i];
-      if (this.props.vert) {
-        d += c.attributes.beta && (this.outer_rect.height / 100 * c.attributes.beta) || c.attributes.h;
-      } else {
-        d += c.attributes.beta && (this.outer_rect.width / 100 * c.attributes.beta) || c.attributes.w;
-      }
-    }
-    if (this.props.vert) {
-      d -= this.outer_rect.height;
-    } else {
-      d -= this.outer_rect.width;
-    }
-    d = this.roundDim(d); //round off max width/height based on rounding algorithm 
-    if (this.props.vert && y > d && d > 0) {
-      y = d;
-    } else if (x > d && d > 0) {
-      x = d;
-    }
-    return {
-      x: x,
-      y: y
-    };
-  }
-
-  getBeta() {
-    var beta, d, offs, sign;
-    boundMethodCheck(this, Slide);
-    if (!this.props.beta) {
-      throw new Error('props.beta == 0 | null');
-    }
-    if (!this.is_root && this.context.outer_width && !this.context.vert && this.context.slide) {
-      d = this.context.outer_width / 100 * this.props.beta + this.props.offset + this.context.outer_width / 100 * this.props.offset_beta;
-      this.state.dim = this.roundDim(d);
-      return this.state.dim + 'px';
-    } else if (!this.is_root && this.context.outer_height && this.context.vert && this.context.slide) {
-      d = this.context.outer_height / 100 * this.props.beta + this.props.offset + this.context.outer_height / 100 * this.props.offset_beta;
-      this.state.dim = this.roundDim(d);
-      return this.state.dim + 'px';
-    }
-    
-    // base case scenario, this is legacy fallback for relative betas using css % 
-    // CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
-    beta = this.props.beta + '%';
-    if (this.props.offset) {
-      sign = this.props.offset < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset) + 'px';
-    } else if (this.props.offset_beta) {
-      sign = this.props.offset_beta < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset_beta) + '%';
-    }
-    if (offs) {
-      return 'calc(#{beta} #{sign} #{offs})';
-    } else {
-      return beta;
-    }
-  }
-
-  getOuterHW() {
-    var dim, height, ph, pw, vert, width;
-    boundMethodCheck(this, Slide);
-    // square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
-    if (this.props.square) {
-      dim = {};
-      if (this.context.vert) {
-        dim.height = this.context.dim;
-        dim.width = '100%';
-      } else {
-        //dim.height = '100%' CSS is weird...
-        dim.width = this.context.dim;
-      }
-      return dim;
-    }
-    // w/h passed down from props override
-    if (this.context.vert) {
-      width = this.props.w || null;
-      height = this.props.dim || this.props.h || null;
-    } else {
-      width = this.props.dim || this.props.w || null;
-      height = this.props.h || null;
-    }
-    if (this.props.vert == null) {
-      vert = this.context.vert;
-    } else {
-      vert = this.props.vert;
-    }
-    if (vert && this.props.auto) {
-      ph = 'auto';
-    } else if (height) {
-      ph = height + 'px';
-    }
-    if (!vert && this.props.auto) {
-      pw = 'auto';
-    } else if (width) {
-      pw = width + 'px';
-    }
-    
-    // insert calculated beta
-    if (this.context.vert) {
-      pw = pw || '100%';
-      ph = ph || this.getBeta();
-    } else {
-      pw = pw || this.getBeta();
-      ph = ph || '100%'; //CSS is weird...
-    }
-    return {
-      // console.log ph,pw,@props.className
-      height: ph,
-      width: pw
-    };
-  }
-
-  resizeEvent() {
-    boundMethodCheck(this, Slide);
-    return this.forceUpdate();
-  }
-
-  inner_ref(e) {
-    boundMethodCheck(this, Slide);
-    return this._inner = e;
-  }
-
-  outer_ref(e) {
-    boundMethodCheck(this, Slide);
-    return this._outer = e;
-  }
-
-  renderSlide() {
-    var c_name, class_auto, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, inner_props, slide_props;
-    boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclass && (" " + this.props.iclass) || '';
-    c_name = this.props.class && (" " + this.props.class) || '';
-    class_center = this.props.center && ' -i-s-center' || '';
-    class_vert = this.props.vert && ' -i-s-vertical' || '';
-    class_fixed = ((this.props.square || this.props.dim || this.props.w || this.props.h) && ' -i-s-fixed') || '';
-    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
-    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
-    class_auto = this.props.auto && ' -i-s-auto' || '';
-    inner_props = {
-      ref: this.inner_ref,
-      style: {
-        transition: this.state.transition,
-        transform: this.state.transform
-      },
-      className: "-i-s-inner" + class_vert + inner_c_name + class_center + class_reverse + class_auto
-    };
-    slide_props = this.pass_props;
-    slide_props.ref = this.outer_ref;
-    slide_props.className = "-i-s-outer" + c_name + class_fixed;
-    if (this.context._i_slide) {
-      slide_props.style = this.getOuterHW();
-    }
-    return h('div', slide_props, h('div', inner_props, this.props.children), this.props.outer_children);
-  }
-
-  renderStatic() {
-    var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, outer_props;
-    boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclass && (" " + this.props.iclass) || '';
-    c_name = this.props.class && (" " + this.props.class) || '';
-    class_center = this.props.center && ' -i-s-center' || '';
-    class_vert = this.props.vert && ' -i-s-vertical' || '';
-    class_fixed = ((this.props.square || this.props.dim || this.props.w || this.props.h) && ' -i-s-fixed') || '';
-    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
-    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
-    outer_props = this.pass_props;
-    if (this.context._i_slide) {
-      outer_props.style = this.getOuterHW();
-    }
-    outer_props.className = "-i-s-static" + c_name + class_fixed + class_vert + class_center + class_reverse + class_scroll;
-    outer_props.id = this.props.id;
-    outer_props.ref = this.outer_ref;
-    return h('div', outer_props, this.props.children, this.props.outer_children);
-  }
-
-  render() {
-    boundMethodCheck(this, Slide);
-    if (this.props.slide) {
-      return this.renderSlide();
-    } else {
-      return this.renderStatic();
-    }
-  }
-
-};
-
-Slide.defaultProps = DEFAULT_PROPS;
-
-module.exports = Slide;
-
-
-/***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(6);
+var content = __webpack_require__(8);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -2354,14 +2711,14 @@ var transform;
 var options = {"hmr":true}
 options.transform = transform
 // add the styles to the DOM
-var update = __webpack_require__(2)(content, options);
+var update = __webpack_require__(4)(content, options);
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./module-style.scss", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./module-style.scss");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./preact-slide.scss", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./preact-slide.scss");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -2371,21 +2728,21 @@ if(false) {
 }
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(1)(false);
+exports = module.exports = __webpack_require__(3)(false);
 // imports
 
 
 // module
-exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-shrink: 0; }\n\n.-i-s-scroll {\n  overflow-x: scroll;\n  overflow-y: hidden; }\n\n.-i-s-scroll.-i-s-vertical {\n  overflow-y: scroll;\n  overflow-x: hidden; }\n\n.-i-s-center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.-i-s-static {\n  box-sizing: border-box;\n  position: relative;\n  flex-direction: row;\n  display: flex;\n  overflow: hidden; }\n  .-i-s-static.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-outer {\n  position: relative;\n  overflow: hidden; }\n\n.-i-s-inner {\n  height: 100%;\n  display: flex;\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%; }\n  .-i-s-inner > .-i-s-in {\n    transition: transform 0.3s cubic-bezier(0, 0.93, 0.27, 1);\n    transform: scale(1) rotateY(0deg) !important; }\n  .-i-s-inner > .-i-s-in_pre.-i-s-right {\n    transform-origin: 0% 50%;\n    transform: scale(1) rotateY(10deg); }\n  .-i-s-inner > .-i-s-in_pre.-i-s-left {\n    transform-origin: 100% 50%;\n    transform: scale(1) rotateY(-10deg); }\n  .-i-s-inner.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-inner > .-i-s-outer {\n  flex-shrink: 0; }\n\n.-i-s-inner > .-i-s-static {\n  flex-shrink: 0; }\n\n.-i-s-horizontal {\n  flex-direction: row; }\n\n.-i-s-vertical {\n  flex-direction: column; }\n  .-i-s-vertical.-i-s-inner {\n    height: 100%; }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-right {\n    transform-origin: 50% 0%;\n    transform: scale(1) rotateX(-60deg); }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-left {\n    transform-origin: 50% 100%;\n    transform: scale(1) rotateX(60deg); }\n  .-i-s-vertical.-i-s-reverse {\n    flex-direction: column-reverse; }\n", ""]);
+exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-shrink: 0; }\n\n.-i-s-center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.-i-s-static {\n  box-sizing: border-box;\n  position: relative;\n  flex-direction: row;\n  display: flex;\n  overflow: hidden; }\n  .-i-s-static.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-outer {\n  position: relative;\n  overflow: hidden; }\n\n.-i-s-inner {\n  height: 100%;\n  display: flex;\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%; }\n  .-i-s-inner > .-i-s-in {\n    transition: transform 0.3s cubic-bezier(0, 0.93, 0.27, 1);\n    transform: scale(1) rotateY(0deg) !important; }\n  .-i-s-inner > .-i-s-in_pre.-i-s-right {\n    transform-origin: 0% 50%;\n    transform: scale(1) rotateY(10deg); }\n  .-i-s-inner > .-i-s-in_pre.-i-s-left {\n    transform-origin: 100% 50%;\n    transform: scale(1) rotateY(-10deg); }\n  .-i-s-inner.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-inner > .-i-s-outer {\n  flex-shrink: 0; }\n\n.-i-s-inner > .-i-s-static {\n  flex-shrink: 0; }\n\n.-i-s-horizontal {\n  flex-direction: row; }\n\n.-i-s-vertical {\n  flex-direction: column; }\n  .-i-s-vertical.-i-s-inner {\n    height: 100%; }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-right {\n    transform-origin: 50% 0%;\n    transform: scale(1) rotateX(-60deg); }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-left {\n    transform-origin: 50% 100%;\n    transform: scale(1) rotateX(60deg); }\n  .-i-s-vertical.-i-s-reverse {\n    flex-direction: column-reverse; }\n\n.-i-s-scroll {\n  overflow-x: scroll;\n  overflow-y: hidden; }\n\n.-i-s-scroll.-i-s-vertical {\n  overflow-y: scroll;\n  overflow-x: hidden; }\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 
@@ -2480,7 +2837,7 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -2839,12 +3196,12 @@ module.exports=opts=>"attribute vec2 a_position;\nattribute vec2 a_texture;\nuni
 });
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var preact = __webpack_require__(0)
-var Markup = __webpack_require__(10)
-var marked = __webpack_require__(11)
+var Markup = __webpack_require__(2)
+var marked = __webpack_require__(12)
 
 module.exports = Markdown
 
@@ -2874,307 +3231,7 @@ function Markdown(props, opts) {
 
 
 /***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-(function (global, factory) {
-   true ? module.exports = factory(__webpack_require__(0)) :
-  typeof define === 'function' && define.amd ? define(['preact'], factory) :
-  (global.preactMarkup = factory(global.preact));
-}(this, function (preact) { 'use strict';
-
-  var parserDoc = void 0;
-
-  function parseMarkup(markup, type) {
-  	var doc = void 0,
-  	    mime = type === 'html' ? 'text/html' : 'application/xml',
-  	    parserError = void 0,
-  	    wrappedMarkup = void 0,
-  	    tag = void 0;
-
-  	if (type === 'html') {
-  		tag = 'body';
-  		wrappedMarkup = '<!DOCTYPE html>\n<html><body>' + markup + '</body></html>';
-  	} else {
-  		tag = 'xml';
-  		wrappedMarkup = '<?xml version="1.0" encoding="UTF-8"?>\n<xml>' + markup + '</xml>';
-  	}
-
-  	try {
-  		doc = new DOMParser().parseFromString(wrappedMarkup, mime);
-  	} catch (err) {
-  		parserError = err;
-  	}
-
-  	if (!doc && type === 'html') {
-  		doc = parserDoc || (parserDoc = buildParserFrame());
-  		doc.open();
-  		doc.write(wrappedMarkup);
-  		doc.close();
-  	}
-
-  	if (!doc) return;
-
-  	var out = doc.getElementsByTagName(tag)[0],
-  	    fc = out.firstChild;
-
-  	if (markup && !fc) {
-  		out.error = 'Document parse failed.';
-  	}
-
-  	if (fc && String(fc.nodeName).toLowerCase() === 'parsererror') {
-  		fc.removeChild(fc.firstChild);
-  		fc.removeChild(fc.lastChild);
-  		out.error = fc.textContent || fc.nodeValue || parserError || 'Unknown error';
-
-  		out.removeChild(fc);
-  	}
-
-  	return out;
-  }
-
-  function buildParserFrame() {
-  	if (document.implementation && document.implementation.createHTMLDocument) {
-  		return document.implementation.createHTMLDocument('');
-  	}
-  	var frame = document.createElement('iframe');
-  	frame.style.cssText = 'position:absolute; left:0; top:-999em; width:1px; height:1px; overflow:hidden;';
-  	frame.setAttribute('sandbox', 'allow-forms');
-  	document.body.appendChild(frame);
-  	return frame.contentWindow.document;
-  }
-
-  var EMPTY_OBJ$1 = {};
-
-  function toVdom(node, visitor, h, options) {
-  	walk.visitor = visitor;
-  	walk.h = h;
-  	walk.options = options || EMPTY_OBJ$1;
-  	return walk(node);
-  }
-
-  function walk(n, index, arr) {
-  	if (n.nodeType === 3) {
-  		var text = 'textContent' in n ? n.textContent : n.nodeValue || '';
-
-  		if (walk.options.trim !== false) {
-  			var isFirstOrLast = index === 0 || index === arr.length - 1;
-
-  			if (text.match(/^[\s\n]+$/g) && walk.options.trim !== 'all') {
-  				text = ' ';
-  			} else {
-  				text = text.replace(/(^[\s\n]+|[\s\n]+$)/g, walk.options.trim === 'all' || isFirstOrLast ? '' : ' ');
-  			}
-
-  			if ((!text || text === ' ') && arr.length > 1 && isFirstOrLast) return null;
-  		}
-  		return text;
-  	}
-  	if (n.nodeType !== 1) return null;
-  	var nodeName = String(n.nodeName).toLowerCase();
-
-  	if (nodeName === 'script' && !walk.options.allowScripts) return null;
-
-  	var out = walk.h(nodeName, getProps(n.attributes), walkChildren(n.childNodes));
-  	if (walk.visitor) walk.visitor(out);
-  	return out;
-  }
-
-  function getProps(attrs) {
-  	var len = attrs && attrs.length;
-  	if (!len) return null;
-  	var props = {};
-  	for (var i = 0; i < len; i++) {
-  		var _attrs$i = attrs[i];
-  		var name = _attrs$i.name;
-  		var value = _attrs$i.value;
-
-  		if (value === '') value = true;
-  		if (name.substring(0, 2) === 'on' && walk.options.allowEvents) {
-  			value = new Function(value);
-  		}
-  		props[name] = value;
-  	}
-  	return props;
-  }
-
-  function walkChildren(children) {
-  	var c = children && Array.prototype.map.call(children, walk).filter(exists);
-  	return c && c.length ? c : null;
-  }
-
-  var exists = function (x) {
-  	return x;
-  };
-
-  var EMPTY_OBJ = {};
-
-  function markupToVdom(markup, type, reviver, map, options) {
-  	var dom = parseMarkup(markup, type);
-
-  	if (dom && dom.error) {
-  		throw new Error(dom.error);
-  	}
-
-  	var body = dom && dom.body || dom;
-  	visitor.map = map || EMPTY_OBJ;
-  	var vdom = body && toVdom(body, visitor, reviver, options);
-  	visitor.map = null;
-
-  	return vdom && vdom.children || null;
-  }
-
-  function toCamelCase(name) {
-  	return name.replace(/-(.)/g, function (match, letter) {
-  		return letter.toUpperCase();
-  	});
-  }
-
-  function visitor(node) {
-  	var name = node.nodeName.toLowerCase(),
-  	    map = visitor.map;
-  	if (map && map.hasOwnProperty(name)) {
-  		node.nodeName = map[name];
-  		node.attributes = Object.keys(node.attributes || {}).reduce(function (attrs, attrName) {
-  			attrs[toCamelCase(attrName)] = node.attributes[attrName];
-  			return attrs;
-  		}, {});
-  	} else {
-  		node.nodeName = name.replace(/[^a-z0-9-]/i, '');
-  	}
-  }
-
-  var classCallCheck = function (instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  var inherits = function (subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-  };
-
-  var objectWithoutProperties = function (obj, keys) {
-    var target = {};
-
-    for (var i in obj) {
-      if (keys.indexOf(i) >= 0) continue;
-      if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-      target[i] = obj[i];
-    }
-
-    return target;
-  };
-
-  var possibleConstructorReturn = function (self, call) {
-    if (!self) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return call && (typeof call === "object" || typeof call === "function") ? call : self;
-  };
-
-  var customReviver = void 0;
-
-  var Markup = function (_Component) {
-  	inherits(Markup, _Component);
-
-  	function Markup() {
-  		classCallCheck(this, Markup);
-  		return possibleConstructorReturn(this, _Component.apply(this, arguments));
-  	}
-
-  	Markup.setReviver = function setReviver(h) {
-  		customReviver = h;
-  	};
-
-  	Markup.prototype.shouldComponentUpdate = function shouldComponentUpdate(_ref) {
-  		var wrap = _ref.wrap;
-  		var type = _ref.type;
-  		var markup = _ref.markup;
-
-  		var p = this.props;
-  		return wrap !== p.wrap || type !== p.type || markup !== p.markup;
-  	};
-
-  	Markup.prototype.setComponents = function setComponents(components) {
-  		this.map = {};
-  		if (components) {
-  			for (var i in components) {
-  				if (components.hasOwnProperty(i)) {
-  					var name = i.replace(/([A-Z]+)([A-Z][a-z0-9])|([a-z0-9]+)([A-Z])/g, '$1$3-$2$4').toLowerCase();
-  					this.map[name] = components[i];
-  				}
-  			}
-  		}
-  	};
-
-  	Markup.prototype.render = function render(_ref2) {
-  		var _ref2$wrap = _ref2.wrap;
-  		var wrap = _ref2$wrap === undefined ? true : _ref2$wrap;
-  		var type = _ref2.type;
-  		var markup = _ref2.markup;
-  		var components = _ref2.components;
-  		var reviver = _ref2.reviver;
-  		var onError = _ref2.onError;
-  		var allowScripts = _ref2['allow-scripts'];
-  		var allowEvents = _ref2['allow-events'];
-  		var trim = _ref2.trim;
-  		var props = objectWithoutProperties(_ref2, ['wrap', 'type', 'markup', 'components', 'reviver', 'onError', 'allow-scripts', 'allow-events', 'trim']);
-
-  		var h = reviver || this.reviver || this.constructor.prototype.reviver || customReviver || preact.h,
-  		    vdom = void 0;
-
-  		this.setComponents(components);
-
-  		var options = {
-  			allowScripts: allowScripts,
-  			allowEvents: allowEvents,
-  			trim: trim
-  		};
-
-  		try {
-  			vdom = markupToVdom(markup, type, h, this.map, options);
-  		} catch (error) {
-  			if (onError) {
-  				onError({ error: error });
-  			} else if (typeof console !== 'undefined' && console.error) {
-  				console.error('preact-markup: ' + error);
-  			}
-  		}
-
-  		if (wrap === false) return vdom && vdom[0] || null;
-
-  		var c = props.hasOwnProperty('className') ? 'className' : 'class',
-  		    cl = props[c];
-  		if (!cl) props[c] = 'markup';else if (cl.splice) cl.splice(0, 0, 'markup');else if (typeof cl === 'string') props[c] += ' markup';else if (typeof cl === 'object') cl.markup = true;
-
-  		return h('div', props, vdom || null);
-  	};
-
-  	return Markup;
-  }(preact.Component);
-
-  return Markup;
-
-}));
-//# sourceMappingURL=preact-markup.js.map
-
-
-/***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -4498,10 +4555,10 @@ if (true) {
   return this || (typeof window !== 'undefined' ? window : global);
 }());
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 var g;
@@ -4528,13 +4585,13 @@ module.exports = g;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(14);
+var content = __webpack_require__(15);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4542,14 +4599,14 @@ var transform;
 var options = {"hmr":true}
 options.transform = transform
 // add the styles to the DOM
-var update = __webpack_require__(2)(content, options);
+var update = __webpack_require__(4)(content, options);
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./site-style.scss", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./site-style.scss");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./site.scss", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/sass-loader/lib/loader.js!./site.scss");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -4559,24 +4616,412 @@ if(false) {
 }
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(1)(false);
+exports = module.exports = __webpack_require__(3)(false);
 // imports
-exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Swanky+and+Moo+Moo);", ""]);
+exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Gloria+Hallelujah);", ""]);
 
 // module
-exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.428571429;\n  font-size: 16px;\n  line-height: 18px;\n  font-family: 'Roboto', sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Swanky and Moo Moo', cursive;\n  font-size: 50px; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    width: 40px;\n    height: 40px;\n    opacity: 0.5; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  padding: 20px 10px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\n.props {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto; }\n\n.prop {\n  width: auto;\n  background: white;\n  font-size: 14px;\n  margin: 30px 0px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    font-size: 18px;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    line-height: 18px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 12px; }\n  .prop .prop-text {\n    margin-top: 0px;\n    font-size: 14px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
+exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.428571429;\n  font-size: 16px;\n  line-height: normal;\n  font-family: \"Roboto\", sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 70px;\n  line-height: 70px;\n  color: #424748; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    fill: white;\n    width: 40px;\n    height: 40px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  font-size: 20px;\n  margin: 50px 0px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 60px auto; }\n\n.section-title {\n  color: #35405b;\n  font-weight: 700;\n  font-size: 24px;\n  line-height: 24px; }\n\n.section-text {\n  padding: 0px; }\n  .section-text p {\n    margin: 5px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.carousel-example-square {\n  background: yellow;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px;\n  font-family: monospace; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: yellow;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.props {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto; }\n\n.prop {\n  width: auto;\n  background: white;\n  font-size: 14px;\n  margin: 30px 0px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    font-size: 18px;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 18px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 12px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    font-size: 15px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * pow(v_uv.y * 1.2, 2.0));\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component, Markup, SimpleMenuExample, Slide, h, render,
+  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
+
+({h, render, Component} = __webpack_require__(0));
+
+Slide = __webpack_require__(1);
+
+Markup = __webpack_require__(2);
+
+SimpleMenuExample = class SimpleMenuExample extends Component {
+  constructor(props) {
+    super(props);
+    this.toggle = this.toggle.bind(this);
+    this.toggle2 = this.toggle2.bind(this);
+    this.state = {
+      toggle: 0,
+      toggle2: 1
+    };
+  }
+
+  toggle() {
+    boundMethodCheck(this, SimpleMenuExample);
+    return this.setState({
+      toggle: 1 - this.state.toggle,
+      toggle2: this.state.toggle === 1 ? 1 : this.state.toggle2
+    });
+  }
+
+  toggle2() {
+    boundMethodCheck(this, SimpleMenuExample);
+    return this.setState({
+      toggle2: 1 - this.state.toggle2
+    });
+  }
+
+  render() {
+    return h(Slide, {
+      slide: true,
+      className: 'example',
+      height: 200,
+      pos: this.state.toggle
+    }, h(Slide, {
+      outer_children: h('div', {
+        onClick: this.toggle,
+        className: 'simple-menu-example-icon'
+      }, '=')
+    }, h(Slide, {
+      scroll: true,
+      vert: true,
+      className: 'simple-menu-example-main'
+    }, h(Markup, {
+      markup: __webpack_require__(18)
+    }))), h(Slide, {
+      beta: 20,
+      vert: true,
+      slide: true,
+      pos: this.state.toggle2,
+      className: 'simple-menu-example-menu'
+    }, h(Slide, {
+      beta: 20,
+      className: 'center simple-menu-example-menu2'
+    }, 'sub menu?'), h(Slide, {
+      className: 'center'
+    }, 'menu', h('div', {
+      onClick: this.toggle2,
+      className: 'simple-menu-example-icon2'
+    }, '='))));
+  }
+
+};
+
+module.exports = SimpleMenuExample;
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = "Be at miss or each good play home they. It leave taste mr in it fancy. She son lose does fond bred gave lady get. Sir her company conduct expense bed any. Sister depend change off piqued one. Contented continued any happiness instantly objection yet her allowance. Use correct day new brought tedious. By come this been in. Kept easy or sons my it done. \n\nPrevailed sincerity behaviour to so do principle mr. As departure at no propriety zealously my. On dear rent if girl view. First on smart there he sense. Earnestly enjoyment her you resources. Brother chamber ten old against. Mr be cottage so related minuter is. Delicate say and blessing ladyship exertion few margaret. Delight herself welcome against smiling its for. Suspected discovery by he affection household of principle perfectly he. \n\nIncreasing impression interested expression he my at. Respect invited request charmed me warrant to. Expect no pretty as do though so genius afraid cousin. Girl when of ye snug poor draw. Mistake totally of in chiefly. Justice visitor him entered for. Continue delicate as unlocked entirely mr relation diverted in. Known not end fully being style house. An whom down kept lain name so at easy. \n\nNow for manners use has company believe parlors. Least nor party who wrote while did. Excuse formed as is agreed admire so on result parish. Put use set uncommonly announcing and travelling. Allowance sweetness direction to as necessary. Principle oh explained excellent do my suspected conveying in. Excellent you did therefore perfectly supposing described. \n\nAs am hastily invited settled at limited civilly fortune me. Really spring in extent an by. Judge but built gay party world. Of so am he remember although required. Bachelor unpacked be advanced at. Confined in declared marianne is vicinity. \n\nFrom they fine john he give of rich he. They age and draw mrs like. Improving end distrusts may instantly was household applauded incommode. Why kept very ever home mrs. Considered sympathize ten uncommonly occasional assistance sufficient not. Letter of on become he tended active enable to. Vicinity relation sensible sociable surprise screened no up as. \n\nEver man are put down his very. And marry may table him avoid. Hard sell it were into it upon. He forbade affixed parties of assured to me windows. Happiness him nor she disposing provision. Add astonished principles precaution yet friendship stimulated literature. State thing might stand one his plate. Offending or extremity therefore so difficult he on provision. Tended depart turned not are. \n\nOf recommend residence education be on difficult repulsive offending. Judge views had mirth table seems great him for her. Alone all happy asked begin fully stand own get. Excuse ye seeing result of we. See scale dried songs old may not. Promotion did disposing you household any instantly. Hills we do under times at first short an. \n\nAm of mr friendly by strongly peculiar juvenile. Unpleasant it sufficient simplicity am by friendship no inhabiting. Goodness doubtful material has denoting suitable she two. Dear mean she way and poor bred they come. He otherwise me incommode explained so in remaining. Polite barton in it warmly do county length an. \n\nCause dried no solid no an small so still widen. Ten weather evident smiling bed against she examine its. Rendered far opinions two yet moderate sex striking. Sufficient motionless compliment by stimulated assistance at. Convinced resolving extensive agreeable in it on as remainder. Cordially say affection met who propriety him. Are man she towards private weather pleased. In more part he lose need so want rank no. At bringing or he sensible pleasure. Prevent he parlors do waiting be females an message society. "
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component, LayoutExample, Slide, h, render;
+
+({h, render, Component} = __webpack_require__(0));
+
+Slide = __webpack_require__(1);
+
+LayoutExample = class LayoutExample extends Component {
+  render() {
+    return h(Slide, {
+      className: 'example layout-example',
+      height: 300
+    }, h(Slide, {
+      className: 'layout-example-a center'
+    }, '#A beta 50% (or both 100%)'), h(Slide, {
+      className: 'layout-example-b',
+      vert: true
+    }, h(Slide, {
+      beta: 20,
+      className: 'layout-example-b-a center',
+      style: {
+        padding: '10px',
+        background: '#E9E9E9'
+      }
+    }, '#B (50%) -> #B.A 20% (vertical parent)'), h(Slide, {
+      beta: 80,
+      className: 'layout-example-b-b center',
+      style: {
+        padding: '10px',
+        background: '#DEDEDE'
+      }
+    }, '#B (50%) -> #B.B 80% (vertical parent)')));
+  }
+
+};
+
+module.exports = LayoutExample;
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var ButtonsExample, Component, Slide, h, render;
+
+({h, render, Component} = __webpack_require__(0));
+
+Slide = __webpack_require__(1);
+
+ButtonsExample = class ButtonsExample extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      pos_a: 0,
+      pos_b: 0,
+      pos_c: 0,
+      pos_d: 0
+    };
+  }
+
+  render() {
+    return h(Slide, {
+      className: 'example buttons-example',
+      height: 50
+    }, h(Slide, {
+      square: true,
+      slide: true,
+      vert: true,
+      pos: this.state.pos_a,
+      onMouseEnter: () => {
+        return this.setState({
+          pos_a: 0.05
+        });
+      },
+      onClick: () => {
+        return this.setState({
+          pos_a: 1
+        });
+      },
+      onMouseLeave: () => {
+        return this.setState({
+          pos_a: 0
+        });
+      }
+    }, h(Slide, {
+      className: 'center'
+    }, '#A'), h(Slide, {
+      className: 'btn-example-dark center'
+    }, '#A')), h(Slide, {
+      slide: true,
+      vert: true,
+      pos: this.state.pos_b,
+      inverse: true,
+      onMouseEnter: () => {
+        return this.setState({
+          pos_b: 0.05
+        });
+      },
+      onClick: () => {
+        return this.setState({
+          pos_b: 1
+        });
+      },
+      onMouseLeave: () => {
+        return this.setState({
+          pos_b: 0
+        });
+      }
+    }, h(Slide, {
+      className: 'center'
+    }, '#B == #A except inverse : true,square : false'), h(Slide, {
+      className: 'btn-example-dark center'
+    }, '#B')), h(Slide, {
+      square: true,
+      slide: true,
+      pos: this.state.pos_c,
+      onMouseEnter: () => {
+        return this.setState({
+          pos_c: 0.05
+        });
+      },
+      onClick: () => {
+        return this.setState({
+          pos_c: 1
+        });
+      },
+      onMouseLeave: () => {
+        return this.setState({
+          pos_c: 0
+        });
+      }
+    }, h(Slide, {
+      className: 'center'
+    }, '#C'), h(Slide, {
+      className: 'btn-example-dark center'
+    }, '#C')), h(Slide, {
+      square: true,
+      slide: true,
+      inverse: true,
+      pos: this.state.pos_d,
+      onMouseEnter: () => {
+        return this.setState({
+          pos_d: 0.05
+        });
+      },
+      onClick: () => {
+        return this.setState({
+          pos_d: 1
+        });
+      },
+      onMouseLeave: () => {
+        return this.setState({
+          pos_d: 0
+        });
+      }
+    }, h(Slide, {
+      className: 'center'
+    }, '#D'), h(Slide, {
+      className: 'btn-example-dark center'
+    }, '#D')));
+  }
+
+};
+
+module.exports = ButtonsExample;
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var CarouselExample, Component, Slide, h, render;
+
+({h, render, Component} = __webpack_require__(0));
+
+Slide = __webpack_require__(1);
+
+CarouselExample = class CarouselExample extends Component {
+  constructor(props) {
+    var i, j;
+    super(props);
+    this.state = {
+      c_pos: 0
+    };
+    for (i = j = 0; j < 10; i = ++j) {
+      this.state[`c_${i}`] = 0;
+    }
+  }
+
+  slides(count) {
+    var j, results;
+    return (function() {
+      results = [];
+      for (var j = 0; 0 <= count ? j < count : j > count; 0 <= count ? j++ : j--){ results.push(j); }
+      return results;
+    }).apply(this).map((i) => {
+      return h(Slide, {
+        beta: i % 2 && 50 || 100,
+        className: 'carousel-example',
+        slide: true,
+        vert: true,
+        pos: this.state[`c_${i}`],
+        onMouseLeave: () => {
+          return this.setState({
+            [`c_${i}`]: 0
+          });
+        }
+      }, h(Slide, {
+        className: 'carousel-example-top center',
+        style: {
+          background: i % 2 && '#E2E2E2' || '#F3F3F3'
+        },
+        onClick: () => {
+          return this.setState({
+            [`c_${i}`]: 1 - this.state[`c_${i}`]
+          });
+        }
+      }, `# ${i} (click me)`), h(Slide, {
+        height: 50,
+        className: 'carousel-example-bot center'
+      }, `# ${i} (hi there!)`));
+    });
+  }
+
+  ctrl(count) {
+    var dots, j, k, results, results1, squares;
+    squares = (function() {
+      results = [];
+      for (var j = 0; 0 <= count ? j < count : j > count; 0 <= count ? j++ : j--){ results.push(j); }
+      return results;
+    }).apply(this).map((i) => {
+      return h(Slide, {
+        className: 'carousel-example-square center'
+      }, i);
+    });
+    dots = (function() {
+      results1 = [];
+      for (var k = 0; 0 <= count ? k < count : k > count; 0 <= count ? k++ : k--){ results1.push(k); }
+      return results1;
+    }).apply(this).map((i) => {
+      return h(Slide, {
+        width: 30,
+        onClick: () => {
+          return this.setState({
+            c_pos: i
+          });
+        },
+        className: 'dot center ' + (this.state.c_pos === i && 'active')
+      }, '•');
+    });
+    return h(Slide, {
+      height: 50,
+      className: 'carousel-example-dots'
+    }, h(Slide, {
+      square: true,
+      slide: true,
+      vert: true,
+      style: {
+        background: 'red'
+      },
+      pos: this.state.c_pos
+    }, squares), h(Slide, {
+      className: 'dots center'
+    }, dots));
+  }
+
+  render() {
+    return h(Slide, {
+      height: 250,
+      className: 'example carousel-example',
+      vert: true
+    }, h(Slide, {
+      slide: true,
+      className: 'carousel-example-top',
+      pos: this.state.c_pos
+    }, this.slides(10)), this.ctrl(10));
+  }
+
+};
+
+module.exports = CarouselExample;
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports) {
+
+module.exports = "<p>layout your ui by splitting up each slide. based on css flexbox, but stricter and stripped down to the core concept: (relative splitting) so you dont have to mess around with layouts in css. With a strict slide based ui its easy to scale your app without getting your hands dirty in css.</p>"
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports) {
+
+module.exports = "<p>Creating a typical sliding menu and/or page transitions is super easy. Elements that are not in the viewport are automatically set to visibility:hidden giving a performance boost for animation heavy interfaces with deeply nested slides. Click on the equals sign to see the sliding effect.</p>"
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports) {
+
+module.exports = "<p>On its own, it does not do much but combined and nested within itself, a unique set of properties make this component a powerful ui and ux as well as layout tool that be used to create a whole new realm of animated animated and modular user interfaces. checkout <a href = ''>this</a> example todo app and see for yourself!</p>"
 
 /***/ })
 /******/ ]);

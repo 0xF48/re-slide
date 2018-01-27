@@ -5,6 +5,7 @@ var cfg = {
 		loaders: [
 			{ test: /\.coffee$/, use: "coffee-loader"},
 			{ test: /\.glsl$/, use: "glsl-template-loader" },
+			{ test: /\.(xml|html|txt|md)$/, loader: "raw-loader" },
 			{ test: /\.(scss|less)$/, use: ['style-loader','css-loader','sass-loader'] }
 		]
 	},

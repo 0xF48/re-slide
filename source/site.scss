@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Swanky+and+Moo+Moo');
+@import url('https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Gloria+Hallelujah');
 
 body{
 	background: white;
     color: #1E1E1E;
     line-height: 1.428571429;
     font-size: 16px;
-    line-height: 18px;
-    font-family: 'Roboto', sans-serif;
+    line-height: normal;
+    font-family: "Roboto", sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -51,8 +51,10 @@ body{
 	flex-direction: column;
 }
 .title-name{
-	font-family: 'Swanky and Moo Moo', cursive;
-	font-size: 50px;
+	font-family: 'Gloria Hallelujah', cursive;
+	font-size: 70px;
+	line-height: 70px;
+	color: #424748;
 }
 
 
@@ -60,9 +62,9 @@ body{
 	padding: 10px;
 	// background: white;
 	img{
+		fill: white;
 		width: 40px;
 		height: 40px;
-		opacity: 0.5;
 	}
 }
 
@@ -100,7 +102,9 @@ body{
 	position: absolute;
 	bottom: 0px;
 	left: 0px;
-	padding: 20px 10px;
+	font-size: 20px;
+	// padding: 20px 0px;
+	margin: 50px 0px;
 	width: 100%;
 	p{
 		position: relative;
@@ -118,10 +122,38 @@ body{
 }
 
 
+//section
+.section{
+	max-width: 600px;
+	padding: 0px 10px;
+	margin: 60px auto;
+}
+.section-title{
+	color: #35405b;
+	font-weight: 700;
+	// font-size: 18px;
+	font-size: 24px;
+	line-height: 24px;
+	// padding: 0px 10px;
+}
+.section-text{
+	padding: 0px;
+	p{
+		margin: 5px 0px;
+		// margin-bottom: 10px;
+	}
+}
 
+//example
+.example{
+	max-width: 600px;
+	height: 300px;
+	font-family: 'Gloria Hallelujah', cursive;
+	-webkit-font-smoothing: auto;
+	text-rendering: optimizeSpeed;
+}
 
-// about/description
-
+@import "./examples.scss";
 
 // props
 .props{
@@ -147,7 +179,7 @@ body{
 		color: #35405b;
 		border-left: 4px solid #f1f1f1;
 		padding-left: 5px;
-		line-height: 18px;
+		font-size: 18px;
 	}
 	.prop-default{
 		margin-left: 0px;
@@ -156,8 +188,8 @@ body{
 
 	}
 	.prop-text{
-		margin-top: 0px;
-		font-size: 14px;
+		margin-top: 5px;
+		font-size: 15px;
 		display: block;
 		padding-top: 0px;
 		color: #3e3e3e;

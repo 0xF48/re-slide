@@ -1,0 +1,85 @@
+
+.carousel-example-square{
+	background: yellow;
+	color: black;
+	font-size: 14px;
+}
+.carousel-example-top{
+	background: red;
+	cursor: pointer;
+}
+.carousel-example-bot{
+	background: #333333;
+	color: white;
+}
+.carousel-example-dots{
+	background: #DCDCDC;
+	color: #9F9F9F;
+	font-size: 30px;
+	font-family: monospace;
+	.dot{
+		cursor: pointer;
+		&:hover{
+			color: #333333;
+		}
+		&.active{
+			color:#333333;
+		}
+	}
+}
+
+
+
+.buttons-example{
+	background: #E2E2E2;
+	cursor: pointer;
+}
+.btn-example-dark{
+	background: black;
+	color: white;
+}
+//
+.simple-menu-example{
+	height: 200px;
+} 
+
+.simple-menu-example-main{
+	background: #E2E2E2;
+	padding: 50px;
+	box-sizing: border-box;
+}
+
+.simple-menu-example-menu{
+	background: black;
+	color: white;
+}
+
+.simple-menu-example-menu2{
+	background: yellow;
+	color: black;
+}
+
+.simple-menu-example-icon{
+	position: absolute;
+	right: 0;
+	top: 0;
+	padding: 20px;
+	color: black;
+	font-size: 30px;
+	cursor: pointer;
+}
+
+.simple-menu-example-icon2{
+	position: absolute;
+	right: 0;
+	top: 0;
+	padding: 20px;
+	color: white;
+	font-size: 30px;
+	cursor: pointer;
+}
+
+
+.layout-example{
+	background: #E2E2E2;
+}

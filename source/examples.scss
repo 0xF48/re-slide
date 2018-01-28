@@ -16,7 +16,6 @@
 	background: #DCDCDC;
 	color: #9F9F9F;
 	font-size: 30px;
-	font-family: monospace;
 	.dot{
 		cursor: pointer;
 		&:hover{
@@ -26,6 +25,9 @@
 			color:#333333;
 		}
 	}
+}
+.dots{
+	font-family: monospace;
 }
 
 
@@ -66,6 +68,7 @@
 	padding: 20px;
 	color: black;
 	font-size: 30px;
+	line-height: 15px;
 	cursor: pointer;
 }
 
@@ -76,6 +79,7 @@
 	padding: 20px;
 	color: white;
 	font-size: 30px;
+	line-height: 15px;
 	cursor: pointer;
 }
 

@@ -1220,7 +1220,7 @@ Slide = class Slide extends Component {
     boundMethodCheck(this, Slide);
     this.is_root = !this._outer.parentNode.className.match('-i-s-static|-i-s-inner');
     this._outer.style.visibility = null;
-    setTimeout(this.onSlideDone.bind(this), 0);
+    setTimeout(this.onSlideDone, 0);
     if (this.is_root) {
       this.forceUpdate();
       return addEventListener('resize', this.resizeEvent);
@@ -1339,6 +1339,9 @@ Slide = class Slide extends Component {
   onSlideDone() {
     var base;
     boundMethodCheck(this, Slide);
+    if (!this.props.slide) {
+      return;
+    }
     this.calculateBounds();
     this.updateVisibility(0, 0, true);
     this.state.in_transition = false;
@@ -2512,6 +2515,7 @@ Header = class Header extends Component {
   }
 
   componentDidMount() {
+    this.t = Math.random() * 10000;
     this.box = new Box({
       canvas: this._canvas,
       resize: true, //auto resize on window.resize
@@ -2542,13 +2546,13 @@ Header = class Header extends Component {
         },
         iTime: {
           type: '1f',
-          val: 0.4
+          val: this.t
         }
       }
     });
     this.box.add(this.gradient);
     this.box.clear().draw(this.gradient);
-    // @tick(0)
+    this.tick(this.t);
     // setInterval @switchTitleSnippetTextA,1000
     return setInterval(this.switchTitleSnippetTextB, 2000);
   }
@@ -2567,10 +2571,10 @@ Header = class Header extends Component {
     });
   }
 
-  tick(t) {
+  tick() {
     boundMethodCheck(this, Header);
     requestAnimationFrame(this.tick);
-    this.gradient.uniforms.iTime.val = t;
+    this.gradient.uniforms.iTime.val = this.t += 10;
     return this.box.clear().draw(this.gradient);
   }
 
@@ -2643,7 +2647,7 @@ ButtonsExample = __webpack_require__(20);
 
 CarouselExample = __webpack_require__(21);
 
-EXAMPLES = [['Layout', __webpack_require__(22), LayoutExample], ['Simple Menu', __webpack_require__(23), SimpleMenuExample], ['Buttons', __webpack_require__(5), ButtonsExample], ['Carousel', __webpack_require__(5), CarouselExample]];
+EXAMPLES = [['Layout', __webpack_require__(22), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(23), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(5), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(5), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4']];
 
 ABOUT = __webpack_require__(24);
 
@@ -2675,12 +2679,19 @@ Docs = class Docs {
       }));
     })), h('div', {
       className: 'examples'
-    }, EXAMPLES.map(function(example) {
+    }, h('h1', {
+      margin: 10
+    }, 'Examples'), EXAMPLES.map(function(example) {
       return h('div', {
         className: 'section'
-      }, h('div', {
+      }, h('a', {
+        href: example[3],
         className: 'section-title'
-      }, example[0]), h(Markup, {
+      }, example[3] && h('span', {
+        className: 'section-title-link'
+      }, '</>'), h('span', {
+        className: 'section-title-name'
+      }, example[0])), h(Markup, {
         markup: example[1],
         className: 'section-text'
       }), h(example[2]));
@@ -4624,7 +4635,7 @@ exports = module.exports = __webpack_require__(3)(false);
 exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Gloria+Hallelujah);", ""]);
 
 // module
-exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.428571429;\n  font-size: 16px;\n  line-height: normal;\n  font-family: \"Roboto\", sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 70px;\n  line-height: 70px;\n  color: #424748; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    fill: white;\n    width: 40px;\n    height: 40px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  font-size: 20px;\n  margin: 50px 0px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 60px auto; }\n\n.section-title {\n  color: #35405b;\n  font-weight: 700;\n  font-size: 24px;\n  line-height: 24px; }\n\n.section-text {\n  padding: 0px; }\n  .section-text p {\n    margin: 5px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.carousel-example-square {\n  background: yellow;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px;\n  font-family: monospace; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: yellow;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.props {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto; }\n\n.prop {\n  width: auto;\n  background: white;\n  font-size: 14px;\n  margin: 30px 0px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    font-size: 18px;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 18px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 12px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    font-size: 15px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
+exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.2;\n  font-size: 16px;\n  font-family: \"Roboto\", sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 70px;\n  line-height: 70px;\n  color: #424748; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    fill: white;\n    width: 40px;\n    height: 40px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  font-size: 20px;\n  margin: 50px 0px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\nh1 {\n  color: #074072;\n  max-width: 600px;\n  margin: 8px auto; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px; }\n\n.section-title {\n  color: #35405b;\n  display: flex;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none; }\n  .section-title .section-title-name {\n    font-weight: 700; }\n  .section-title .section-title-link {\n    color: #cacaca;\n    margin: 0px 10px;\n    border-right: 4px solid #f1f1f1;\n    padding-right: 10px;\n    text-decoration: none;\n    font-size: 16px;\n    font-weight: 800; }\n\n.section-text {\n  padding: 0px; }\n  .section-text p {\n    margin: 5px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.carousel-example-square {\n  background: yellow;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.dots {\n  font-family: monospace; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: yellow;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.props {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto; }\n\n.prop {\n  width: auto;\n  background: white;\n  font-size: 14px;\n  margin: 30px 0px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 20px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 12px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    font-size: 15px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
 
 // exports
 
@@ -4633,7 +4644,7 @@ exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line
 /* 16 */
 /***/ (function(module, exports) {
 
-module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * pow(v_uv.y * 1.2, 2.0));\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
+module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * v_uv.y);\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
 
 /***/ }),
 /* 17 */
@@ -4840,7 +4851,7 @@ ButtonsExample = class ButtonsExample extends Component {
       pos: this.state.pos_c,
       onMouseEnter: () => {
         return this.setState({
-          pos_c: 0.05
+          pos_c: 0.2
         });
       },
       onClick: () => {
@@ -4864,7 +4875,7 @@ ButtonsExample = class ButtonsExample extends Component {
       pos: this.state.pos_d,
       onMouseEnter: () => {
         return this.setState({
-          pos_d: 0.05
+          pos_d: 0.2
         });
       },
       onClick: () => {
@@ -4923,6 +4934,7 @@ CarouselExample = class CarouselExample extends Component {
         className: 'carousel-example',
         slide: true,
         vert: true,
+        inverse: !!(i % 2),
         pos: this.state[`c_${i}`],
         onMouseLeave: () => {
           return this.setState({
@@ -4939,10 +4951,10 @@ CarouselExample = class CarouselExample extends Component {
             [`c_${i}`]: 1 - this.state[`c_${i}`]
           });
         }
-      }, `# ${i} (click me)`), h(Slide, {
+      }, `#${i}.top (click me!)`), h(Slide, {
         height: 50,
         className: 'carousel-example-bot center'
-      }, `# ${i} (hi there!)`));
+      }, `#${i}.bot (hi there!)`));
     });
   }
 

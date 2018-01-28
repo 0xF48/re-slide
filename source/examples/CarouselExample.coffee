@@ -16,6 +16,7 @@ class CarouselExample extends Component
 				className: 'carousel-example'
 				slide: yes
 				vert: yes
+				inverse: !!(i%2)
 				pos: @state["c_#{i}"]
 				onMouseLeave: =>
 					@setState "c_#{i}": 0
@@ -25,11 +26,11 @@ class CarouselExample extends Component
 						background: i%2 && '#E2E2E2' || '#F3F3F3'
 					onClick: =>
 						@setState "c_#{i}": 1 - @state["c_#{i}"]
-					"# #{i} (click me)"
+					"##{i}.top (click me!)"
 				h Slide,
 					height: 50
 					className: 'carousel-example-bot center'
-					"# #{i} (hi there!)"
+					"##{i}.bot (hi there!)"
 	
 	ctrl: (count)->
 		squares = [0...count].map (i)=>

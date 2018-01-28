@@ -53,7 +53,7 @@ class ButtonsExample extends Component
 				slide: yes
 				pos: @state.pos_c
 				onMouseEnter: ()=>
-					@setState pos_c:0.05
+					@setState pos_c:0.2
 				onClick: ()=>
 					@setState pos_c:1
 				onMouseLeave: ()=>
@@ -70,7 +70,7 @@ class ButtonsExample extends Component
 				inverse: yes
 				pos: @state.pos_d
 				onMouseEnter: ()=>
-					@setState pos_d:0.05
+					@setState pos_d:0.2
 				onClick: ()=>
 					@setState pos_d:1
 				onMouseLeave: ()=>

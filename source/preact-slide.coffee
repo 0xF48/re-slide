@@ -70,7 +70,7 @@ class Slide extends Component
 	componentDidMount: ()=>
 		@is_root = !@_outer.parentNode.className.match('-i-s-static|-i-s-inner')
 		@_outer.style.visibility = null
-		setTimeout @onSlideDone.bind(@),0
+		setTimeout @onSlideDone,0
 		if @is_root
 			@forceUpdate()
 			addEventListener 'resize',@resizeEvent
@@ -190,6 +190,8 @@ class Slide extends Component
 	when slide animation is complete, this function is triggered.
 	###
 	onSlideDone: ()=>
+		if !@props.slide
+			return
 		@calculateBounds()
 		@updateVisibility(0,0,true)
 		@state.in_transition = false

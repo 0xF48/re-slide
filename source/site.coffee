@@ -59,6 +59,7 @@ class Header extends Component
 			title_snippet_pos_b: 1
 	
 	componentDidMount: ->
+		@t = Math.random()*10000
 		@box = new Box
 			canvas: @_canvas
 			resize: true #auto resize on window.resize
@@ -83,11 +84,11 @@ class Header extends Component
 					val:1.0
 				iTime:
 					type:'1f'
-					val: 0.4
+					val: @t
 
 		@box.add(@gradient)
 		@box.clear().draw(@gradient)
-		# @tick(0)
+		@tick(@t)
 		# setInterval @switchTitleSnippetTextA,1000
 		setInterval @switchTitleSnippetTextB,2000
 
@@ -102,9 +103,9 @@ class Header extends Component
 			title_snippet_pos_b: 1-@state.title_snippet_pos_b
 		
 	
-	tick: (t)=>
+	tick: ()=>
 		requestAnimationFrame(@tick)
-		@gradient.uniforms.iTime.val = t
+		@gradient.uniforms.iTime.val = @t+=10
 		@box.clear().draw(@gradient)
 
 
@@ -185,10 +186,10 @@ CarouselExample = require './examples/CarouselExample.coffee'
 
 
 EXAMPLES = [
-	['Layout',require('./html/layout.html'),LayoutExample]
-	['Simple Menu',require('./html/simple-menu.html'),SimpleMenuExample],
-	['Buttons',require('./html/buttons.html'),ButtonsExample],
-	['Carousel',require('./html/buttons.html'),CarouselExample],
+	['Layout',require('./html/layout.html'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
+	['Simple Menu',require('./html/simple-menu.html'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
+	['Buttons',require('./html/buttons.html'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
+	['Carousel',require('./html/buttons.html'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
 ]
 
 ABOUT = require './html/about.html'
@@ -208,6 +209,7 @@ class Docs
 				h Markup,
 					className: 'section-text'
 					markup: ABOUT
+
 			
 			h 'div',
 				className: 'props'
@@ -224,15 +226,26 @@ class Docs
 							markdown: prop[2]
 							markupOpts:
 								className: 'prop-text'
+		
 
 			h 'div',
 				className: 'examples'
+				h 'h1',
+					margin: 10
+					'Examples'
 				EXAMPLES.map (example)->
 					h 'div',
 						className: 'section'
-						h 'div',
+						h 'a',
+							href: example[3]
 							className: 'section-title'
-							example[0]
+							example[3] && h 'span',
+								className: 'section-title-link'
+								'</>'
+							h 'span',
+								className: 'section-title-name'
+								example[0]
+
 						h Markup,
 							markup: example[1]
 							className: 'section-text'

@@ -301,6 +301,7 @@ class Slide extends Component
 	Get the index x and y position of where we want to slide/pan
 	###
 	getIndexXY: (index)->
+
 		if !index?
 			throw new Error 'index position is undefined'
 		if index >= @props.children.length
@@ -316,11 +317,27 @@ class Slide extends Component
 		
 
 		if @props.vert
-			y = cc.offsetTop
+		
+			if cc.offsetTop > @state.y
+				if cc.clientHeight > @outer_rect.height
+					y = cc.offsetTop
+				else
+					y = cc.offsetTop - @outer_rect.height + cc.clientHeight
+			else
+				y = cc.offsetTop
+			
 			if (index % 1) != 0
 				y += (Math.round((index % 1) * @getChildHeight(_cc))) * (@props.inverse && -1 || 1)
+		
 		else
-			x = cc.offsetLeft
+			if cc.offsetLeft > @state.x
+				if cc.clientWidth > @outer_rect.width
+					x = cc.offsetLeft
+				else
+					x = cc.offsetLeft - @outer_rect.width + cc.clientWidth
+			else
+				x = cc.offsetLeft
+			
 			if (index % 1) != 0
 				x += Math.round((index % 1) * @getChildWidth(_cc)) * (@props.inverse && -1 || 1)
 
@@ -349,7 +366,7 @@ class Slide extends Component
 		else if x > d && d > 0
 			x = d 
 
-	
+		
 		
 		x: x || 0
 		y: y || 0

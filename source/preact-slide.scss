@@ -89,6 +89,7 @@
 
 .-i-s-scroll{
 	overflow-x: scroll;
+	-webkit-overflow-scrolling: touch;
 	overflow-y: hidden;
 }
 

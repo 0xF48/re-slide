@@ -17,6 +17,7 @@ body{
 }
 
 
+
 .gradient-link{
     position: absolute;
     z-index: 10;
@@ -53,7 +54,7 @@ body{
 	font-family: 'Gloria Hallelujah', cursive;
 	font-size: 70px;
 	line-height: 70px;
-	color: #424748;
+	color: #555555;
 }
 
 
@@ -97,13 +98,21 @@ body{
 // 	padding: 6px 8px;
 // }
 
+.header-description-sub{
+	font-style: oblique;
+	font-family: 'Gloria Hallelujah', cursive;
+	opacity: 0.4;
+}
+
 .header-description{
 	position: absolute;
 	bottom: 0px;
+	box-sizing: border-box;
 	left: 0px;
-	font-size: 20px;
+	font-size: 18px;
 	// padding: 20px 0px;
 	margin: 50px 0px;
+	padding:  0px 10px;
 	width: 100%;
 	p{
 		position: relative;
@@ -121,9 +130,12 @@ body{
 }
 
 h1{
-	color: #074072;
-	max-width: 600px;
-	margin: 8px auto;
+    font-style: oblique;
+    font-family: 'Gloria Hallelujah', cursive;
+    opacity: 0.4;
+    color: #1E1E1E;
+    font-size: 20px;
+    font-weight: 100;
 }
 
 //section
@@ -134,8 +146,10 @@ h1{
 	margin-bottom: 100px;
 }
 .section-title{
-	color: #35405b;
+	color: #5A3D3C;
 	display: flex;
+	border-left: 4px solid #F1E0D9;
+	padding-left: 5px;
 	align-children: center;
 	line-height: 20px;
 	font-size: 20px;
@@ -146,18 +160,25 @@ h1{
 		
 			
 	}
-	.section-title-link{
-		color: #cacaca;
-		margin: 0px 10px;
-		border-right: 4px solid #f1f1f1;
-		padding-right: 10px;
-		text-decoration: none;
-		font-size:16px;
-		font-weight: 800;
-	}
 	// padding: 0px 10px;
 }
+.section-title-link{
+	color: #535154;
+	/* margin: 0px 10px; */
+	padding: 10px 8px;
+	/* color: black; */
+	text-decoration: none;
+	text-align: center;
+	vertical-align: middle;
+	line-height: 40px;
+	margin-top: 50px;
+	font-size: 16px;
+	position: relative;
+	font-weight: 800;
+}
 .section-text{
+	// margin-top: 30px;
+	font-size: 18px;
 	padding: 0px;
 	p{
 		margin: 5px 0px;
@@ -174,19 +195,23 @@ h1{
 	text-rendering: optimizeSpeed;
 }
 
+.example-section{
+	margin-bottom:80px;
+}
+
 @import "./examples.scss";
 
 // props
-.props{
-	max-width: 600px;
-	padding: 0px 10px;
-	margin: 0px auto;
-}
+// .props{
+// 	max-width: 600px;
+// 	padding: 0px 10px;
+// 	margin: 0px auto;
+// 	margin-bottom: 100px;
+// }
 .prop{
     width: auto;
     background: white;
-    font-size: 14px;
-    margin: 30px 0px;
+    margin-bottom: 30px;
 	div{
 		padding: 0px 2px;
 		/* font-size: 12px; */
@@ -204,12 +229,11 @@ h1{
 	.prop-default{
 		margin-left: 0px;
 		opacity: 0.5;
-		font-size: 12px;
+		font-size: 15px;
 
 	}
 	.prop-text{
 		margin-top: 5px;
-		font-size: 15px;
 		display: block;
 		padding-top: 0px;
 		color: #3e3e3e;

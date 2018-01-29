@@ -1474,12 +1474,28 @@ Slide = class Slide extends Component {
     _cc = this.props.children[Math.floor(index)];
     // cc_rect = cc.getBoundingClientRect()
     if (this.props.vert) {
-      y = cc.offsetTop;
+      if (cc.offsetTop > this.state.y) {
+        if (cc.clientHeight > this.outer_rect.height) {
+          y = cc.offsetTop;
+        } else {
+          y = cc.offsetTop - this.outer_rect.height + cc.clientHeight;
+        }
+      } else {
+        y = cc.offsetTop;
+      }
       if ((index % 1) !== 0) {
         y += (Math.round((index % 1) * this.getChildHeight(_cc))) * (this.props.inverse && -1 || 1);
       }
     } else {
-      x = cc.offsetLeft;
+      if (cc.offsetLeft > this.state.x) {
+        if (cc.clientWidth > this.outer_rect.width) {
+          x = cc.offsetLeft;
+        } else {
+          x = cc.offsetLeft - this.outer_rect.width + cc.clientWidth;
+        }
+      } else {
+        x = cc.offsetLeft;
+      }
       if ((index % 1) !== 0) {
         x += Math.round((index % 1) * this.getChildWidth(_cc)) * (this.props.inverse && -1 || 1);
       }
@@ -2617,8 +2633,8 @@ Header = class Header extends Component {
     }))), h('div', {
       className: 'header-description'
     }, h('p', {
-      className: 'header-description-text'
-    }, 'Experimental technology.'), h('p', {
+      className: 'header-description-sub'
+    }, 'Experimental'), h('p', {
       className: 'header-description-text'
     }, 'A universal layout component which can be used as a foundation for creating animated modular interfaces and widgets.', h('div', {
       className: 'shields'
@@ -2657,14 +2673,12 @@ Docs = class Docs {
       className: 'docs'
     }, h(Header), h('div', {
       className: 'section'
-    }, h('div', {
-      className: 'section-title'
-    }, 'About'), h(Markup, {
+    }, h('h1', {}, 'About'), h(Markup, {
       className: 'section-text',
       markup: ABOUT
     })), h('div', {
-      className: 'props'
-    }, PROPS.map(function(prop) {
+      className: 'section'
+    }, h('h1', {}, 'Props'), PROPS.map(function(prop) {
       return h('div', {
         className: 'prop'
       }, h('div', {
@@ -2678,23 +2692,26 @@ Docs = class Docs {
         }
       }));
     })), h('div', {
-      className: 'examples'
+      className: 'examples section'
     }, h('h1', {
       margin: 10
     }, 'Examples'), EXAMPLES.map(function(example) {
       return h('div', {
-        className: 'section'
+        className: 'example-section'
       }, h('a', {
         href: example[3],
+        target: '_blank',
         className: 'section-title'
-      }, example[3] && h('span', {
-        className: 'section-title-link'
-      }, '</>'), h('span', {
+      }, h('span', {
         className: 'section-title-name'
       }, example[0])), h(Markup, {
         markup: example[1],
         className: 'section-text'
-      }), h(example[2]));
+      }), h(example[2]), example[3] && h('a', {
+        href: example[3],
+        className: 'section-title-link',
+        target: '_blank'
+      }, '</>'));
     })));
   }
 
@@ -2747,7 +2764,7 @@ exports = module.exports = __webpack_require__(3)(false);
 
 
 // module
-exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-shrink: 0; }\n\n.-i-s-center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.-i-s-static {\n  box-sizing: border-box;\n  position: relative;\n  flex-direction: row;\n  display: flex;\n  overflow: hidden; }\n  .-i-s-static.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-outer {\n  position: relative;\n  overflow: hidden; }\n\n.-i-s-inner {\n  height: 100%;\n  display: flex;\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%; }\n  .-i-s-inner > .-i-s-in {\n    transition: transform 0.3s cubic-bezier(0, 0.93, 0.27, 1);\n    transform: scale(1) rotateY(0deg) !important; }\n  .-i-s-inner > .-i-s-in_pre.-i-s-right {\n    transform-origin: 0% 50%;\n    transform: scale(1) rotateY(10deg); }\n  .-i-s-inner > .-i-s-in_pre.-i-s-left {\n    transform-origin: 100% 50%;\n    transform: scale(1) rotateY(-10deg); }\n  .-i-s-inner.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-inner > .-i-s-outer {\n  flex-shrink: 0; }\n\n.-i-s-inner > .-i-s-static {\n  flex-shrink: 0; }\n\n.-i-s-horizontal {\n  flex-direction: row; }\n\n.-i-s-vertical {\n  flex-direction: column; }\n  .-i-s-vertical.-i-s-inner {\n    height: 100%; }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-right {\n    transform-origin: 50% 0%;\n    transform: scale(1) rotateX(-60deg); }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-left {\n    transform-origin: 50% 100%;\n    transform: scale(1) rotateX(60deg); }\n  .-i-s-vertical.-i-s-reverse {\n    flex-direction: column-reverse; }\n\n.-i-s-scroll {\n  overflow-x: scroll;\n  overflow-y: hidden; }\n\n.-i-s-scroll.-i-s-vertical {\n  overflow-y: scroll;\n  overflow-x: hidden; }\n", ""]);
+exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-shrink: 0; }\n\n.-i-s-center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.-i-s-static {\n  box-sizing: border-box;\n  position: relative;\n  flex-direction: row;\n  display: flex;\n  overflow: hidden; }\n  .-i-s-static.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-outer {\n  position: relative;\n  overflow: hidden; }\n\n.-i-s-inner {\n  height: 100%;\n  display: flex;\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%; }\n  .-i-s-inner > .-i-s-in {\n    transition: transform 0.3s cubic-bezier(0, 0.93, 0.27, 1);\n    transform: scale(1) rotateY(0deg) !important; }\n  .-i-s-inner > .-i-s-in_pre.-i-s-right {\n    transform-origin: 0% 50%;\n    transform: scale(1) rotateY(10deg); }\n  .-i-s-inner > .-i-s-in_pre.-i-s-left {\n    transform-origin: 100% 50%;\n    transform: scale(1) rotateY(-10deg); }\n  .-i-s-inner.-i-s-reverse {\n    flex-direction: row-reverse; }\n\n.-i-s-inner > .-i-s-outer {\n  flex-shrink: 0; }\n\n.-i-s-inner > .-i-s-static {\n  flex-shrink: 0; }\n\n.-i-s-horizontal {\n  flex-direction: row; }\n\n.-i-s-vertical {\n  flex-direction: column; }\n  .-i-s-vertical.-i-s-inner {\n    height: 100%; }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-right {\n    transform-origin: 50% 0%;\n    transform: scale(1) rotateX(-60deg); }\n  .-i-s-vertical > .-i-s-in_pre.-i-s-left {\n    transform-origin: 50% 100%;\n    transform: scale(1) rotateX(60deg); }\n  .-i-s-vertical.-i-s-reverse {\n    flex-direction: column-reverse; }\n\n.-i-s-scroll {\n  overflow-x: scroll;\n  -webkit-overflow-scrolling: touch;\n  overflow-y: hidden; }\n\n.-i-s-scroll.-i-s-vertical {\n  overflow-y: scroll;\n  overflow-x: hidden; }\n", ""]);
 
 // exports
 
@@ -4635,7 +4652,7 @@ exports = module.exports = __webpack_require__(3)(false);
 exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Gloria+Hallelujah);", ""]);
 
 // module
-exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.2;\n  font-size: 16px;\n  font-family: \"Roboto\", sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 70px;\n  line-height: 70px;\n  color: #424748; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    fill: white;\n    width: 40px;\n    height: 40px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  left: 0px;\n  font-size: 20px;\n  margin: 50px 0px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\nh1 {\n  color: #074072;\n  max-width: 600px;\n  margin: 8px auto; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px; }\n\n.section-title {\n  color: #35405b;\n  display: flex;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none; }\n  .section-title .section-title-name {\n    font-weight: 700; }\n  .section-title .section-title-link {\n    color: #cacaca;\n    margin: 0px 10px;\n    border-right: 4px solid #f1f1f1;\n    padding-right: 10px;\n    text-decoration: none;\n    font-size: 16px;\n    font-weight: 800; }\n\n.section-text {\n  padding: 0px; }\n  .section-text p {\n    margin: 5px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.carousel-example-square {\n  background: yellow;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.dots {\n  font-family: monospace; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: yellow;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.props {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto; }\n\n.prop {\n  width: auto;\n  background: white;\n  font-size: 14px;\n  margin: 30px 0px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 20px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 12px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    font-size: 15px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
+exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.2;\n  font-size: 16px;\n  font-family: \"Roboto\", sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 70px;\n  line-height: 70px;\n  color: #555555; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    fill: white;\n    width: 40px;\n    height: 40px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description-sub {\n  font-style: oblique;\n  font-family: 'Gloria Hallelujah', cursive;\n  opacity: 0.4; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  font-size: 18px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\nh1 {\n  font-style: oblique;\n  font-family: 'Gloria Hallelujah', cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px; }\n\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none; }\n  .section-title .section-title-name {\n    font-weight: 700; }\n\n.section-title-link {\n  color: #535154;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 800; }\n\n.section-text {\n  font-size: 18px;\n  padding: 0px; }\n  .section-text p {\n    margin: 5px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.example-section {\n  margin-bottom: 80px; }\n\n.carousel-example-square {\n  background: yellow;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.dots {\n  font-family: monospace; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: yellow;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.prop {\n  width: auto;\n  background: white;\n  margin-bottom: 30px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 20px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 15px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
 
 // exports
 

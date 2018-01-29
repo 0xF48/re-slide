@@ -153,8 +153,8 @@ class Header extends Component
 			h 'div',
 				className: 'header-description',
 				h 'p',
-					className:'header-description-text'
-					'Experimental technology.'
+					className:'header-description-sub'
+					'Experimental'
 				h 'p',
 					className:'header-description-text'
 					'A universal layout component which can be used as a foundation for creating animated modular interfaces and widgets.'
@@ -203,16 +203,15 @@ class Docs
 			
 			h 'div',
 				className: 'section'
-				h 'div',
-					className: 'section-title'
-					'About'
+				h 'h1',{},'About'
 				h Markup,
 					className: 'section-text'
 					markup: ABOUT
 
 			
 			h 'div',
-				className: 'props'
+				className: 'section'
+				h 'h1',{},'Props'
 				PROPS.map (prop)->
 					h 'div',
 						className: 'prop'
@@ -229,27 +228,29 @@ class Docs
 		
 
 			h 'div',
-				className: 'examples'
+				className: 'examples section'
 				h 'h1',
 					margin: 10
 					'Examples'
 				EXAMPLES.map (example)->
 					h 'div',
-						className: 'section'
+						className: 'example-section'
 						h 'a',
 							href: example[3]
+							target: '_blank'
 							className: 'section-title'
-							example[3] && h 'span',
-								className: 'section-title-link'
-								'</>'
 							h 'span',
 								className: 'section-title-name'
 								example[0]
-
 						h Markup,
 							markup: example[1]
 							className: 'section-text'
 						h example[2]
+						example[3] && h 'a',
+							href: example[3]
+							className: 'section-title-link'
+							target: '_blank'
+							'</>'
 
 
 

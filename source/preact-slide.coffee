@@ -11,20 +11,14 @@ DEFAULT_PROPS =
 	animate: false #transitions
 	ease: 'cubic-bezier(0.25, 0.34, 0, 1)' #slide easing
 	ease_dur: 0.4 #slide easing duration
-	w: 0 #slide width manual override
-	h: 0 #slide height manual override
-
-	offset: 0 #offset in pixels
-	offset_beta: 0 #offset in beta
-	
-	posOffset: 0 
-	posOffsetBeta: 0
-
-
-	square: no #square dim helper
+	width: 0 #slide width manual override
+	height: 0 #slide height manual override
+	ratio: 0 #ratio dim helper
 	center: no #css flex center
 	inverse: no #css flex direction inverse
 	scroll: no #css scroll overflow
+	className: null
+	iclassName: null
 	
 	
 
@@ -50,7 +44,7 @@ class Slide extends Component
 			height: 0 #height of _outer
 
 	
-	checkProps: (props)->
+	# checkProps: (props)->
 		# if props.inverse && props.slide
 		# 	console.warn 'inverted slides are not supported'
 	
@@ -61,7 +55,7 @@ class Slide extends Component
 	componentWillMount: ->
 		@passProps(@props) #do stuff with props 
 		@legacyProps(@props) #legacy props support
-		@checkProps(@props)
+		# @checkProps(@props)
 	
 
 	###
@@ -105,7 +99,7 @@ class Slide extends Component
 	componentWillReceiveProps: (props)->
 		@passProps(props)
 		@legacyProps(props)
-		@checkProps(props)
+		# @checkProps(props)
 	
 
 
@@ -141,26 +135,12 @@ class Slide extends Component
 	###	
 	legacyProps: (props)->
 
-		if props.size?
-			props.dim = props.size
 
-		if props.vertical?
-			props.vert = props.vertical 
+		# if props.size?
+		# 	props.dim = props.size
 
-		if props.width
-			props.w = props.width
+		
 
-		if props.height
-			props.h = props.height
-
-		if props.iclassName?
-			props.iclass = props.iclassName
-
-		if props.oclassName?
-			props.class = props.oclassName
-
-		if props.className?
-			props.class = props.className
 
 
 	###
@@ -427,23 +407,23 @@ class Slide extends Component
 	getOuterHW: ()=>
 
 		# square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
-		if @props.square
+		if @props.ratio
 			dim = {}
 			if @context.vert
-				dim.height = @context.dim
+				dim.height = @context.dim*@props.ratio
 				dim.width = '100%'
 			else
 				#dim.height = '100%' CSS is weird...
-				dim.width = @context.dim
+				dim.width = @context.dim*@props.ratio
 			return dim
 
 		# w/h passed down from props override
 		if @context.vert
-			width = @props.w || null
-			height = @props.dim || @props.h || null
+			width = @props.width || null
+			height = @props.dim || @props.height || null
 		else
-			width = @props.dim || @props.w  || null
-			height = @props.h || null
+			width = @props.dim || @props.width  || null
+			height = @props.height || null
 
 		# auto height / width helpers
 		
@@ -469,7 +449,7 @@ class Slide extends Component
 		else
 			pw = pw || @getBeta()
 			ph = ph || '100%' #CSS is weird...
-		# console.log ph,pw,@props.className
+		# console.log ph,pw,@props.className Name
 		
 		height: ph
 		width: pw
@@ -495,11 +475,11 @@ class Slide extends Component
 	render component as a slideable, when props.slide is enabled, an extra div is rendered for panning/sliding.
 	###		
 	renderSlide: =>
-		inner_c_name = @props.iclass && (" "+@props.iclass) || ''
-		c_name = @props.class && (" "+@props.class) || ''
+		inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
+		c_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''
 		class_vert = @props.vert && ' -i-s-vertical' || ''
-		class_fixed = ( (@props.square || @props.dim || @props.w || @props.h) && ' -i-s-fixed') || ''
+		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		class_auto = @props.auto && ' -i-s-auto' || ''
@@ -538,11 +518,11 @@ class Slide extends Component
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
 	###	
 	renderStatic: =>
-		inner_c_name = @props.iclass && (" "+@props.iclass) || ''
-		c_name = @props.class && (" "+@props.class) || ''
+		inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
+		c_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''
 		class_vert = @props.vert && ' -i-s-vertical' || ''
-		class_fixed = ( (@props.square || @props.dim || @props.w || @props.h) && ' -i-s-fixed') || ''
+		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		outer_props = @pass_props

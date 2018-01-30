@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Gloria+Hallelujah');
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500|Gloria+Hallelujah');
 
 body{
-	background: white;
-    color: #1E1E1E;
-    line-height: 1.2;
-    font-size: 16px;
-    font-family: "Roboto", sans-serif;
-    -webkit-font-smoothing: antialiased;
+	font-family: "Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+	font-size: 14px;
+	line-height: 1.5;
+	font-size: 16px;
+	color: #24292e;
+	background-color: #fff;
 }
 
 .center{
@@ -16,7 +16,25 @@ body{
 	justify-content: center;  
 }
 
+a{
+	text-decoration: none;
+}
 
+hr{
+	border: none;
+	border-bottom: 1px solid rgb(232, 232, 232);
+	background: none;
+	height: 0;
+}
+
+code{
+	background: rgb(255, 250, 213);
+}
+
+blockquote{
+	opacity: 0.5;
+	font-style: oblique;
+}
 
 .gradient-link{
     position: absolute;
@@ -52,56 +70,45 @@ body{
 }
 .title-name{
 	font-family: 'Gloria Hallelujah', cursive;
-	font-size: 70px;
-	line-height: 70px;
+	font-size: 50px;
+	line-height: 50px;
 	color: #555555;
 }
 
 
 .github-link{
-	padding: 10px;
+	padding: 0px;
+	opacity: 0.3;
 	// background: white;
 	img{
 		fill: white;
-		width: 40px;
-		height: 40px;
+		width: 25px;
+		height: 25px;
 	}
 }
 
 .title-snippet{
 	margin: 10px;
-	font-family: 'Inconsolata', monospace;
+	font-family: monospace;
+	font-size: 12px;
 	color: rgba(0, 0, 0, 0.5215686274509804);
 	width: 340px;
 	height: 30px;
-	// border: 1px solid rgba(0, 0, 0, 0.09019607843137255);
-	// background: white;
-	// color:  
-	// .dark{
-	// 	background: black;
-	// 	color: white;
-	// }
 }
 
 .title-snippet-text{
 	text-align: left;
 	padding: 6px 8px;
 	display: inline-block;
-	// width: 100%;
 }
-
-
-// .snippet{
-// 	font-family: 'Inconsolata', monospace;
-// 	color: rgba(0, 0, 0, 0.5215686274509804);
-// 	border: 1px solid rgba(0, 0, 0, 0.09019607843137255);
-// 	padding: 6px 8px;
-// }
 
 .header-description-sub{
 	font-style: oblique;
 	font-family: 'Gloria Hallelujah', cursive;
 	opacity: 0.4;
+	color: #1E1E1E;
+	font-size: 20px;
+	font-weight: 100;
 }
 
 .header-description{
@@ -109,7 +116,7 @@ body{
 	bottom: 0px;
 	box-sizing: border-box;
 	left: 0px;
-	font-size: 18px;
+	// font-size: 18px;
 	// padding: 20px 0px;
 	margin: 50px 0px;
 	padding:  0px 10px;
@@ -163,7 +170,7 @@ h1{
 	// padding: 0px 10px;
 }
 .section-title-link{
-	color: #535154;
+	color: #39383a;
 	/* margin: 0px 10px; */
 	padding: 10px 8px;
 	/* color: black; */
@@ -174,15 +181,12 @@ h1{
 	margin-top: 50px;
 	font-size: 16px;
 	position: relative;
-	font-weight: 800;
+	font-weight: 500;
 }
 .section-text{
-	// margin-top: 30px;
-	font-size: 18px;
 	padding: 0px;
 	p{
-		margin: 5px 0px;
-		// margin-bottom: 10px;
+		margin: 10px 0px;
 	}
 }
 
@@ -201,16 +205,8 @@ h1{
 
 @import "./examples.scss";
 
-// props
-// .props{
-// 	max-width: 600px;
-// 	padding: 0px 10px;
-// 	margin: 0px auto;
-// 	margin-bottom: 100px;
-// }
 .prop{
     width: auto;
-    background: white;
     margin-bottom: 30px;
 	div{
 		padding: 0px 2px;
@@ -242,3 +238,25 @@ h1{
 		}
 	}
 }
+
+
+footer{
+	display: flex;
+	justify-content: center;
+	img{
+		width: 25px;
+		height: 25px;
+		padding: 10px;
+		margin: 0px auto;
+		opacity: 0.3;
+	}
+}
+
+.footer-author{
+	color: black;
+	line-height: 46px;
+	font-family: monospace;
+	opacity: 0.3;
+}
+
+

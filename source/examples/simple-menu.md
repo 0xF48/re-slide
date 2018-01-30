@@ -1,0 +1,1 @@
+Creating a typical sliding menu and/or page transitions is super easy. Click on the equals sign to see the sliding effect. Notice that the main slide is scrollable. This can be quickly enabled via the `scroll` shortcut property.

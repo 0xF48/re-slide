@@ -15,7 +15,7 @@ class ButtonsExample extends Component
 			className: 'example buttons-example'
 			height: 50
 			h Slide,
-				square: yes
+				ratio: 1
 				slide: yes
 				vert:yes
 				pos: @state.pos_a
@@ -44,12 +44,12 @@ class ButtonsExample extends Component
 					@setState pos_b:0
 				h Slide,
 					className:'center'
-					'#B == #A except inverse : true,square : false'
+					'#B == #A except inverse : true,ratio : 1'
 				h Slide,
 					className: 'btn-example-dark center'
 					'#B'
 			h Slide,
-				square: yes
+				ratio: 1
 				slide: yes
 				pos: @state.pos_c
 				onMouseEnter: ()=>
@@ -65,7 +65,7 @@ class ButtonsExample extends Component
 					className: 'btn-example-dark center'
 					'#C'
 			h Slide,
-				square: yes
+				ratio: 1
 				slide: yes
 				inverse: yes
 				pos: @state.pos_d

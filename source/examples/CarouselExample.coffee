@@ -48,7 +48,7 @@ class CarouselExample extends Component
 			height: 50
 			className: 'carousel-example-dots'
 			h Slide,
-				square: yes
+				ratio: 1
 				slide: yes
 				vert:yes
 				style:

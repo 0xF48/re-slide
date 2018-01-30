@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/site/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1091,7 +1091,7 @@ var preact = {
 var Component, DEFAULT_PROPS, EVENT_REGEX, Slide, h,
   boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
 
-__webpack_require__(7);
+__webpack_require__(6);
 
 ({h, Component} = __webpack_require__(0));
 
@@ -1105,16 +1105,14 @@ DEFAULT_PROPS = {
   animate: false, //transitions
   ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
   ease_dur: 0.4, //slide easing duration
-  w: 0, //slide width manual override
-  h: 0, //slide height manual override
-  offset: 0, //offset in pixels
-  offset_beta: 0, //offset in beta
-  posOffset: 0,
-  posOffsetBeta: 0,
-  square: false, //square dim helper
+  width: 0, //slide width manual override
+  height: 0, //slide height manual override
+  ratio: 0, //ratio dim helper
   center: false, //css flex center
   inverse: false, //css flex direction inverse
-  scroll: false //css scroll overflow
+  scroll: false, //css scroll overflow
+  className: null,
+  iclassName: null
 };
 
 EVENT_REGEX = new RegExp('^on[A-Z]');
@@ -1126,6 +1124,7 @@ universal slide layout component.
 Slide = class Slide extends Component {
   constructor(props) {
     super(props);
+    // @checkProps(@props)
     /*
     @componentDidMount method
     */
@@ -1138,6 +1137,7 @@ Slide = class Slide extends Component {
     @componentWillUnmount method
     */
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    // @checkProps(props)
     this.addRem = this.addRem.bind(this);
     /*
     @getChildContext method
@@ -1203,8 +1203,8 @@ Slide = class Slide extends Component {
     };
   }
 
-  checkProps(props) {}
-
+  
+  // checkProps: (props)->
   // if props.inverse && props.slide
   // 	console.warn 'inverted slides are not supported'
   /*
@@ -1212,8 +1212,7 @@ Slide = class Slide extends Component {
   */
   componentWillMount() {
     this.passProps(this.props); //do stuff with props 
-    this.legacyProps(this.props); //legacy props support
-    return this.checkProps(this.props);
+    return this.legacyProps(this.props); //legacy props support
   }
 
   componentDidMount() {
@@ -1249,8 +1248,7 @@ Slide = class Slide extends Component {
   */
   componentWillReceiveProps(props) {
     this.passProps(props);
-    this.legacyProps(props);
-    return this.checkProps(props);
+    return this.legacyProps(props);
   }
 
   addRem(rem) {
@@ -1285,30 +1283,10 @@ Slide = class Slide extends Component {
   @legacyProps method
   support for different option keys
   */
-  legacyProps(props) {
-    if (props.size != null) {
-      props.dim = props.size;
-    }
-    if (props.vertical != null) {
-      props.vert = props.vertical;
-    }
-    if (props.width) {
-      props.w = props.width;
-    }
-    if (props.height) {
-      props.h = props.height;
-    }
-    if (props.iclassName != null) {
-      props.iclass = props.iclassName;
-    }
-    if (props.oclassName != null) {
-      props.class = props.oclassName;
-    }
-    if (props.className != null) {
-      return props.class = props.className;
-    }
-  }
+  legacyProps(props) {}
 
+  // if props.size?
+  // 	props.dim = props.size
   /*
   @inViewBounds method
   check to see if a line that starts at p with length d is overlapping a line starting at op with length od
@@ -1565,24 +1543,24 @@ Slide = class Slide extends Component {
     var dim, height, ph, pw, vert, width;
     boundMethodCheck(this, Slide);
     // square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
-    if (this.props.square) {
+    if (this.props.ratio) {
       dim = {};
       if (this.context.vert) {
-        dim.height = this.context.dim;
+        dim.height = this.context.dim * this.props.ratio;
         dim.width = '100%';
       } else {
         //dim.height = '100%' CSS is weird...
-        dim.width = this.context.dim;
+        dim.width = this.context.dim * this.props.ratio;
       }
       return dim;
     }
     // w/h passed down from props override
     if (this.context.vert) {
-      width = this.props.w || null;
-      height = this.props.dim || this.props.h || null;
+      width = this.props.width || null;
+      height = this.props.dim || this.props.height || null;
     } else {
-      width = this.props.dim || this.props.w || null;
-      height = this.props.h || null;
+      width = this.props.dim || this.props.width || null;
+      height = this.props.height || null;
     }
     if (this.props.vert == null) {
       vert = this.context.vert;
@@ -1609,7 +1587,7 @@ Slide = class Slide extends Component {
       ph = ph || '100%'; //CSS is weird...
     }
     return {
-      // console.log ph,pw,@props.className
+      // console.log ph,pw,@props.className Name
       height: ph,
       width: pw
     };
@@ -1633,11 +1611,11 @@ Slide = class Slide extends Component {
   renderSlide() {
     var c_name, class_auto, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, inner_props, slide_props;
     boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclass && (" " + this.props.iclass) || '';
-    c_name = this.props.class && (" " + this.props.class) || '';
+    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
+    c_name = this.props.className && (" " + this.props.className) || '';
     class_center = this.props.center && ' -i-s-center' || '';
     class_vert = this.props.vert && ' -i-s-vertical' || '';
-    class_fixed = ((this.props.square || this.props.dim || this.props.w || this.props.h) && ' -i-s-fixed') || '';
+    class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
     class_reverse = this.props.inverse && ' -i-s-reverse' || '';
     class_scroll = this.props.scroll && ' -i-s-scroll' || '';
     class_auto = this.props.auto && ' -i-s-auto' || '';
@@ -1667,11 +1645,11 @@ Slide = class Slide extends Component {
   renderStatic() {
     var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, outer_props;
     boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclass && (" " + this.props.iclass) || '';
-    c_name = this.props.class && (" " + this.props.class) || '';
+    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
+    c_name = this.props.className && (" " + this.props.className) || '';
     class_center = this.props.center && ' -i-s-center' || '';
     class_vert = this.props.vert && ' -i-s-vertical' || '';
-    class_fixed = ((this.props.square || this.props.dim || this.props.w || this.props.h) && ' -i-s-fixed') || '';
+    class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
     class_reverse = this.props.inverse && ' -i-s-reverse' || '';
     class_scroll = this.props.scroll && ' -i-s-scroll' || '';
     outer_props = this.pass_props;
@@ -2142,7 +2120,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(9);
+var	fixUrls = __webpack_require__(8);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -2459,12 +2437,6 @@ function updateLink (link, options, obj) {
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports) {
-
-module.exports = "<p>create buttons!</p>"
-
-/***/ }),
-/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, Header, LayoutExample, Markdown, Markup, PROPS, Props, Shader, SimpleMenuExample, Slide, h, render,
@@ -2474,44 +2446,83 @@ var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES
 
 Slide = __webpack_require__(1);
 
-({Box, Shader} = __webpack_require__(10));
+({Box, Shader} = __webpack_require__(9));
 
-Markdown = __webpack_require__(11);
+Markdown = __webpack_require__(10);
 
 Markup = __webpack_require__(2);
 
-__webpack_require__(14);
+__webpack_require__(13);
 
-Card = class Card extends Component {
-  componentWillMount() {
-    if (this.props.color) {
-      this.bg = this.props.color.hexString();
-      this.color = this.props.color.clone().darken(0.7).hexString();
-      return this.icon = this.props.icon;
-    } else {
-      this.c = randomColor(0.7, 0.99);
-      this.bg = this.c.hexString();
-      this.color = this.c.darken(0.7).hexString();
-      this.icon = icons[Math.floor(Math.random() * icons.length)];
-      return this.forceUpdate();
+Card = (function() {
+  class Card extends Component {
+    componentWillMount() {
+      if (this.props.color) {
+        this.bg = this.props.color.hexString();
+        this.color = this.props.color.clone().darken(0.7).hexString();
+        return this.icon = this.props.icon;
+      } else {
+        this.c = randomColor(0.7, 0.99);
+        this.bg = this.c.hexString();
+        this.color = this.c.darken(0.7).hexString();
+        this.icon = icons[Math.floor(Math.random() * icons.length)];
+        return this.forceUpdate();
+      }
     }
-  }
 
-  render() {
-    return h('div', {
-      style: {
-        background: this.bg,
-        color: this.color
-      },
-      className: 'center card'
-    }, h('i', {
-      className: 'material-icons'
-    }, this.icon));
-  }
+    render() {
+      return h('div', {
+        style: {
+          background: this.bg,
+          color: this.color
+        },
+        className: 'center card'
+      }, h('i', {
+        className: 'material-icons'
+      }, this.icon));
+    }
 
-};
+  };
 
-PROPS = [['vert', 'false', 'flex direction. if set to false then the slide will arrange its children slides horizontaly (left to right)'], ['beta', '100', 'width/height % relative to the parent'], ['slide', 'false', 'if set to true, creates a wrapper enabling the children to scroll/slide'], ['pos', '0', 'if slide is set to true, then setting this will slide to child in that index, setting to a float will create an interpolated offset.'], ['auto', 'false', 'if set to true, component will resize based on content inside.'], ['scroll', 'false', 'if set to true, outer wrapper will be scrollable.'], ['oclassName', 'false', 'When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.'], ['iclassName', 'false', 'same as oclassName but for the inner element. if only one element, this class will be used'], ['ratio', '0', 'set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced']];
+  Card.prototype.vert = null; //css flex direction column
+
+  Card.prototype.beta = 100; //beta variable
+
+  Card.prototype.slide = false; //slides through children, if disabled will return a simplified wrapper
+
+  Card.prototype.pos = 0; //position of the slide
+
+  Card.prototype.auto = false; //auto dim based on content
+
+  Card.prototype.dim = 0; //dim is width/height but relative to split direction, so u dont have to ;)
+
+  Card.prototype.animate = false; //transitions
+
+  Card.prototype.ease = 'cubic-bezier(0.25, 0.34, 0, 1)'; //slide easing
+
+  Card.prototype.ease_dur = 0.4; //slide easing duration
+
+  Card.prototype.width = 0; //slide width manual override
+
+  Card.prototype.height = 0; //slide height manual override
+
+  Card.prototype.square = false; //square dim helper
+
+  Card.prototype.center = false; //css flex center
+
+  Card.prototype.inverse = false; //css flex direction inverse
+
+  Card.prototype.scroll = false; //css scroll overflow
+
+  Card.prototype.oclassName = null;
+
+  Card.prototype.iclassName = null;
+
+  return Card;
+
+}).call(this);
+
+PROPS = [['vert', 'false', 'flex direction. if set to false then the slide will arrange its children slides horizontaly (left to right)'], ['beta', '100', 'width/height % relative to the parent'], ['slide', 'false', 'if set to true, creates a wrapper enabling the children to scroll/slide'], ['pos', '0', 'if slide is set to true, then setting this will slide to child in that index, setting to a float will create an interpolated offset.'], ['auto', 'false', 'if set to true, component will resize based on content inside.'], ['dim', 'null', 'set either the width or height relative to parent split direction. So if the parent split horizontaly the width will be set, otherwise the height will be set as the dim value.'], ['animate', 'false', 'do transition animations?'], ['ease', 'cubic-bezier(0.25, 0.34, 0, 1)', 'css ease function for the slide transition'], ['ease_dur', '0.4', 'transition duration'], ['width', '0', 'force set width shortcut (or use a css class override)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['center', 'false', 'css flex center shortcut'], ['inverse', 'false', 'the slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'if set to true, outer wrapper will be scrollable.'], ['className', 'false', 'When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.'], ['iclassName', 'false', 'Same as className but for the inner element. if only one static element, this class will not be used'], ['ratio', '0', 'set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height relative to parent.']];
 
 Props = class Props {
   render() {}
@@ -2542,7 +2553,7 @@ Header = class Header extends Component {
       }
     });
     this.gradient = new Shader({
-      code: __webpack_require__(16)(),
+      code: __webpack_require__(15)(),
       uniforms: {
         pos: {
           type: '2fv',
@@ -2607,7 +2618,8 @@ Header = class Header extends Component {
       href: 'https://github.com/arxii/shader-box-gradient'
     }, '?'), h('div', {
       className: 'title center'
-    }, h('div', {
+    }, h('a', {
+      href: "https://github.com/arxii/preact-slide",
       className: 'title-name'
     }, 'Slide'), h(Slide, {
       className: 'title-snippet',
@@ -2629,7 +2641,7 @@ Header = class Header extends Component {
       href: "https://github.com/arxii/preact-slide",
       className: 'center github-link'
     }, h('img', {
-      src: 'https://unpkg.com/simple-icons@latest/icons/github.svg'
+      src: './site/github.svg'
     }))), h('div', {
       className: 'header-description'
     }, h('p', {
@@ -2655,17 +2667,17 @@ Header = class Header extends Component {
 
 };
 
-SimpleMenuExample = __webpack_require__(17);
+SimpleMenuExample = __webpack_require__(16);
 
-LayoutExample = __webpack_require__(19);
+LayoutExample = __webpack_require__(18);
 
-ButtonsExample = __webpack_require__(20);
+ButtonsExample = __webpack_require__(19);
 
-CarouselExample = __webpack_require__(21);
+CarouselExample = __webpack_require__(20);
 
-EXAMPLES = [['Layout', __webpack_require__(22), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(23), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(5), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(5), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4']];
+EXAMPLES = [['Layout', __webpack_require__(21), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(22), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(23), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(24), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4']];
 
-ABOUT = __webpack_require__(24);
+ABOUT = __webpack_require__(25);
 
 Docs = class Docs {
   render() {
@@ -2673,9 +2685,11 @@ Docs = class Docs {
       className: 'docs'
     }, h(Header), h('div', {
       className: 'section'
-    }, h('h1', {}, 'About'), h(Markup, {
-      className: 'section-text',
-      markup: ABOUT
+    }, h('h1', {}, 'About'), h(Markdown, {
+      markupOpts: {
+        className: 'section-text'
+      },
+      markdown: ABOUT
     })), h('div', {
       className: 'section'
     }, h('h1', {}, 'Props'), PROPS.map(function(prop) {
@@ -2704,15 +2718,26 @@ Docs = class Docs {
         className: 'section-title'
       }, h('span', {
         className: 'section-title-name'
-      }, example[0])), h(Markup, {
-        markup: example[1],
-        className: 'section-text'
+      }, example[0])), h(Markdown, {
+        markdown: example[1],
+        markupOpts: {
+          className: 'section-text'
+        }
       }), h(example[2]), example[3] && h('a', {
         href: example[3],
         className: 'section-title-link',
         target: '_blank'
       }, '</>'));
-    })));
+    })), h('footer', {
+      className: 'footer'
+    }, h('a', {
+      href: "https://github.com/arxii/preact-slide"
+    }, h('img', {
+      src: './site/github.svg'
+    })), h('a', {
+      href: "https://github.com/arxii",
+      className: 'footer-author'
+    }, 'arxii')));
   }
 
 };
@@ -2725,13 +2750,13 @@ render(h(Docs), document.body, this.docs_el);
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(8);
+var content = __webpack_require__(7);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -2756,7 +2781,7 @@ if(false) {
 }
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(3)(false);
@@ -2770,7 +2795,7 @@ exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-sh
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 
@@ -2865,7 +2890,7 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -3224,12 +3249,12 @@ module.exports=opts=>"attribute vec2 a_position;\nattribute vec2 a_texture;\nuni
 });
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var preact = __webpack_require__(0)
 var Markup = __webpack_require__(2)
-var marked = __webpack_require__(12)
+var marked = __webpack_require__(11)
 
 module.exports = Markdown
 
@@ -3259,7 +3284,7 @@ function Markdown(props, opts) {
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -4583,10 +4608,10 @@ if (true) {
   return this || (typeof window !== 'undefined' ? window : global);
 }());
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports) {
 
 var g;
@@ -4613,13 +4638,13 @@ module.exports = g;
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(15);
+var content = __webpack_require__(14);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4644,27 +4669,27 @@ if(false) {
 }
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(3)(false);
 // imports
-exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Inconsolata:400|Roboto:400,400i,700|Gloria+Hallelujah);", ""]);
+exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto:400,500|Gloria+Hallelujah);", ""]);
 
 // module
-exports.push([module.i, "body {\n  background: white;\n  color: #1E1E1E;\n  line-height: 1.2;\n  font-size: 16px;\n  font-family: \"Roboto\", sans-serif;\n  -webkit-font-smoothing: antialiased; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 70px;\n  line-height: 70px;\n  color: #555555; }\n\n.github-link {\n  padding: 10px; }\n  .github-link img {\n    fill: white;\n    width: 40px;\n    height: 40px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: 'Inconsolata', monospace;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description-sub {\n  font-style: oblique;\n  font-family: 'Gloria Hallelujah', cursive;\n  opacity: 0.4; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  font-size: 18px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\nh1 {\n  font-style: oblique;\n  font-family: 'Gloria Hallelujah', cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px; }\n\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none; }\n  .section-title .section-title-name {\n    font-weight: 700; }\n\n.section-title-link {\n  color: #535154;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 800; }\n\n.section-text {\n  font-size: 18px;\n  padding: 0px; }\n  .section-text p {\n    margin: 5px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.example-section {\n  margin-bottom: 80px; }\n\n.carousel-example-square {\n  background: yellow;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.dots {\n  font-family: monospace; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: yellow;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.prop {\n  width: auto;\n  background: white;\n  margin-bottom: 30px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 20px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 15px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n", ""]);
+exports.push([module.i, "body {\n  font-family: \"Roboto\",-apple-system,BlinkMacSystemFont,\"Segoe UI\",Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\",\"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff; }\n\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center; }\n\na {\n  text-decoration: none; }\n\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0; }\n\ncode {\n  background: #fffad5; }\n\nblockquote {\n  opacity: 0.5;\n  font-style: oblique; }\n\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px; }\n\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh; }\n\n.canvas {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%; }\n\n.title {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  flex-direction: column; }\n\n.title-name {\n  font-family: 'Gloria Hallelujah', cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555; }\n\n.github-link {\n  padding: 0px;\n  opacity: 0.3; }\n  .github-link img {\n    fill: white;\n    width: 25px;\n    height: 25px; }\n\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.521569);\n  width: 340px;\n  height: 30px; }\n\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block; }\n\n.header-description-sub {\n  font-style: oblique;\n  font-family: 'Gloria Hallelujah', cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100; }\n\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%; }\n  .header-description p {\n    position: relative;\n    margin: 20px auto;\n    max-width: 600px; }\n\n.shields {\n  margin: 10px 0px; }\n  .shields a {\n    margin-right: 4px; }\n\nh1 {\n  font-style: oblique;\n  font-family: 'Gloria Hallelujah', cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100; }\n\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px; }\n\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none; }\n  .section-title .section-title-name {\n    font-weight: 700; }\n\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500; }\n\n.section-text {\n  padding: 0px; }\n  .section-text p {\n    margin: 10px 0px; }\n\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: 'Gloria Hallelujah', cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed; }\n\n.example-section {\n  margin-bottom: 80px; }\n\n.carousel-example-square {\n  background: #FFEBCA;\n  color: black;\n  font-size: 14px; }\n\n.carousel-example-top {\n  background: red;\n  cursor: pointer; }\n\n.carousel-example-bot {\n  background: #333333;\n  color: white; }\n\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px; }\n  .carousel-example-dots .dot {\n    cursor: pointer; }\n    .carousel-example-dots .dot:hover {\n      color: #333333; }\n    .carousel-example-dots .dot.active {\n      color: #333333; }\n\n.dots {\n  font-family: monospace; }\n\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer; }\n\n.btn-example-dark {\n  background: black;\n  color: white; }\n\n.simple-menu-example {\n  height: 200px; }\n\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box; }\n\n.simple-menu-example-menu {\n  background: black;\n  color: white; }\n\n.simple-menu-example-menu2 {\n  background: #FFEBCA;\n  color: black; }\n\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer; }\n\n.layout-example {\n  background: #E2E2E2; }\n\n.prop {\n  width: auto;\n  margin-bottom: 30px; }\n  .prop div {\n    padding: 0px 2px;\n    /* font-size: 12px; */\n    /* margin: 0px 10px; */\n    display: inline-block; }\n  .prop .prop-name {\n    margin-right: 0px;\n    font-weight: 600;\n    color: #35405b;\n    border-left: 4px solid #f1f1f1;\n    padding-left: 5px;\n    font-size: 20px; }\n  .prop .prop-default {\n    margin-left: 0px;\n    opacity: 0.5;\n    font-size: 15px; }\n  .prop .prop-text {\n    margin-top: 5px;\n    display: block;\n    padding-top: 0px;\n    color: #3e3e3e; }\n    .prop .prop-text p {\n      margin-top: 0px; }\n\nfooter {\n  display: flex;\n  justify-content: center; }\n  footer img {\n    width: 25px;\n    height: 25px;\n    padding: 10px;\n    margin: 0px auto;\n    opacity: 0.3; }\n\n.footer-author {\n  color: black;\n  line-height: 46px;\n  font-family: monospace;\n  opacity: 0.3; }\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * v_uv.y);\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component, Markup, SimpleMenuExample, Slide, h, render,
@@ -4718,7 +4743,7 @@ SimpleMenuExample = class SimpleMenuExample extends Component {
       vert: true,
       className: 'simple-menu-example-main'
     }, h(Markup, {
-      markup: __webpack_require__(18)
+      markup: __webpack_require__(17)
     }))), h(Slide, {
       beta: 20,
       vert: true,
@@ -4742,13 +4767,13 @@ module.exports = SimpleMenuExample;
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = "Be at miss or each good play home they. It leave taste mr in it fancy. She son lose does fond bred gave lady get. Sir her company conduct expense bed any. Sister depend change off piqued one. Contented continued any happiness instantly objection yet her allowance. Use correct day new brought tedious. By come this been in. Kept easy or sons my it done. \n\nPrevailed sincerity behaviour to so do principle mr. As departure at no propriety zealously my. On dear rent if girl view. First on smart there he sense. Earnestly enjoyment her you resources. Brother chamber ten old against. Mr be cottage so related minuter is. Delicate say and blessing ladyship exertion few margaret. Delight herself welcome against smiling its for. Suspected discovery by he affection household of principle perfectly he. \n\nIncreasing impression interested expression he my at. Respect invited request charmed me warrant to. Expect no pretty as do though so genius afraid cousin. Girl when of ye snug poor draw. Mistake totally of in chiefly. Justice visitor him entered for. Continue delicate as unlocked entirely mr relation diverted in. Known not end fully being style house. An whom down kept lain name so at easy. \n\nNow for manners use has company believe parlors. Least nor party who wrote while did. Excuse formed as is agreed admire so on result parish. Put use set uncommonly announcing and travelling. Allowance sweetness direction to as necessary. Principle oh explained excellent do my suspected conveying in. Excellent you did therefore perfectly supposing described. \n\nAs am hastily invited settled at limited civilly fortune me. Really spring in extent an by. Judge but built gay party world. Of so am he remember although required. Bachelor unpacked be advanced at. Confined in declared marianne is vicinity. \n\nFrom they fine john he give of rich he. They age and draw mrs like. Improving end distrusts may instantly was household applauded incommode. Why kept very ever home mrs. Considered sympathize ten uncommonly occasional assistance sufficient not. Letter of on become he tended active enable to. Vicinity relation sensible sociable surprise screened no up as. \n\nEver man are put down his very. And marry may table him avoid. Hard sell it were into it upon. He forbade affixed parties of assured to me windows. Happiness him nor she disposing provision. Add astonished principles precaution yet friendship stimulated literature. State thing might stand one his plate. Offending or extremity therefore so difficult he on provision. Tended depart turned not are. \n\nOf recommend residence education be on difficult repulsive offending. Judge views had mirth table seems great him for her. Alone all happy asked begin fully stand own get. Excuse ye seeing result of we. See scale dried songs old may not. Promotion did disposing you household any instantly. Hills we do under times at first short an. \n\nAm of mr friendly by strongly peculiar juvenile. Unpleasant it sufficient simplicity am by friendship no inhabiting. Goodness doubtful material has denoting suitable she two. Dear mean she way and poor bred they come. He otherwise me incommode explained so in remaining. Polite barton in it warmly do county length an. \n\nCause dried no solid no an small so still widen. Ten weather evident smiling bed against she examine its. Rendered far opinions two yet moderate sex striking. Sufficient motionless compliment by stimulated assistance at. Convinced resolving extensive agreeable in it on as remainder. Cordially say affection met who propriety him. Are man she towards private weather pleased. In more part he lose need so want rank no. At bringing or he sensible pleasure. Prevent he parlors do waiting be females an message society. "
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component, LayoutExample, Slide, h, render;
@@ -4790,7 +4815,7 @@ module.exports = LayoutExample;
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ButtonsExample, Component, Slide, h, render;
@@ -4815,7 +4840,7 @@ ButtonsExample = class ButtonsExample extends Component {
       className: 'example buttons-example',
       height: 50
     }, h(Slide, {
-      square: true,
+      ratio: 1,
       slide: true,
       vert: true,
       pos: this.state.pos_a,
@@ -4860,10 +4885,10 @@ ButtonsExample = class ButtonsExample extends Component {
       }
     }, h(Slide, {
       className: 'center'
-    }, '#B == #A except inverse : true,square : false'), h(Slide, {
+    }, '#B == #A except inverse : true,ratio : 1'), h(Slide, {
       className: 'btn-example-dark center'
     }, '#B')), h(Slide, {
-      square: true,
+      ratio: 1,
       slide: true,
       pos: this.state.pos_c,
       onMouseEnter: () => {
@@ -4886,7 +4911,7 @@ ButtonsExample = class ButtonsExample extends Component {
     }, '#C'), h(Slide, {
       className: 'btn-example-dark center'
     }, '#C')), h(Slide, {
-      square: true,
+      ratio: 1,
       slide: true,
       inverse: true,
       pos: this.state.pos_d,
@@ -4918,7 +4943,7 @@ module.exports = ButtonsExample;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var CarouselExample, Component, Slide, h, render;
@@ -5005,7 +5030,7 @@ CarouselExample = class CarouselExample extends Component {
       height: 50,
       className: 'carousel-example-dots'
     }, h(Slide, {
-      square: true,
+      ratio: 1,
       slide: true,
       vert: true,
       style: {
@@ -5035,22 +5060,34 @@ module.exports = CarouselExample;
 
 
 /***/ }),
+/* 21 */
+/***/ (function(module, exports) {
+
+module.exports = "With Slide, you can layout your ui by splitting up each parent slide with nested slides. \n****\nThe `beta` property based on the css flexbox property, but stricter and stripped down to functionality that pertains to building a functional user interface. With a stricter layout mechanism that scales, its easy to layout different components of your app and their relationships in a complex way without getting your hands dirty in css and having to worry about side cases."
+
+/***/ }),
 /* 22 */
 /***/ (function(module, exports) {
 
-module.exports = "<p>layout your ui by splitting up each slide. based on css flexbox, but stricter and stripped down to the core concept: (relative splitting) so you dont have to mess around with layouts in css. With a strict slide based ui its easy to scale your app without getting your hands dirty in css.</p>"
+module.exports = "Creating a typical sliding menu and/or page transitions is super easy. Click on the equals sign to see the sliding effect. Notice that the main slide is scrollable. This can be quickly enabled via the `scroll` shortcut property."
 
 /***/ }),
 /* 23 */
 /***/ (function(module, exports) {
 
-module.exports = "<p>Creating a typical sliding menu and/or page transitions is super easy. Elements that are not in the viewport are automatically set to visibility:hidden giving a performance boost for animation heavy interfaces with deeply nested slides. Click on the equals sign to see the sliding effect.</p>"
+module.exports = "`Slide` can generally be used as a wrapper for any ui element that requires some sort of \"reveal\", a quick and easy example is a simple button with underlines and transitions. by setting `pos:0.1` we can offset the slide by some percentage relative to the floored value. click and hover over each button to see the effect. Think of any other way you can use this? \n> hint: progress bars, input fields, toggle buttons...etc"
 
 /***/ }),
 /* 24 */
 /***/ (function(module, exports) {
 
-module.exports = "<p>On its own, it does not do much but combined and nested within itself, a unique set of properties make this component a powerful ui and ux as well as layout tool that be used to create a whole new realm of animated animated and modular user interfaces. checkout <a href = ''>this</a> example todo app and see for yourself!</p>"
+module.exports = "This example demonstrates how easy it is to build a carousel type component with just a few lines of code, just checkout the <a href = 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'>source file</a> and see for yourself!\n***\n**Notice** the red background when selecting slides that are 1 or more over, it's there to show that slides which are not visible relative to the parent are set to `visibility: hidden`. When you change the `pos` property, the component recalculates the visibility before and after the transition.\n"
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+module.exports = "Combined and nested within itself, `Slide` gives you a unique set of properties enabling you to create powerful modular and animated layouts for your app. checkout <a href = 'http://checklist-preact.lerp.io'>this example todo app</a> and see for yourself!"
 
 /***/ })
 /******/ ]);

@@ -1,0 +1,3 @@
+With Slide, you can layout your ui by splitting up each parent slide with nested slides. 
+****
+The `beta` property based on the css flexbox property, but stricter and stripped down to functionality that pertains to building a functional user interface. With a stricter layout mechanism that scales, its easy to layout different components of your app and their relationships in a complex way without getting your hands dirty in css and having to worry about side cases.

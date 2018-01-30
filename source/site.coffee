@@ -31,6 +31,23 @@ class Card extends Component
 				className: 'material-icons'
 				@icon
 
+	vert: null #css flex direction column
+	beta: 100 #beta variable
+	slide: no #slides through children, if disabled will return a simplified wrapper
+	pos: 0 #position of the slide
+	auto: false #auto dim based on content
+	dim: 0 #dim is width/height but relative to split direction, so u dont have to ;)
+	animate: false #transitions
+	ease: 'cubic-bezier(0.25, 0.34, 0, 1)' #slide easing
+	ease_dur: 0.4 #slide easing duration
+	width: 0 #slide width manual override
+	height: 0 #slide height manual override
+	square: no #square dim helper
+	center: no #css flex center
+	inverse: no #css flex direction inverse
+	scroll: no #css scroll overflow
+	oclassName: null
+	iclassName: null
 
 
 
@@ -40,10 +57,18 @@ PROPS = [
 	['slide','false','if set to true, creates a wrapper enabling the children to scroll/slide']
 	['pos','0','if slide is set to true, then setting this will slide to child in that index, setting to a float will create an interpolated offset.']
 	['auto','false','if set to true, component will resize based on content inside.']
+	['dim','null','set either the width or height relative to parent split direction. So if the parent split horizontaly the width will be set, otherwise the height will be set as the dim value.']
+	['animate','false','do transition animations?']
+	['ease','cubic-bezier(0.25, 0.34, 0, 1)','css ease function for the slide transition']
+	['ease_dur','0.4','transition duration']
+	['width','0','force set width shortcut (or use a css class override)']
+	['height','0','force set height shortcut (or use a css class override)']
+	['center','false','css flex center shortcut']
+	['inverse','false','the slide is inverted, meaning the last child is the first and the first child is the last']
 	['scroll','false','if set to true, outer wrapper will be scrollable.']
-	['oclassName','false','When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.']
-	['iclassName','false','same as oclassName but for the inner element. if only one element, this class will be used']
-	['ratio','0','set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced']
+	['className','false','When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.']
+	['iclassName','false','Same as className but for the inner element. if only one static element, this class will not be used']
+	['ratio','0','set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height relative to parent.']
 ]
 
 
@@ -123,7 +148,8 @@ class Header extends Component
 
 			h 'div',
 				className: 'title center'
-				h 'div',
+				h 'a',
+					href: "https://github.com/arxii/preact-slide"
 					className: 'title-name'
 					'Slide'
 
@@ -149,7 +175,7 @@ class Header extends Component
 					href: "https://github.com/arxii/preact-slide"
 					className: 'center github-link'
 					h 'img',
-						src: 'https://unpkg.com/simple-icons@latest/icons/github.svg'
+						src: './site/github.svg'
 			h 'div',
 				className: 'header-description',
 				h 'p',
@@ -186,13 +212,16 @@ CarouselExample = require './examples/CarouselExample.coffee'
 
 
 EXAMPLES = [
-	['Layout',require('./html/layout.html'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
-	['Simple Menu',require('./html/simple-menu.html'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
-	['Buttons',require('./html/buttons.html'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
-	['Carousel',require('./html/buttons.html'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
+	['Layout',require('./examples/layout.md'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
+	['Simple Menu',require('./examples/simple-menu.md'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
+	['Buttons',require('./examples/buttons.md'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
+	['Carousel',require('./examples/carousel.md'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
 ]
 
-ABOUT = require './html/about.html'
+
+
+
+ABOUT = require './about.md'
 
 class Docs 
 	render: ->
@@ -204,9 +233,10 @@ class Docs
 			h 'div',
 				className: 'section'
 				h 'h1',{},'About'
-				h Markup,
-					className: 'section-text'
-					markup: ABOUT
+				h Markdown,
+					markupOpts:
+						className: 'section-text'
+					markdown: ABOUT
 
 			
 			h 'div',
@@ -242,16 +272,26 @@ class Docs
 							h 'span',
 								className: 'section-title-name'
 								example[0]
-						h Markup,
-							markup: example[1]
-							className: 'section-text'
+						h Markdown,
+							markdown: example[1]
+							markupOpts:
+								className: 'section-text'
 						h example[2]
 						example[3] && h 'a',
 							href: example[3]
 							className: 'section-title-link'
 							target: '_blank'
 							'</>'
-
+			h 'footer',
+				className: 'footer'
+				h 'a',
+					href: "https://github.com/arxii/preact-slide"
+					h 'img',
+						src: './site/github.svg'
+				h 'a',
+					href: "https://github.com/arxii"
+					className: 'footer-author'
+					'arxii'
 
 
 

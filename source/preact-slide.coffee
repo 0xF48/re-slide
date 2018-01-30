@@ -134,7 +134,8 @@ class Slide extends Component
 	support for different option keys
 	###	
 	legacyProps: (props)->
-
+		if !props.beta
+			props.beta = 100
 
 		# if props.size?
 		# 	props.dim = props.size
@@ -360,8 +361,8 @@ class Slide extends Component
 	get beta dimention variable for the slide, either in pixels or percentages.
 	###
 	getBeta: ()=>
-		if !@props.beta
-			throw new Error 'props.beta == 0 | null'
+		if !@props.beta || @props.beta < 0
+			throw new Error 'beta is ( <= 0 | null ) '
 
 		# split along horizontal
 		if !@is_root && @context.outer_width && !@context.vert && @context.slide
@@ -410,9 +411,11 @@ class Slide extends Component
 		if @props.ratio
 			dim = {}
 			if @context.vert
+				console.log 'CONTEXT  VERT'
 				dim.height = @context.dim*@props.ratio
 				dim.width = '100%'
 			else
+				console.log 'CONTEXT  NOT VERT'
 				#dim.height = '100%' CSS is weird...
 				dim.width = @context.dim*@props.ratio
 			return dim

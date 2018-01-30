@@ -11,6 +11,7 @@ var cfg = {
 	},
 	entry: {
 		main: "./source/site.coffee",
+		test: "./source/test.coffee",
 	},
 	resolve: {
 		// "modules": [__dirname+"/node_modules"],
@@ -18,7 +19,7 @@ var cfg = {
 	output: {
 		path: __dirname+'/site/',
 		publicPath: '/site/',
-		filename: "main.js"
+		filename: "[name].js"
 	},
 	devServer: {
 		// contentBase: '/',

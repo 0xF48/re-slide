@@ -1,12 +1,12 @@
 {
   "name": "preact-slide",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "recursive slide component for preact",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --config site.config.js",
-    "build": "webpack --progress --config site.config.js"
+    "build": "webpack --progress --config site.config.js && minify site/main.js -o site/main.js"
   },
   "repository": {
     "type": "git",

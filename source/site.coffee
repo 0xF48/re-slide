@@ -82,6 +82,7 @@ class Header extends Component
 		@state =
 			title_snippet_pos_a: 0
 			title_snippet_pos_b: 1
+			show_bg: true
 	
 	componentDidMount: ->
 		@t = Math.random()*10000
@@ -115,7 +116,7 @@ class Header extends Component
 		@box.clear().draw(@gradient)
 		@tick(@t)
 		# setInterval @switchTitleSnippetTextA,1000
-		setInterval @switchTitleSnippetTextB,2000
+		# setInterval @switchTitleSnippetTextB,2000
 
 	
 	switchTitleSnippetTextA: =>
@@ -130,14 +131,25 @@ class Header extends Component
 	
 	tick: ()=>
 		requestAnimationFrame(@tick)
+		if window.scrollY > window.innerHeight && @state.show_bg
+			@setState
+				show_bg: false
+		else if window.scrollY < window.innerHeight && !@state.show_bg
+			@setState
+				show_bg: true
+		if !@state.show_bg
+			return
 		@gradient.uniforms.iTime.val = @t+=10
 		@box.clear().draw(@gradient)
+		
 
 
 	render: ->
 		h 'div',
 			className: 'header'
 			h 'canvas',
+				style:
+					visibility: !@state.show_bg && 'hidden' || null
 				className: 'canvas'
 				ref: (el)=>
 					@_canvas = el

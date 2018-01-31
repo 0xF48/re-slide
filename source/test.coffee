@@ -5,48 +5,83 @@ seed = require 'seed-random'
 _ = require 'lodash'
 require './site.scss'
 
-rand = seed('128j319sdj3b1')
 
-toggle = false
+rand = seed('128j3b1')
 
-console.log rand(),rand(),rand()
+
+shuffle = (arr)->
+	ind = [0...arr.length].map rand
+	map = {}
+	map[j] = i for i,j in ind
+	arr.sort (a,b)->
+		if map[a] > map[b] then return -1
+		else if map[a] < map[b] then return 1
+		return 0
 
 rc = ->
-	rand().toString(36).substring(7,9)
+	rand().toString(36).substring(7,8)
 rbg = ->
-	v = 100
-	r = rand()*v
-	g = rand()*v
-	b = rand()*v
-	background: "rgb(#{Math.floor(255-r)},#{Math.floor(255-g)},#{Math.floor(255-b)})"
+	v = 200
+	d = 100
+	v1 = rand() * (v)
+	v2 = rand() * (v)
+	v3 = (v - v1 - v2)
+	c = shuffle([v1,v2,v3])
+	if rand() < 0.5
+		c[0] = v2
+		c[1] = v3
+		c[2] = v1
+	else
+		c[0] = v1
+	c = [Math.floor(255-d-c[0]),Math.floor(255-d-c[1]),Math.floor(255-d-c[2])]
+	#randomColor(0.7,0.99).hexString()
+	background: "rgb(#{c[0]},#{c[1]},#{c[2]})"
 
-card = ->
-	p = rand() > 0.5 && 1 || 0
-	h Slide,
-		slide: true
-		pos: if toggle then p else (1-p)
+class Card extends Component
+	constructor: ->
+		super()
+		@state = 
+			vert: rand() > 0.5 && true || false
+			pos: 1
+			rbg1: rbg()
+			rbg2: rbg()
+			rbg3: rbg()
+			rc: rc()
+	render: ->
 		h Slide,
-			center: true
-			style: rbg()
-			rc()
-		h Slide,
-			center: true
-			style: rbg()
-			rc()
+			slide: if @props.slide? then @props.slide else true 
+			vert: false
+			pos: @state.pos
+			style: 
+				'cursor':'pointer'
+			onClick: =>
+				@setState
+					pos: (@state.pos+1)%3
+			h Slide,
+				center: true
+				style: @state.rbg1
+				@state.rc
+			!@props.slide? && h Slide,
+				center: true
+				style: @state.rbg2
+				@state.rc
+			!@props.slide? && h Slide,
+				center: true
+				style: @state.rbg3
+				@state.rc
 
 
 class Test extends Component
 	constructor: ->
 		super()
 		@state = 
-			pos_a: 0
+			pos_a: 2
 
 	componentDidMount: ->
-		setTimeout ()=>
-			toggle = !toggle
-			rand = seed('128j319sdj3b1')
-			@forceUpdate()
-		,1000
+		# setTimeout ()=>
+		# 	# toggle = !toggle
+		# 	# @forceUpdate()
+		# ,1000
 	
 
 
@@ -55,40 +90,99 @@ class Test extends Component
 			className: 'test'
 			vert: false
 			h Slide,
-				vert: false
-				card()
-				h Slide,
-					vert: yes
-					h Slide,
-						slide:yes
-						dim: 50
-						h Slide,
-							ratio: 1
-							card()
-						h Slide,
-							ratio: 2
-							card()
-						h Slide,
-							ratio: 3
-							card()
-					h Slide,
-						beta: 0
-						h Slide,
-							slide:yes
-							vert: yes
-							dim: 50
-							h Slide,
-								ratio: 1
-								card()
-							h Slide,
-								ratio: 2
-								card()
-							h Slide,
-								ratio: 3
-								card()
-						h Slide,
-							beta:100
-							card()
+				beta:100
+				h Card
+				h Card
+				h Card
+			h Slide,
+				vert:yes
+				h Card
+				h Card
+
+
+			# h Slide,
+			# 	beta:100
+			# 	slide:true
+			# 	pos: @state.pos_a
+			# 	onClick: =>
+			# 		console.log (@state.pos_a + 1)%5
+			# 		@setState
+			# 			pos_a: (@state.pos_a + 1)%5
+			# 	vert:false
+			# 	# auto: true
+			# 	h Slide,
+			# 		beta: 50
+			# 		h Card,slide:false
+			# 	h Slide,
+			# 		beta: 50
+			# 		h Card,slide:false
+			# 	h Slide,
+			# 		beta: 100
+			# 		h Card,slide:false
+			# 	h Slide,
+			# 		beta: 150
+			# 		h Card,slide:false
+			# 	h Slide,
+			# 		beta: 10
+			# 		h Card,slide:false
+			# h Slide,
+			# 	vert: yes
+			# 	h Slide,
+			# 		slide:yes
+			# 		dim: 50
+			# 		h Slide,
+			# 			ratio: 1
+			# 			h Card
+			# 		h Slide,
+			# 			ratio: 2
+			# 			h Card
+			# 	h Slide,
+			# 		beta: 0
+			# 		h Slide,
+			# 			vert: yes
+			# 			dim: 50
+			# 			h Slide,
+			# 				ratio: 1
+			# 				h Card
+			# 			h Slide,
+			# 				ratio: 2
+			# 				h Card
+			# 			h Slide,
+			# 				ratio: 3
+			# 				slide: yes
+			# 				vert: no
+			# 				pos: @state.pos_a
+			# 				h Slide,center:yes,style:background:'black','0'
+			# 				h Slide,center:yes,style:background:'blue','1'
+			# 				h Slide,center:yes,style:background:'black','2'
+			# 				h Slide,center:yes,style:background:'blue','3'
+			# 				h Slide,center:yes,style:background:'black','4'
+			# 			h Card
+			# 		h Slide,
+			# 			beta:100
+			# 			slide:true
+			# 			pos: @state.pos_a
+			# 			onClick: =>
+			# 				console.log (@state.pos_a + 1)%5
+			# 				@setState
+			# 					pos_a: (@state.pos_a + 1)%5
+			# 			vert:true
+			# 			# auto: true
+			# 			h Slide,
+			# 				beta: 50
+			# 				h Card,slide:false
+			# 			h Slide,
+			# 				beta: 20
+			# 				h Card,slide:false
+			# 			h Slide,
+			# 				dim: 50
+			# 				h Card,slide:false
+			# 			h Slide,
+			# 				beta: 150
+			# 				h Card,slide:false
+			# 			h Slide,
+			# 				beta: 100
+			# 				h Card,slide:false
 
 
 			

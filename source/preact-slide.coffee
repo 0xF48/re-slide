@@ -19,6 +19,8 @@ DEFAULT_PROPS =
 	scroll: no #css scroll overflow
 	className: null
 	iclassName: null
+	# offset: 0
+	# offset_beta: 0
 	
 	
 
@@ -35,10 +37,11 @@ class Slide extends Component
 		super(props)
 		
 		@state=
+			offset: 0
 			x: 0 #x pos of _inner
 			y: 0 #y pos of _inner
 			dim: 0 #width/height of _outer
-		@rem = 0
+
 		@outer_rect = 
 			width: 0 #width of _outer
 			height: 0 #height of _outer
@@ -62,6 +65,7 @@ class Slide extends Component
 	@componentDidMount method
 	###
 	componentDidMount: ()=>
+		
 		@is_root = !@_outer.parentNode.className.match('-i-s-static|-i-s-inner')
 		@_outer.style.visibility = null
 		setTimeout @onSlideDone,0
@@ -77,6 +81,13 @@ class Slide extends Component
 	###
 	componentWillUpdate: ()=>
 		@calculateBounds() #recalculate bounds for further processing...
+		r = @outer_rect.width % Math.floor(@outer_rect.width)
+		if r
+			@state.offset = r
+		else
+			@state.offset = 0
+			# dim = @getOuterHW()
+			# @_outer.style.width = 'calc('+dim.width+ ' + 0.5px)'
 	
 
 	###
@@ -103,8 +114,7 @@ class Slide extends Component
 	
 
 
-	addRem: (rem)=>
-		log 'add rem',rem
+
 	###
 	@getChildContext method
 	###	
@@ -112,7 +122,6 @@ class Slide extends Component
 		outer_width: @context.vert && !@is_root && @context.outer_width || @outer_rect.width
 		outer_height: !@context.vert && !@is_root && @context.outer_height || @outer_rect.height
 		vert: @props.vert || @props.vert || false
-		addRem: @addRem
 		dim: if @props.vert then @outer_rect.width else @outer_rect.height
 		slide: @context.slide || @props.slide
 		_i_slide: true
@@ -123,8 +132,6 @@ class Slide extends Component
 	calculate and store position and size.
 	###	
 	calculateBounds: ()->
-		@prev_rect_width = @outer_rect.width
-		@prev_rect_height = @outer_rect.height
 		@outer_rect = @_outer.getBoundingClientRect()
 
 	
@@ -225,7 +232,7 @@ class Slide extends Component
 		@setState
 			in_transition: true
 			transition: @getTransition()
-			transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
+			transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
 			x: pos.x
 			y: pos.y
 
@@ -243,7 +250,7 @@ class Slide extends Component
 		@setState
 			in_transition: false
 			transition: ''
-			transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
+			transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
 			x: pos.x
 			y: pos.y
 
@@ -270,12 +277,12 @@ class Slide extends Component
 		return d
 
 	getChildHeight: (c)->
-		b = c.attributes.beta || 100
-		c.attributes.height || (@outer_rect.height / 100 * b)
+		b = (c.attributes && c.attributes.beta) || 100
+		(c.attributes && c.attributes.height) || (@outer_rect.height / 100 * b)
 
 	getChildWidth: (c)->
-		b = c.attributes.beta || 100
-		c.attributes.width || (@outer_rect.width / 100 * b)
+		b = (c.attributes && c.attributes.beta) || 100
+		(c.attributes && c.attributes.width) || (@outer_rect.width / 100 * b)
 
 	###
 	@getIndexXY method
@@ -295,15 +302,18 @@ class Slide extends Component
 		_cc = @props.children[Math.floor(index)]
 		# cc_rect = cc.getBoundingClientRect()
 	
-		
+
 
 		if @props.vert
 		
 			if cc.offsetTop > @state.y
-				if cc.clientHeight > @outer_rect.height
+				if cc.clientHeight >= @outer_rect.height
 					y = cc.offsetTop
 				else
-					y = cc.offsetTop - @outer_rect.height + cc.clientHeight
+					if cc.offsetTop + cc.clientHeight < @state.y+@outer_rect.height
+						y = @state.y
+					else
+						y = cc.offsetTop - @outer_rect.height + cc.clientHeight
 			else
 				y = cc.offsetTop
 			
@@ -312,10 +322,13 @@ class Slide extends Component
 		
 		else
 			if cc.offsetLeft > @state.x
-				if cc.clientWidth > @outer_rect.width
+				if cc.clientWidth >= @outer_rect.width
 					x = cc.offsetLeft
 				else
-					x = cc.offsetLeft - @outer_rect.width + cc.clientWidth
+					if cc.offsetLeft + cc.clientWidth < @state.x+@outer_rect.width
+						x = @state.x
+					else
+						x = cc.offsetLeft - @outer_rect.width + cc.clientWidth
 			else
 				x = cc.offsetLeft
 			
@@ -325,7 +338,8 @@ class Slide extends Component
 		
 		d = 0
 		for c in @props.children
-			c.attributes.beta = c.attributes.beta || 100
+			if c.attributes
+				c.attributes.beta = c.attributes.beta || 100
 
 			if @props.vert
 				d += @getChildHeight(c)
@@ -347,6 +361,16 @@ class Slide extends Component
 		else if x > d && d > 0
 			x = d 
 
+		# if x != 0
+		# 	r = (x || 0) % (Math.floor(x||0))
+		# 	if r != 0
+		# 		console.log 'REMAINER '+r,x
+		# 		@rem = true
+		# 		x = Math.floor(x)
+		# 	else
+		# 		@rem = false
+		# else
+		# 	@rem = false
 		
 		
 		x: x || 0
@@ -355,6 +379,16 @@ class Slide extends Component
 	# 201 = 100.5 * 100.5
 	# 101 (rem .5)
 	# round(100.5 - .5) = 100
+
+
+	#round beta to pixel to avoid artifacts in non retina screens. 
+	roundBetaHack: (beta)=>
+		# if @state.offset
+		# 	console.log 'set calc'
+		# 	'calc('+beta+'% + 1px)'
+		# else
+		beta + '%'
+		
 
 	###
 	@getBeta method
@@ -366,7 +400,7 @@ class Slide extends Component
 
 		# split along horizontal
 		if !@is_root && @context.outer_width && !@context.vert && @context.slide
-			d = @context.outer_width / 100 * @props.beta + @props.offset + @context.outer_width / 100 * @props.offset_beta 
+			d = @context.outer_width / 100 * @props.beta + @props.offset + @context.outer_width / 100 * @props.offset_beta
 			
 			@state.dim = @roundDim(d)
 			return @state.dim + 'px'
@@ -383,7 +417,7 @@ class Slide extends Component
 		# base case scenario, this is legacy fallback for relative betas using css % 
 		# CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
 
-		beta = @props.beta + '%'
+		beta = @roundBetaHack(@props.beta)
 
 		if @props.offset
 			sign = @props.offset < 0 && '-' || '+'
@@ -411,11 +445,9 @@ class Slide extends Component
 		if @props.ratio
 			dim = {}
 			if @context.vert
-				console.log 'CONTEXT  VERT'
 				dim.height = @context.dim*@props.ratio
 				dim.width = '100%'
 			else
-				console.log 'CONTEXT  NOT VERT'
 				#dim.height = '100%' CSS is weird...
 				dim.width = @context.dim*@props.ratio
 			return dim

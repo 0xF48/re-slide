@@ -1,20 +1,29 @@
 var webpack = require("webpack");
+var path = require('path');
+var fs = require('fs');
+
+var nodeModules = {};
+fs.readdirSync('node_modules')
+.filter(function(x) {
+	return ['.bin'].indexOf(x) === -1;
+})
+.forEach(function(mod) {
+	nodeModules[mod] = 'commonjs ' + mod;
+});
 var cfg = {
 	module: {
 		loaders: [
 			{ test: /\.coffee$/, use: "coffee-loader"},
 			{ test: /\.glsl$/, use: "glsl-template-loader" },
-			{ test: /\.(scss|less)$/, use: ['style-loader','css-loader','sass-loader'] }
+			{ test: /\.(xml|html|txt|md)$/, loader: "raw-loader" },
+			{ test: /\.(less)$/, use: ['style-loader','css-loader','less-loader'] }
 		]
 	},
 	entry: {
-		main: "preact-slide.coffee",
+		main: "./source/preact-slide.coffee",
 	},
-	resolve: {
-		"modules": ["node_modules"],
-	},
+	externals: nodeModules,
 	output: {
-		path: 'static',
 		filename: "index.js",
 		library: 'Slide',
 		libraryTarget: 'umd'

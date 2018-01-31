@@ -1,12 +1,13 @@
 {
   "name": "preact-slide",
   "version": "0.1.0",
-  "description": "recursive slide component for preact",
+  "description": "📏 Preact Universal Layout Component",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node test.js",
     "dev": "webpack-dev-server --config site.config.js",
-    "build": "webpack --progress --config site.config.js && minify site/main.js -o site/main.js"
+    "build": "webpack --config site.config.js && webpack --config lib.config.js && minify --keepClassName -o index.min.js index.js",
+    "republishOnly":"npm run build && npm run test"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/arxii/preact-slide/issues"
   },
-  "homepage": "https://github.com/arxii/preact-slide#readme",
+  "homepage": "http://arxii.github.io/preact-slide",
   "peerDependencies": {
     "preact": "8.x"
   },
@@ -31,14 +32,14 @@
     "coffeescript": "^2.1.1",
     "css-loader": "^0.28.9",
     "glsl-template-loader": "^1.1.0",
+    "less": "^2.7.3",
+    "less-loader": "^4.0.5",
     "lodash": "^4.17.4",
-    "node-sass": "^4.7.2",
     "preact": "^8.2.7",
     "preact-markdown": "^0.4.0",
     "preact-markup": "^1.6.0",
     "random-color": "^1.0.1",
     "raw-loader": "^0.5.1",
-    "sass-loader": "^6.0.6",
     "seed-random": "^2.2.0",
     "style-loader": "^0.19.1",
     "webpack": "^3.10.0"

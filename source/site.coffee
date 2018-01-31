@@ -1,9 +1,10 @@
 {h,render,Component} = require 'preact'
-Slide = require './preact-slide.coffee'
+Slide = require '../index.js'
 {Box,Shader} = require 'shader-box'
 Markdown = require 'preact-markdown'
 Markup = require 'preact-markup'
-require './site.scss'
+require './site.less'
+require './examples.less'
 
 
 class Card extends Component

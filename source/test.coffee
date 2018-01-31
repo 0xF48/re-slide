@@ -3,7 +3,7 @@ Slide = require './preact-slide.coffee'
 randomColor = require 'random-color'
 seed = require 'seed-random'
 _ = require 'lodash'
-require './site.scss'
+require './site.less'
 
 
 rand = seed('128j3b1')
@@ -91,98 +91,87 @@ class Test extends Component
 			vert: false
 			h Slide,
 				beta:100
-				h Card
-				h Card
-				h Card
+				slide:true
+				pos: @state.pos_a
+				onClick: =>
+					console.log (@state.pos_a + 1)%5
+					@setState
+						pos_a: (@state.pos_a + 1)%5
+				vert:false
+				# auto: true
+				h Slide,
+					beta: 50
+					h Card,slide:false
+				h Slide,
+					beta: 50
+					h Card,slide:false
+				h Slide,
+					beta: 100
+					h Card,slide:false
+				h Slide,
+					beta: 150
+					h Card,slide:false
+				h Slide,
+					beta: 10
+					h Card,slide:false
 			h Slide,
-				vert:yes
-				h Card
-				h Card
-
-
-			# h Slide,
-			# 	beta:100
-			# 	slide:true
-			# 	pos: @state.pos_a
-			# 	onClick: =>
-			# 		console.log (@state.pos_a + 1)%5
-			# 		@setState
-			# 			pos_a: (@state.pos_a + 1)%5
-			# 	vert:false
-			# 	# auto: true
-			# 	h Slide,
-			# 		beta: 50
-			# 		h Card,slide:false
-			# 	h Slide,
-			# 		beta: 50
-			# 		h Card,slide:false
-			# 	h Slide,
-			# 		beta: 100
-			# 		h Card,slide:false
-			# 	h Slide,
-			# 		beta: 150
-			# 		h Card,slide:false
-			# 	h Slide,
-			# 		beta: 10
-			# 		h Card,slide:false
-			# h Slide,
-			# 	vert: yes
-			# 	h Slide,
-			# 		slide:yes
-			# 		dim: 50
-			# 		h Slide,
-			# 			ratio: 1
-			# 			h Card
-			# 		h Slide,
-			# 			ratio: 2
-			# 			h Card
-			# 	h Slide,
-			# 		beta: 0
-			# 		h Slide,
-			# 			vert: yes
-			# 			dim: 50
-			# 			h Slide,
-			# 				ratio: 1
-			# 				h Card
-			# 			h Slide,
-			# 				ratio: 2
-			# 				h Card
-			# 			h Slide,
-			# 				ratio: 3
-			# 				slide: yes
-			# 				vert: no
-			# 				pos: @state.pos_a
-			# 				h Slide,center:yes,style:background:'black','0'
-			# 				h Slide,center:yes,style:background:'blue','1'
-			# 				h Slide,center:yes,style:background:'black','2'
-			# 				h Slide,center:yes,style:background:'blue','3'
-			# 				h Slide,center:yes,style:background:'black','4'
-			# 			h Card
-			# 		h Slide,
-			# 			beta:100
-			# 			slide:true
-			# 			pos: @state.pos_a
-			# 			onClick: =>
-			# 				console.log (@state.pos_a + 1)%5
-			# 				@setState
-			# 					pos_a: (@state.pos_a + 1)%5
-			# 			vert:true
-			# 			# auto: true
-			# 			h Slide,
-			# 				beta: 50
-			# 				h Card,slide:false
-			# 			h Slide,
-			# 				beta: 20
-			# 				h Card,slide:false
-			# 			h Slide,
-			# 				dim: 50
-			# 				h Card,slide:false
-			# 			h Slide,
-			# 				beta: 150
-			# 				h Card,slide:false
-			# 			h Slide,
-			# 				beta: 100
-			# 				h Card,slide:false
+				vert: yes
+				h Slide,
+					slide:yes
+					dim: 50
+					h Slide,
+						ratio: 1
+						h Card
+					h Slide,
+						ratio: 2
+						h Card
+				h Slide,
+					beta: 0
+					h Slide,
+						vert: yes
+						dim: 50
+						h Slide,
+							ratio: 1
+							h Card
+						h Slide,
+							ratio: 2
+							h Card
+						h Slide,
+							ratio: 3
+							slide: yes
+							vert: no
+							pos: @state.pos_a
+							h Slide,center:yes,style:background:'black','0'
+							h Slide,center:yes,style:background:'blue','1'
+							h Slide,center:yes,style:background:'black','2'
+							h Slide,center:yes,style:background:'blue','3'
+							h Slide,center:yes,style:background:'black','4'
+						h Card
+					h Slide,
+						beta:100
+						slide:true
+						pos: @state.pos_a
+						onClick: =>
+							console.log (@state.pos_a + 1)%5
+							@setState
+								pos_a: (@state.pos_a + 1)%5
+						vert:true
+						# auto: true
+						h Slide,
+							beta: 50
+							h Card,slide:false
+						h Slide,
+							beta: 20
+							h Card,slide:false
+						h Slide,
+							dim: 50
+							h Card,slide:false
+						h Slide,
+							beta: 150
+							h Card,slide:false
+						h Slide,
+							beta: 100
+							h Card,slide:false
 
 
 			

@@ -1,4 +1,4 @@
-require './preact-slide.scss'
+require './preact-slide.less'
 {h,Component} = require 'preact'
 
 DEFAULT_PROPS = 
@@ -19,8 +19,8 @@ DEFAULT_PROPS =
 	scroll: no #css scroll overflow
 	className: null
 	iclassName: null
-	# offset: 0
-	# offset_beta: 0
+	offset: 0
+	offset_beta: 0
 	
 	
 
@@ -122,8 +122,9 @@ class Slide extends Component
 		outer_width: @context.vert && !@is_root && @context.outer_width || @outer_rect.width
 		outer_height: !@context.vert && !@is_root && @context.outer_height || @outer_rect.height
 		vert: @props.vert || @props.vert || false
+		count: @props.children.length
 		dim: if @props.vert then @outer_rect.width else @outer_rect.height
-		slide: @context.slide || @props.slide
+		slide: @props.slide
 		_i_slide: true
 
 
@@ -321,6 +322,7 @@ class Slide extends Component
 				y += (Math.round((index % 1) * @getChildHeight(_cc))) * (@props.inverse && -1 || 1)
 		
 		else
+			# console.log cc.offsetLeft
 			if cc.offsetLeft > @state.x
 				if cc.clientWidth >= @outer_rect.width
 					x = cc.offsetLeft
@@ -335,59 +337,50 @@ class Slide extends Component
 			if (index % 1) != 0
 				x += Math.round((index % 1) * @getChildWidth(_cc)) * (@props.inverse && -1 || 1)
 
-		
-		d = 0
-		for c in @props.children
-			if c.attributes
-				c.attributes.beta = c.attributes.beta || 100
-
-			if @props.vert
-				d += @getChildHeight(c)
-			else
-				d += @getChildWidth(c)
-		
-		
-		if @props.vert
-			d -= @outer_rect.height
-		else 
-			d -= @outer_rect.width
+	
 
 
-		d = @roundDim(d) #round off max width/height based on rounding algorithm 
 
-		
-		if @props.vert && y > d && d > 0
-			y = d
-		else if x > d && d > 0
-			x = d 
+		# d = 0
+		# for c in @props.children
+		# 	# if c.nodeName.name != 'Slide'
+		# 	# 	throw new Error 'attempted to do calculations on child that is not a Slide class! Slides that slide can'
+		# 	if c.attributes
+		# 		c.attributes.beta = c.attributes.beta || 100
 
-		# if x != 0
-		# 	r = (x || 0) % (Math.floor(x||0))
-		# 	if r != 0
-		# 		console.log 'REMAINER '+r,x
-		# 		@rem = true
-		# 		x = Math.floor(x)
+		# 	if @props.vert
+		# 		d += @getChildHeight(c)
 		# 	else
-		# 		@rem = false
-		# else
-		# 	@rem = false
+		# 		d += @getChildWidth(c)
+		
+		
+		# if @props.vert
+		# 	d -= @outer_rect.height
+		# else 
+		# 	d -= @outer_rect.width
+
+
+		# d = @roundDim(d) #round off max width/height based on rounding algorithm 
+
+		
+		# if @props.vert && y > d && d > 0
+		# 	y = d
+		# else if x > d && d > 0
+		# 	x = d 
+
+	
 		
 		
 		x: x || 0
 		y: y || 0
 
-	# 201 = 100.5 * 100.5
-	# 101 (rem .5)
-	# round(100.5 - .5) = 100
 
 
-	#round beta to pixel to avoid artifacts in non retina screens. 
 	roundBetaHack: (beta)=>
-		# if @state.offset
-		# 	console.log 'set calc'
-		# 	'calc('+beta+'% + 1px)'
-		# else
-		beta + '%'
+		if @context.count == 2 && (@context.outer_width/2 % Math.floor(@context.outer_width/2) == 0.5) && @_outer.nextElementSibling
+			return 'calc('+beta+'% + 0.5px)'
+		
+		return  beta + '%'
 		
 
 	###
@@ -395,25 +388,26 @@ class Slide extends Component
 	get beta dimention variable for the slide, either in pixels or percentages.
 	###
 	getBeta: ()=>
+
 		if !@props.beta || @props.beta < 0
 			throw new Error 'beta is ( <= 0 | null ) '
 
 		# split along horizontal
+
+
+
 		if !@is_root && @context.outer_width && !@context.vert && @context.slide
 			d = @context.outer_width / 100 * @props.beta + @props.offset + @context.outer_width / 100 * @props.offset_beta
-			
 			@state.dim = @roundDim(d)
 			return @state.dim + 'px'
 		
 		# split along vertical
 		else if !@is_root && @context.outer_height && @context.vert && @context.slide
 			d = @context.outer_height / 100 * @props.beta + @props.offset + @context.outer_height / 100 * @props.offset_beta
-			
 			@state.dim = @roundDim(d)
-			
 			return @state.dim + 'px'
-		
-		
+
+
 		# base case scenario, this is legacy fallback for relative betas using css % 
 		# CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
 
@@ -440,7 +434,6 @@ class Slide extends Component
 	get outer height and width.
 	###
 	getOuterHW: ()=>
-
 		# square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
 		if @props.ratio
 			dim = {}
@@ -477,15 +470,16 @@ class Slide extends Component
 		else if width
 			pw = width + 'px'
 		
-		# insert calculated beta
+
+		# insert calculated beta if width or height is still null
 		if @context.vert
 			pw = pw || '100%'
 			ph = ph || @getBeta()
 		else
 			pw = pw || @getBeta()
 			ph = ph || '100%' #CSS is weird...
-		# console.log ph,pw,@props.className Name
-		
+	
+	
 		height: ph
 		width: pw
 

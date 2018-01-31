@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,500|Architects+Daughter');
-$cursive: "Architects Daughter";
+@cursive: "Architects Daughter";
 
 body{
 	font-family: "Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
@@ -21,7 +21,7 @@ body:after{background: none;content:"";height:1px;position:fixed;}
 
 
 .test{
-	font-family: $cursive, cursive;
+	font-family: @cursive, cursive;
 	font-size: 20px;
 	color: white;
 	height: 100%;
@@ -91,7 +91,7 @@ blockquote{
 	flex-direction: column;
 }
 .title-name{
-	font-family: $cursive, cursive;
+	font-family: @cursive, cursive;
 	font-size: 50px;
 	line-height: 50px;
 	color: #555555;
@@ -126,7 +126,7 @@ blockquote{
 
 .header-description-sub{
 	font-style: oblique;
-	font-family: $cursive, cursive;
+	font-family: @cursive, cursive;
 	opacity: 0.4;
 	color: #1E1E1E;
 	font-size: 20px;
@@ -160,7 +160,7 @@ blockquote{
 
 h1{
     font-style: oblique;
-    font-family: $cursive, cursive;
+    font-family: @cursive, cursive;
     opacity: 0.4;
     color: #1E1E1E;
     font-size: 20px;
@@ -216,7 +216,7 @@ h1{
 .example{
 	max-width: 600px;
 	height: 300px;
-	font-family: $cursive, cursive;
+	font-family: @cursive, cursive;
 	-webkit-font-smoothing: auto;
 	text-rendering: optimizeSpeed;
 }
@@ -225,7 +225,7 @@ h1{
 	margin-bottom:80px;
 }
 
-@import "./examples.scss";
+
 
 .prop{
     width: auto;

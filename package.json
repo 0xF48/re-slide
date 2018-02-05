@@ -7,7 +7,7 @@
     "test": "node test.js",
     "dev": "webpack-dev-server --config site.config.js",
     "build": "webpack --config site.config.js && webpack --config lib.config.js && minify --keepClassName -o index.min.js index.js",
-    "republishOnly":"npm run build && npm run test"
+    "republishOnly": "npm run build && npm run test"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "coffee-loader": "^0.9.0",
     "coffeescript": "^2.1.1",
     "css-loader": "^0.28.9",
+    "file-loader": "^1.1.6",
     "glsl-template-loader": "^1.1.0",
     "less": "^2.7.3",
     "less-loader": "^4.0.5",
@@ -42,6 +43,7 @@
     "raw-loader": "^0.5.1",
     "seed-random": "^2.2.0",
     "style-loader": "^0.19.1",
+    "url-loader": "^0.6.2",
     "webpack": "^3.10.0"
   },
   "dependencies": {

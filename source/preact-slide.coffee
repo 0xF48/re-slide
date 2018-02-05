@@ -9,8 +9,7 @@ DEFAULT_PROPS =
 	auto: false #auto dim based on content
 	dim: 0 #dim is width/height but relative to split direction, so u dont have to ;)
 	animate: false #transitions
-	ease: 'cubic-bezier(0.25, 0.34, 0, 1)' #slide easing
-	ease_dur: 0.4 #slide easing duration
+	ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
 	width: 0 #slide width manual override
 	height: 0 #slide height manual override
 	ratio: 0 #ratio dim helper
@@ -20,9 +19,8 @@ DEFAULT_PROPS =
 	className: null
 	iclassName: null
 	offset: 0
-	offset_beta: 0
 	
-	
+
 
 EVENT_REGEX = new RegExp('^on[A-Z]')
 
@@ -230,7 +228,7 @@ class Slide extends Component
 	CSS transition easing/duration.
 	###
 	getTransition: ()->
-		'transform ' + @props.ease_dur + 's ' + @props.ease
+		'transform ' + @props.ease
 
 
 	###
@@ -384,13 +382,13 @@ class Slide extends Component
 
 
 		if !@is_root && @context.outer_width && !@context.vert && @context.slide
-			d = @context.outer_width / 100 * @props.beta + @props.offset + @context.outer_width / 100 * @props.offset_beta
+			d = @context.outer_width / 100 * @props.beta + @props.offset
 			@state.dim = @roundDim(d)
 			return @state.dim + 'px'
 		
 		# split along vertical
 		else if !@is_root && @context.outer_height && @context.vert && @context.slide
-			d = @context.outer_height / 100 * @props.beta + @props.offset + @context.outer_height / 100 * @props.offset_beta
+			d = @context.outer_height / 100 * @props.beta + @props.offset
 			@state.dim = @roundDim(d)
 			return @state.dim + 'px'
 
@@ -404,11 +402,6 @@ class Slide extends Component
 			sign = @props.offset < 0 && '-' || '+'
 			offs = Math.abs(@props.offset) + 'px'
 		
-		else if @props.offset_beta
-			sign = @props.offset_beta < 0 && '-' || '+'
-			offs = Math.abs(@props.offset_beta) + '%'
-
-
 
 		if offs
 			return 'calc(#{beta} #{sign} #{offs})'

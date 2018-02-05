@@ -49,7 +49,7 @@ class Card extends Component
 			rc: rc()
 	render: ->
 		@state.rbg1.cursor = 'pointer'
-		if !@props.slide
+		if @props.slide == false
 			return h Slide,
 				center: yes
 				style: @state.rbg1

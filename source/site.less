@@ -269,21 +269,32 @@ h1{
 
 footer{
 	display: flex;
-	justify-content: center;
+	justify-content: flex-end;
 	img{
-		width: 25px;
-		height: 25px;
-		padding: 10px;
-		margin: 0px auto;
+		width: 20px;
+		height: 20px;
 		opacity: 0.3;
 	}
+	padding: 0px 10px;
 }
 
-.footer-author{
-	color: black;
-	line-height: 46px;
+.footer-text{
+	vertical-align: middle;
 	font-family: monospace;
-	opacity: 0.3;
+	color: #A1A1A1;
+	font-size: 12px;
+	margin: 10px 10px;
+	&:hover{
+		color: #6E6E6E;
+	}
+	&::before { 
+    	content: "/";
+    	padding-right: 20px;
+	}
+	&:first-child{
+		&&::before { 
+			content: "";
+		}
+	}
 }
-
 

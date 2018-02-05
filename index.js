@@ -92,8 +92,7 @@ DEFAULT_PROPS = {
   auto: false, //auto dim based on content
   dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
   animate: false, //transitions
-  ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
-  ease_dur: 0.4, //slide easing duration
+  ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)', //slide easing
   width: 0, //slide width manual override
   height: 0, //slide height manual override
   ratio: 0, //ratio dim helper
@@ -102,8 +101,7 @@ DEFAULT_PROPS = {
   scroll: false, //css scroll overflow
   className: null,
   iclassName: null,
-  offset: 0,
-  offset_beta: 0
+  offset: 0
 };
 
 EVENT_REGEX = new RegExp('^on[A-Z]');
@@ -356,7 +354,7 @@ Slide = class Slide extends Component {
   CSS transition easing/duration.
   */
   getTransition() {
-    return 'transform ' + this.props.ease_dur + 's ' + this.props.ease;
+    return 'transform ' + this.props.ease;
   }
 
   /*
@@ -519,11 +517,11 @@ Slide = class Slide extends Component {
       throw new Error('beta is ( <= 0 | null ) ');
     }
     if (!this.is_root && this.context.outer_width && !this.context.vert && this.context.slide) {
-      d = this.context.outer_width / 100 * this.props.beta + this.props.offset + this.context.outer_width / 100 * this.props.offset_beta;
+      d = this.context.outer_width / 100 * this.props.beta + this.props.offset;
       this.state.dim = this.roundDim(d);
       return this.state.dim + 'px';
     } else if (!this.is_root && this.context.outer_height && this.context.vert && this.context.slide) {
-      d = this.context.outer_height / 100 * this.props.beta + this.props.offset + this.context.outer_height / 100 * this.props.offset_beta;
+      d = this.context.outer_height / 100 * this.props.beta + this.props.offset;
       this.state.dim = this.roundDim(d);
       return this.state.dim + 'px';
     }
@@ -533,9 +531,6 @@ Slide = class Slide extends Component {
     if (this.props.offset) {
       sign = this.props.offset < 0 && '-' || '+';
       offs = Math.abs(this.props.offset) + 'px';
-    } else if (this.props.offset_beta) {
-      sign = this.props.offset_beta < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset_beta) + '%';
     }
     if (offs) {
       return 'calc(#{beta} #{sign} #{offs})';

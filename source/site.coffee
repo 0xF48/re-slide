@@ -7,6 +7,53 @@ require './site.less'
 require './examples.less'
 
 
+
+
+SimpleMenuExample = require './examples/SimpleMenuExample.coffee'
+LayoutExample = require './examples/LayoutExample.coffee'
+ButtonsExample = require './examples/ButtonsExample.coffee'
+CarouselExample = require './examples/CarouselExample.coffee'
+
+
+
+
+EXAMPLES = [
+	['Layout',require('./examples/layout.md'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
+	['Simple Menu',require('./examples/simple-menu.md'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
+	['Buttons',require('./examples/buttons.md'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
+	['Carousel',require('./examples/carousel.md'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
+]
+
+
+
+
+HEADER_TEXT = 'A powerful and performant way to transition between different modules using a novel nested sliding approach. This smart base component can be used as a foundation for creating animated modular interfaces and widgets of any scale. We take the pretty parts of CSS Flexbox and build on top of it.'
+
+PROPS = [
+	['vert','false','The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.']
+	['beta','100','The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.']
+	['dim','null','The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.']
+	['width','0','force width in pixels shortcut (or use a css class override for root elements)']
+	['height','0','force set height shortcut (or use a css class override)']
+	['ratio','0','Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.']
+	['offset','0','For edge cases, you may want to add or subtract some extra pixels to the `beta` property.']
+	['slide','false','If set to `true`, creates an outer wrapper enabling the children to scroll or slide']
+	['animate','true','Set this to `false` to disable slide transitions for edge cases.']
+	['ease','0.4s cubic-bezier(0.25, 0.35, 0, 1)','The CSS ease function for the slide transition.']
+	['pos','0','When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.']
+	['auto','false (unstable)','If `true`, parent will resize based on content inside.']
+	['center','false','CSS flex center shortcut']
+	['inverse','false','The slide is inverted, meaning the last child is the first and the first child is the last']
+	['scroll','false','If set to true, outer wrapper will be scrollable.']
+	['className','null','When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.']
+	['iclassName','null','className for the inner element if `slide:true`.']
+	['onSlideStart','null','When component starts a slide transition']
+	['onSlideEnd','null','When component ends a slide transition or slide pos is set']
+]
+
+
+
+
 class Card extends Component
 	componentWillMount: ()->
 		
@@ -51,30 +98,6 @@ class Card extends Component
 	iclassName: null
 
 
-
-PROPS = [
-	['vert','false','flex direction. if set to false then the slide will arrange its children slides horizontaly (left to right)']
-	['beta','100','width/height % relative to the parent']
-	['slide','false','if set to true, creates a wrapper enabling the children to scroll/slide']
-	['pos','0','if slide is set to true, then setting this will slide to child in that index, setting to a float will create an interpolated offset.']
-	['auto','false','if set to true, component will resize based on content inside.']
-	['dim','null','set either the width or height relative to parent split direction. So if the parent split horizontaly the width will be set, otherwise the height will be set as the dim value.']
-	['animate','false','do transition animations?']
-	['ease','cubic-bezier(0.25, 0.34, 0, 1)','css ease function for the slide transition']
-	['ease_dur','0.4','transition duration']
-	['width','0','force set width shortcut (or use a css class override)']
-	['height','0','force set height shortcut (or use a css class override)']
-	['center','false','css flex center shortcut']
-	['inverse','false','the slide is inverted, meaning the last child is the first and the first child is the last']
-	['scroll','false','if set to true, outer wrapper will be scrollable.']
-	['className','false','When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.']
-	['iclassName','false','Same as className but for the inner element. if only one static element, this class will not be used']
-	['ratio','0','set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height relative to parent.']
-]
-
-
-class Props
-	render: ->
 
 
 class Header extends Component
@@ -196,7 +219,7 @@ class Header extends Component
 					'Experimental'
 				h 'p',
 					className:'header-description-text'
-					'A universal layout component which can be used as a foundation for creating animated modular interfaces and widgets.'
+					HEADER_TEXT
 					h 'div',
 						className: 'shields'
 						h 'a',
@@ -212,22 +235,6 @@ class Header extends Component
 							h 'img',
 								src: 'https://img.shields.io/badge/build-passing-green.svg?style=flat-square'
 
-
-
-SimpleMenuExample = require './examples/SimpleMenuExample.coffee'
-LayoutExample = require './examples/LayoutExample.coffee'
-ButtonsExample = require './examples/ButtonsExample.coffee'
-CarouselExample = require './examples/CarouselExample.coffee'
-
-
-
-
-EXAMPLES = [
-	['Layout',require('./examples/layout.md'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
-	['Simple Menu',require('./examples/simple-menu.md'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
-	['Buttons',require('./examples/buttons.md'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
-	['Carousel',require('./examples/carousel.md'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
-]
 
 
 
@@ -297,12 +304,16 @@ class Docs
 				className: 'footer'
 				h 'a',
 					href: "https://github.com/arxii/preact-slide"
-					h 'img',
-						src: './site/github.svg'
+					className: 'footer-text'
+					'Source'
 				h 'a',
-					href: "https://github.com/arxii"
-					className: 'footer-author'
-					'arxii'
+					href: "test.html"
+					className: 'footer-text'
+					'Test'
+				h 'a',
+					href: "https://github.com/arxii/preact-slide/blob/master/LICENSE"
+					className: 'footer-text'
+					'Apache License 2.0'
 
 
 

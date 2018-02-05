@@ -1103,8 +1103,7 @@ DEFAULT_PROPS = {
   auto: false, //auto dim based on content
   dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
   animate: false, //transitions
-  ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
-  ease_dur: 0.4, //slide easing duration
+  ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)', //slide easing
   width: 0, //slide width manual override
   height: 0, //slide height manual override
   ratio: 0, //ratio dim helper
@@ -1113,8 +1112,7 @@ DEFAULT_PROPS = {
   scroll: false, //css scroll overflow
   className: null,
   iclassName: null,
-  offset: 0,
-  offset_beta: 0
+  offset: 0
 };
 
 EVENT_REGEX = new RegExp('^on[A-Z]');
@@ -1367,7 +1365,7 @@ Slide = class Slide extends Component {
   CSS transition easing/duration.
   */
   getTransition() {
-    return 'transform ' + this.props.ease_dur + 's ' + this.props.ease;
+    return 'transform ' + this.props.ease;
   }
 
   /*
@@ -1530,11 +1528,11 @@ Slide = class Slide extends Component {
       throw new Error('beta is ( <= 0 | null ) ');
     }
     if (!this.is_root && this.context.outer_width && !this.context.vert && this.context.slide) {
-      d = this.context.outer_width / 100 * this.props.beta + this.props.offset + this.context.outer_width / 100 * this.props.offset_beta;
+      d = this.context.outer_width / 100 * this.props.beta + this.props.offset;
       this.state.dim = this.roundDim(d);
       return this.state.dim + 'px';
     } else if (!this.is_root && this.context.outer_height && this.context.vert && this.context.slide) {
-      d = this.context.outer_height / 100 * this.props.beta + this.props.offset + this.context.outer_height / 100 * this.props.offset_beta;
+      d = this.context.outer_height / 100 * this.props.beta + this.props.offset;
       this.state.dim = this.roundDim(d);
       return this.state.dim + 'px';
     }
@@ -1544,9 +1542,6 @@ Slide = class Slide extends Component {
     if (this.props.offset) {
       sign = this.props.offset < 0 && '-' || '+';
       offs = Math.abs(this.props.offset) + 'px';
-    } else if (this.props.offset_beta) {
-      sign = this.props.offset_beta < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset_beta) + '%';
     }
     if (offs) {
       return 'calc(#{beta} #{sign} #{offs})';
@@ -2671,7 +2666,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "@font-face {\n  font-family: \"Architects Daughter\";\n  src: url(" + escape(__webpack_require__(12)) + ");\n}\nbody {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  height: 100%;\n  width: 100%;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.52156863);\n  width: 340px;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: \"Architects Daughter\", cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 600;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: center;\n}\nfooter img {\n  width: 25px;\n  height: 25px;\n  padding: 10px;\n  margin: 0px auto;\n  opacity: 0.3;\n}\n.footer-author {\n  color: black;\n  line-height: 46px;\n  font-family: monospace;\n  opacity: 0.3;\n}\n", ""]);
+exports.push([module.i, "@font-face {\n  font-family: \"Architects Daughter\";\n  src: url(" + escape(__webpack_require__(12)) + ");\n}\nbody {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  height: 100%;\n  width: 100%;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.52156863);\n  width: 340px;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: \"Architects Daughter\", cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 600;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: flex-end;\n  padding: 0px 10px;\n}\nfooter img {\n  width: 20px;\n  height: 20px;\n  opacity: 0.3;\n}\n.footer-text {\n  vertical-align: middle;\n  font-family: monospace;\n  color: #A1A1A1;\n  font-size: 12px;\n  margin: 10px 10px;\n}\n.footer-text:hover {\n  color: #6E6E6E;\n}\n.footer-text::before {\n  content: \"/\";\n  padding-right: 20px;\n}\n.footer-text:first-child.footer-text:first-child::before {\n  content: \"\";\n}\n", ""]);
 
 // exports
 
@@ -2710,7 +2705,7 @@ module.exports = "data:font/ttf;base64,AAEAAAANAIAAAwBQRkZUTVzdyC4AAKk8AAAAHE9TL
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, Header, LayoutExample, Markdown, Markup, PROPS, Props, Shader, SimpleMenuExample, Slide, h, render,
+var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, HEADER_TEXT, Header, LayoutExample, Markdown, Markup, PROPS, Shader, SimpleMenuExample, Slide, h, render,
   boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
 
 ({h, render, Component} = __webpack_require__(0));
@@ -2726,6 +2721,20 @@ Markup = __webpack_require__(8);
 __webpack_require__(9);
 
 __webpack_require__(19);
+
+SimpleMenuExample = __webpack_require__(21);
+
+LayoutExample = __webpack_require__(23);
+
+ButtonsExample = __webpack_require__(24);
+
+CarouselExample = __webpack_require__(25);
+
+EXAMPLES = [['Layout', __webpack_require__(26), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(27), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(28), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(29), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4']];
+
+HEADER_TEXT = 'A powerful and performant way to transition between different modules using a novel nested sliding approach. This smart base component can be used as a foundation for creating animated modular interfaces and widgets of any scale. We take the pretty parts of CSS Flexbox and build on top of it.';
+
+PROPS = [['vert', 'false', 'The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.'], ['beta', '100', 'The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.'], ['dim', 'null', 'The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.'], ['width', '0', 'force width in pixels shortcut (or use a css class override for root elements)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['ratio', '0', 'Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.'], ['offset', '0', 'For edge cases, you may want to add or subtract some extra pixels to the `beta` property.'], ['slide', 'false', 'If set to `true`, creates an outer wrapper enabling the children to scroll or slide'], ['animate', 'true', 'Set this to `false` to disable slide transitions for edge cases.'], ['ease', '0.4s cubic-bezier(0.25, 0.35, 0, 1)', 'The CSS ease function for the slide transition.'], ['pos', '0', 'When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.'], ['auto', 'false (unstable)', 'If `true`, parent will resize based on content inside.'], ['center', 'false', 'CSS flex center shortcut'], ['inverse', 'false', 'The slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'If set to true, outer wrapper will be scrollable.'], ['className', 'null', 'When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.'], ['iclassName', 'null', 'className for the inner element if `slide:true`.'], ['onSlideStart', 'null', 'When component starts a slide transition'], ['onSlideEnd', 'null', 'When component ends a slide transition or slide pos is set']];
 
 Card = (function() {
   class Card extends Component {
@@ -2795,13 +2804,6 @@ Card = (function() {
 
 }).call(this);
 
-PROPS = [['vert', 'false', 'flex direction. if set to false then the slide will arrange its children slides horizontaly (left to right)'], ['beta', '100', 'width/height % relative to the parent'], ['slide', 'false', 'if set to true, creates a wrapper enabling the children to scroll/slide'], ['pos', '0', 'if slide is set to true, then setting this will slide to child in that index, setting to a float will create an interpolated offset.'], ['auto', 'false', 'if set to true, component will resize based on content inside.'], ['dim', 'null', 'set either the width or height relative to parent split direction. So if the parent split horizontaly the width will be set, otherwise the height will be set as the dim value.'], ['animate', 'false', 'do transition animations?'], ['ease', 'cubic-bezier(0.25, 0.34, 0, 1)', 'css ease function for the slide transition'], ['ease_dur', '0.4', 'transition duration'], ['width', '0', 'force set width shortcut (or use a css class override)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['center', 'false', 'css flex center shortcut'], ['inverse', 'false', 'the slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'if set to true, outer wrapper will be scrollable.'], ['className', 'false', 'When **slide** property is toggled an inner and outer element is created. this property sets the class on the outer element if there is one.'], ['iclassName', 'false', 'Same as className but for the inner element. if only one static element, this class will not be used'], ['ratio', '0', 'set automatic with over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height relative to parent.']];
-
-Props = class Props {
-  render() {}
-
-};
-
 Header = class Header extends Component {
   constructor() {
     super();
@@ -2829,7 +2831,7 @@ Header = class Header extends Component {
       }
     });
     this.gradient = new Shader({
-      code: __webpack_require__(21)(),
+      code: __webpack_require__(30)(),
       uniforms: {
         pos: {
           type: '2fv',
@@ -2937,7 +2939,7 @@ Header = class Header extends Component {
       className: 'header-description-sub'
     }, 'Experimental'), h('p', {
       className: 'header-description-text'
-    }, 'A universal layout component which can be used as a foundation for creating animated modular interfaces and widgets.', h('div', {
+    }, HEADER_TEXT, h('div', {
       className: 'shields'
     }, h('a', {
       href: 'https://npmjs.com/package/preact-slide'
@@ -2955,16 +2957,6 @@ Header = class Header extends Component {
   }
 
 };
-
-SimpleMenuExample = __webpack_require__(22);
-
-LayoutExample = __webpack_require__(24);
-
-ButtonsExample = __webpack_require__(25);
-
-CarouselExample = __webpack_require__(26);
-
-EXAMPLES = [['Layout', __webpack_require__(27), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(28), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(29), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(30), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4']];
 
 ABOUT = __webpack_require__(31);
 
@@ -3020,13 +3012,15 @@ Docs = class Docs {
     })), h('footer', {
       className: 'footer'
     }, h('a', {
-      href: "https://github.com/arxii/preact-slide"
-    }, h('img', {
-      src: './site/github.svg'
-    })), h('a', {
-      href: "https://github.com/arxii",
-      className: 'footer-author'
-    }, 'arxii')));
+      href: "https://github.com/arxii/preact-slide",
+      className: 'footer-text'
+    }, 'Source'), h('a', {
+      href: "test.html",
+      className: 'footer-text'
+    }, 'Test'), h('a', {
+      href: "https://github.com/arxii/preact-slide/blob/master/LICENSE",
+      className: 'footer-text'
+    }, 'Apache License 2.0')));
   }
 
 };
@@ -4806,12 +4800,6 @@ exports.push([module.i, ".carousel-example-square {\n  background: #FFEBCA;\n  c
 
 /***/ }),
 /* 21 */
-/***/ (function(module, exports) {
-
-module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * v_uv.y);\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
-
-/***/ }),
-/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component, Markup, SimpleMenuExample, Slide, h, render,
@@ -4865,7 +4853,7 @@ SimpleMenuExample = class SimpleMenuExample extends Component {
       vert: true,
       className: 'simple-menu-example-main'
     }, h(Markup, {
-      markup: __webpack_require__(23)
+      markup: __webpack_require__(22)
     }))), h(Slide, {
       beta: 20,
       vert: true,
@@ -4889,13 +4877,13 @@ module.exports = SimpleMenuExample;
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = "Be at miss or each good play home they. It leave taste mr in it fancy. She son lose does fond bred gave lady get. Sir her company conduct expense bed any. Sister depend change off piqued one. Contented continued any happiness instantly objection yet her allowance. Use correct day new brought tedious. By come this been in. Kept easy or sons my it done. \n\nPrevailed sincerity behaviour to so do principle mr. As departure at no propriety zealously my. On dear rent if girl view. First on smart there he sense. Earnestly enjoyment her you resources. Brother chamber ten old against. Mr be cottage so related minuter is. Delicate say and blessing ladyship exertion few margaret. Delight herself welcome against smiling its for. Suspected discovery by he affection household of principle perfectly he. \n\nIncreasing impression interested expression he my at. Respect invited request charmed me warrant to. Expect no pretty as do though so genius afraid cousin. Girl when of ye snug poor draw. Mistake totally of in chiefly. Justice visitor him entered for. Continue delicate as unlocked entirely mr relation diverted in. Known not end fully being style house. An whom down kept lain name so at easy. \n\nNow for manners use has company believe parlors. Least nor party who wrote while did. Excuse formed as is agreed admire so on result parish. Put use set uncommonly announcing and travelling. Allowance sweetness direction to as necessary. Principle oh explained excellent do my suspected conveying in. Excellent you did therefore perfectly supposing described. \n\nAs am hastily invited settled at limited civilly fortune me. Really spring in extent an by. Judge but built gay party world. Of so am he remember although required. Bachelor unpacked be advanced at. Confined in declared marianne is vicinity. \n\nFrom they fine john he give of rich he. They age and draw mrs like. Improving end distrusts may instantly was household applauded incommode. Why kept very ever home mrs. Considered sympathize ten uncommonly occasional assistance sufficient not. Letter of on become he tended active enable to. Vicinity relation sensible sociable surprise screened no up as. \n\nEver man are put down his very. And marry may table him avoid. Hard sell it were into it upon. He forbade affixed parties of assured to me windows. Happiness him nor she disposing provision. Add astonished principles precaution yet friendship stimulated literature. State thing might stand one his plate. Offending or extremity therefore so difficult he on provision. Tended depart turned not are. \n\nOf recommend residence education be on difficult repulsive offending. Judge views had mirth table seems great him for her. Alone all happy asked begin fully stand own get. Excuse ye seeing result of we. See scale dried songs old may not. Promotion did disposing you household any instantly. Hills we do under times at first short an. \n\nAm of mr friendly by strongly peculiar juvenile. Unpleasant it sufficient simplicity am by friendship no inhabiting. Goodness doubtful material has denoting suitable she two. Dear mean she way and poor bred they come. He otherwise me incommode explained so in remaining. Polite barton in it warmly do county length an. \n\nCause dried no solid no an small so still widen. Ten weather evident smiling bed against she examine its. Rendered far opinions two yet moderate sex striking. Sufficient motionless compliment by stimulated assistance at. Convinced resolving extensive agreeable in it on as remainder. Cordially say affection met who propriety him. Are man she towards private weather pleased. In more part he lose need so want rank no. At bringing or he sensible pleasure. Prevent he parlors do waiting be females an message society. "
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Component, LayoutExample, Slide, h, render;
@@ -4937,7 +4925,7 @@ module.exports = LayoutExample;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ButtonsExample, Component, Slide, h, render;
@@ -5065,7 +5053,7 @@ module.exports = ButtonsExample;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var CarouselExample, Component, Slide, h, render;
@@ -5182,34 +5170,40 @@ module.exports = CarouselExample;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = "With Slide, you can layout your ui by splitting up each parent slide with nested slides. \n****\nThe `beta` property based on the css flexbox property, but stricter and stripped down to functionality that pertains to building a functional user interface. With a stricter layout mechanism that scales, its easy to layout different components of your app and their relationships in a complex way without getting your hands dirty in css and having to worry about side cases."
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = "Creating a typical sliding menu and/or page transitions is super easy. Click on the equals sign to see the sliding effect. Notice that the main slide is scrollable. This can be quickly enabled via the `scroll` shortcut property."
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = "`Slide` can generally be used as a wrapper for any ui element that requires some sort of \"reveal\", a quick and easy example is a simple button with underlines and transitions. by setting `pos:0.1` we can offset the slide by some percentage relative to the floored value. click and hover over each button to see the effect. Think of any other way you can use this? \n> hint: progress bars, input fields, toggle buttons...etc"
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, exports) {
 
 module.exports = "This example demonstrates how easy it is to build a carousel type component with just a few lines of code, just checkout the <a href = 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'>source file</a> and see for yourself!\n***\n**Notice** the red background when selecting slides that are 1 or more over, it's there to show that slides which are not visible relative to the parent are set to `visibility: hidden`. When you change the `pos` property, the component recalculates the visibility before and after the transition.\n"
 
 /***/ }),
+/* 30 */
+/***/ (function(module, exports) {
+
+module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * v_uv.y);\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
+
+/***/ }),
 /* 31 */
 /***/ (function(module, exports) {
 
-module.exports = "Combined and nested within itself, `Slide` gives you a unique set of properties enabling you to create powerful modular and animated layouts for your app. checkout <a href = 'http://checklist-preact.lerp.io'>this example todo app</a> and see for yourself!"
+module.exports = "\n\nWith increasing modern UI complexity, its easy to get lost in overly complex javascript and css solutions. Use this universal animated layout component to layout your app and slide between different ui components and modules with a simple nested sliding / beta approach! Parts of the UI that are not visible in the viewport are automatically not rendered because parts that you dont need are not in the viewport until you slide them in!\n\n<br>\nexamples:\n<br>\n<a href = 'http://checklist-preact.lerp.io'>checklist app (older library version)</a>\n"
 
 /***/ })
 /******/ ]);

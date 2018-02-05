@@ -129,6 +129,7 @@ Slide = class Slide extends Component {
     */
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
     // @checkProps(props)
+    this.isVisible = this.isVisible.bind(this);
     /*
     @getChildContext method
     */
@@ -189,12 +190,9 @@ Slide = class Slide extends Component {
       width: 0, //width of _outer
       height: 0 //height of _outer
     };
+    this.visibility_map = new Map();
   }
 
-  
-  // checkProps: (props)->
-  // if props.inverse && props.slide
-  // 	console.warn 'inverted slides are not supported'
   /*
   @componentWillMount method
   */
@@ -237,7 +235,10 @@ Slide = class Slide extends Component {
 
   componentWillUnmount() {
     boundMethodCheck(this, Slide);
-    return removeEventListener('resize', this.resizeEvent);
+    removeEventListener('resize', this.resizeEvent);
+    if (this.timer) {
+      return clearTimeout(this.timer);
+    }
   }
 
   /*
@@ -248,6 +249,12 @@ Slide = class Slide extends Component {
     return this.legacyProps(props);
   }
 
+  isVisible(child) {
+    boundMethodCheck(this, Slide);
+    // console.log @visibility_map[child._outer]
+    return true;
+  }
+
   getChildContext() {
     boundMethodCheck(this, Slide);
     return {
@@ -255,6 +262,7 @@ Slide = class Slide extends Component {
       outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
       vert: this.props.vert || this.props.vert || false,
       count: this.props.children.length,
+      isVisible: this.isVisible,
       dim: this.props.vert ? this.outer_rect.width : this.outer_rect.height,
       slide: this.props.slide,
       _i_slide: true
@@ -290,17 +298,22 @@ Slide = class Slide extends Component {
   }
 
   updateVisibility(x, y, force_hide) {
-    var child, i, len, rect, ref, results;
+    var child, i, j, len, rect, ref, results;
     boundMethodCheck(this, Slide);
     ref = this._inner.children;
     results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
+    for (i = j = 0, len = ref.length; j < len; i = ++j) {
       child = ref[i];
       rect = child.getBoundingClientRect();
+      if (i === 0) {
+        console.log(rect.x);
+      }
       if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
-        results.push(child.style.visibility = null);
+        child.style.visibility = null;
+        results.push(this.visibility_map[child] = true);
       } else if (force_hide) {
-        results.push(child.style.visibility = 'hidden');
+        child.style.visibility = 'hidden';
+        results.push(this.visibility_map[child] = false);
       } else {
         results.push(void 0);
       }
@@ -311,13 +324,17 @@ Slide = class Slide extends Component {
   onSlideDone() {
     var base;
     boundMethodCheck(this, Slide);
+    console.log('on slide done');
     if (!this.props.slide) {
       return;
     }
     this.calculateBounds();
     this.updateVisibility(0, 0, true);
     this.state.in_transition = false;
-    return typeof (base = this.props).onSlideDone === "function" ? base.onSlideDone(this.props.pos) : void 0;
+    if (typeof (base = this.props).onSlideDone === "function") {
+      base.onSlideDone(this.props.pos);
+    }
+    return this.timer = null;
   }
 
   onSlideStart(x, y) {
@@ -358,8 +375,6 @@ Slide = class Slide extends Component {
   */
   toXY(pos) {
     this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
-    clearTimeout(this.timer);
-    this.timer = setTimeout(this.onSlideDone, this.props.ease_dur * 1000);
     return this.setState({
       in_transition: true,
       transition: this.getTransition(),
@@ -375,15 +390,13 @@ Slide = class Slide extends Component {
   */
   setXY(pos) {
     this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
-    clearTimeout(this.timer);
-    this.timer = setTimeout(this.onSlideDone, 0);
     return this.setState({
       in_transition: false,
       transition: '',
       transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
       x: pos.x,
       y: pos.y
-    });
+    }, this.onSlideDone);
   }
 
   /*
@@ -433,7 +446,7 @@ Slide = class Slide extends Component {
   Get the index x and y position of where we want to slide/pan
   */
   getIndexXY(index) {
-    var _cc, cc, x, y;
+    var _cc, cc, cc_rect, x, y;
     if (index == null) {
       throw new Error('index position is undefined');
     }
@@ -444,13 +457,13 @@ Slide = class Slide extends Component {
     y = 0;
     cc = this._inner.children[Math.floor(index)];
     _cc = this.props.children[Math.floor(index)];
-    // cc_rect = cc.getBoundingClientRect()
+    cc_rect = cc.getBoundingClientRect();
     if (this.props.vert) {
       if (cc.offsetTop > this.state.y) {
         if (cc.clientHeight >= this.outer_rect.height) {
           y = cc.offsetTop;
         } else {
-          if (cc.offsetTop + cc.clientHeight < this.state.y + this.outer_rect.height) {
+          if (cc.offsetTop + cc.clientHeight <= this.state.y + this.outer_rect.height) {
             y = this.state.y;
           } else {
             y = cc.offsetTop - this.outer_rect.height + cc.clientHeight;
@@ -463,12 +476,11 @@ Slide = class Slide extends Component {
         y += (Math.round((index % 1) * this.getChildHeight(_cc))) * (this.props.inverse && -1 || 1);
       }
     } else {
-      // console.log cc.offsetLeft
       if (cc.offsetLeft > this.state.x) {
         if (cc.clientWidth >= this.outer_rect.width) {
           x = cc.offsetLeft;
         } else {
-          if (cc.offsetLeft + cc.clientWidth < this.state.x + this.outer_rect.width) {
+          if (cc.offsetLeft + cc.clientWidth <= this.state.x + this.outer_rect.width) {
             x = this.state.x;
           } else {
             x = cc.offsetLeft - this.outer_rect.width + cc.clientWidth;
@@ -506,8 +518,11 @@ Slide = class Slide extends Component {
       // 	y = d
       // else if x > d && d > 0
       // 	x = d 
-      x: x || 0,
-      y: y || 0
+
+      // x: x || 0
+      // y: y || 0			
+      x: Math.round(x) || 0,
+      y: Math.round(y) || 0
     };
   }
 
@@ -641,6 +656,7 @@ Slide = class Slide extends Component {
     if (this.props.innerStyle) {
       inner_props.style = Object.assign(inner_props.style, this.props.innerStyle);
     }
+    inner_props.onTransitionEnd = this.onSlideDone;
     slide_props = this.pass_props;
     slide_props.ref = this.outer_ref;
     slide_props.className = "-i-s-outer" + c_name + class_fixed;
@@ -673,7 +689,11 @@ Slide = class Slide extends Component {
     if (this.props.oStyle || this.props.style) {
       outer_props.style = Object.assign(outer_props.style, this.props.outerStyle || this.props.style);
     }
-    return h('div', outer_props, this.props.children, this.props.outer_children);
+    if (this.context.isVisible) {
+      return h('div', outer_props, this.context.isVisible(this) && this.props.children, this.context.isVisible(this) && this.props.outer_children);
+    } else {
+      return h('div', outer_props, this.props.children, this.props.outer_children);
+    }
   }
 
   render() {

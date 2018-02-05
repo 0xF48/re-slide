@@ -214,8 +214,6 @@ class Header extends Component
 
 
 
-
-
 SimpleMenuExample = require './examples/SimpleMenuExample.coffee'
 LayoutExample = require './examples/LayoutExample.coffee'
 ButtonsExample = require './examples/ButtonsExample.coffee'

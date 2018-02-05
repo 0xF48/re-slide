@@ -94,7 +94,6 @@ class Test extends Component
 				slide:true
 				pos: @state.pos_a
 				onClick: =>
-					console.log (@state.pos_a + 1)%5
 					@setState
 						pos_a: (@state.pos_a + 1)%5
 				vert:false
@@ -152,7 +151,6 @@ class Test extends Component
 						slide:true
 						pos: @state.pos_a
 						onClick: =>
-							console.log (@state.pos_a + 1)%5
 							@setState
 								pos_a: (@state.pos_a + 1)%5
 						vert:true

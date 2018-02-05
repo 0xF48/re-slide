@@ -1,1 +1,3 @@
-site/* binary
+site/**.* -text
+index.min.js -text
+index.js -text

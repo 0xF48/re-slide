@@ -64,7 +64,6 @@ class Slide extends Component
 	componentDidMount: ()=>
 		
 		@is_root = !@_outer.parentNode.className.match('-i-s-static|-i-s-inner')
-		@_outer.style.visibility = null
 		setTimeout @onSlideDone,0
 		if @is_root
 			@forceUpdate()
@@ -77,15 +76,8 @@ class Slide extends Component
 	@componentWillUpdate method
 	###
 	componentWillUpdate: ()=>
-		@calculateBounds() #recalculate bounds for further processing...
-		r = @outer_rect.width % Math.floor(@outer_rect.width)
-		if r
-			@state.offset = r
-		else
-			@state.offset = 0
-			# dim = @getOuterHW()
-			# @_outer.style.width = 'calc('+dim.width+ ' + 0.5px)'
-	
+		@calculateBounds()
+
 
 	###
 	@componentDidUpdate method
@@ -114,8 +106,13 @@ class Slide extends Component
 
 
 	isVisible: (child)=>
-		# console.log @visibility_map[child._outer]
+		# if @visibility_map[child._outer] == undefined
+		# 	return true
+		if @visibility_map.get(child._outer) == false
+			# console.log 'NOT VISIBLE',child._outer
+			return false
 		return true
+		
 
 
 
@@ -140,7 +137,7 @@ class Slide extends Component
 	calculateBounds: ()->
 		@outer_rect = @_outer.getBoundingClientRect()
 
-	
+
 
 	###
 	@legacyProps method
@@ -170,17 +167,17 @@ class Slide extends Component
 	update the visibility of slides that are not in the scrolled view
 	###	
 	updateVisibility: (x,y,force_hide)=>
+		
 		for child,i in @_inner.children
 			rect = child.getBoundingClientRect()
-			if i == 0
-				console.log rect.x
-			# log 'update visibility',rect
 			if  ( !@props.vert && @inViewBounds(rect.x+x,rect.width,@outer_rect.x,@outer_rect.width) ) || ( @props.vert && @inViewBounds(rect.y+y,rect.height,@outer_rect.y,@outer_rect.height) )
-				child.style.visibility = null
-				@visibility_map[child] = true
+				@visibility_map.set(child,true)
 			else if force_hide
-				child.style.visibility = 'hidden'
-				@visibility_map[child] = false
+				@visibility_map.set(child,false)
+
+
+		# console.log 'UPDATE VISIBILITY',x,y,force_hide,@visibility_map
+		return
 
 
 	###
@@ -188,14 +185,15 @@ class Slide extends Component
 	when slide animation is complete, this function is triggered.
 	###
 	onSlideDone: ()=>
-		console.log 'on slide done'
-		if !@props.slide
+		if !@_inner
 			return
 		@calculateBounds()
+		@visibility_map = new Map
 		@updateVisibility(0,0,true)
-		@state.in_transition = false
-		@props.onSlideDone?(@props.pos)
-		@timer = null
+		@setState
+			in_transition: false
+		,()=>
+			@props.onSlideDone?(@props.pos)
 
 	###
 	@onSlideStart method
@@ -211,15 +209,19 @@ class Slide extends Component
 	check if slide needs update, and update it if nessesary.
 	###
 	checkSlideUpdate: (p_props)->
-		if !@props.slide
+
+		if !@_inner
 			return false
 
-		pos =@getIndexXY(@props.pos)
+		
+		# console.log 'UPDATE'
+		pos = @getIndexXY(@props.pos)
 		
 		if @props.pos != p_props.pos || @props.posOffset != p_props.posOffset || @props.posOffsetBeta != p_props.posOffsetBeta
 			return @toXY pos
 
 		if @state.x != pos.x || @state.y != pos.y
+			# console.log 'SET XY'
 			return @setXY pos
 
 	
@@ -256,7 +258,8 @@ class Slide extends Component
 			transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
 			x: pos.x
 			y: pos.y
-		,@onSlideDone
+		,()=>
+			setTimeout @onSlideDone,0
 
 
 
@@ -305,6 +308,8 @@ class Slide extends Component
 		cc = @_inner.children[Math.floor(index)]
 		_cc = @props.children[Math.floor(index)]
 		cc_rect = cc.getBoundingClientRect()
+		@calculateBounds()	
+
 	
 
 
@@ -339,42 +344,20 @@ class Slide extends Component
 			if (index % 1) != 0
 				x += Math.round((index % 1) * @getChildWidth(_cc)) * (@props.inverse && -1 || 1)
 
+
+
+		lc = @_inner.children[@_inner.children.length-1]
+		if @props.vert
+			max = lc.offsetTop - @outer_rect.height + lc.clientHeight
+			if y > max && max > 0
+				y = max
+		else
+			max = lc.offsetLeft - @outer_rect.width + lc.clientWidth
+			if x > max && max > 0
+				x = max 
+
+
 	
-			
-
-
-		# d = 0
-		# for c in @props.children
-		# 	# if c.nodeName.name != 'Slide'
-		# 	# 	throw new Error 'attempted to do calculations on child that is not a Slide class! Slides that slide can'
-		# 	if c.attributes
-		# 		c.attributes.beta = c.attributes.beta || 100
-
-		# 	if @props.vert
-		# 		d += @getChildHeight(c)
-		# 	else
-		# 		d += @getChildWidth(c)
-		
-		
-		# if @props.vert
-		# 	d -= @outer_rect.height
-		# else 
-		# 	d -= @outer_rect.width
-
-
-		# d = @roundDim(d) #round off max width/height based on rounding algorithm 
-
-		
-		# if @props.vert && y > d && d > 0
-		# 	y = d
-		# else if x > d && d > 0
-		# 	x = d 
-
-
-
-
-		# x: x || 0
-		# y: y || 0			
 		x: Math.round(x) || 0
 		y: Math.round(y) || 0
 
@@ -534,16 +517,20 @@ class Slide extends Component
 		if @context._i_slide || @props.height || @props.width
 			slide_props.style = @getOuterHW()
 
-		if @props.oStyle || @props.style
+		if @props.outerStyle || @props.style
 			slide_props.style = Object.assign slide_props.style,(@props.outerStyle || @props.style)
-	
+
+		hidden = @context.isVisible && !@context.isVisible(@) || false
+		
+		if hidden
+			slide_props.style.visibility = 'hidden'
 	
 		h 'div',
 			slide_props
-			h 'div',
+			!hidden && h 'div',
 				inner_props
 				@props.children
-			@props.outer_children
+			!hidden && @props.outer_children
 
 
 
@@ -560,27 +547,28 @@ class Slide extends Component
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		outer_props = @pass_props
+		hidden = @context.isVisible && !@context.isVisible(@) || false
 		if @context._i_slide || @props.height || @props.width
 			outer_props.style = @getOuterHW()
+			if hidden
+				outer_props.style.visibility = 'hidden'
 		outer_props.className = "-i-s-static"+c_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
 		outer_props.id = @props.id
 		outer_props.ref = @outer_ref
 
-		if @props.oStyle || @props.style
+		if @props.outerStyle || @props.style
 			outer_props.style = Object.assign outer_props.style,(@props.outerStyle || @props.style)
 	
 	
-		if @context.isVisible
+		if @context.isVisible && !@context.isVisible(@)
 			h 'div',
 				outer_props
-				@context.isVisible(@) && @props.children
-				@context.isVisible(@) && @props.outer_children
 		else
 			h 'div',
 				outer_props
 				@props.children
-				@props.outer_children			
-
+				@props.outer_children
+		
 
 	###
 	@render method

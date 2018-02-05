@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/site/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 31);
+/******/ 	return __webpack_require__(__webpack_require__.s = 30);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1086,6 +1086,631 @@ var preact = {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Component, DEFAULT_PROPS, EVENT_REGEX, Slide, h,
+  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
+
+__webpack_require__(5);
+
+({h, Component} = __webpack_require__(0));
+
+DEFAULT_PROPS = {
+  vert: null, //css flex direction column
+  beta: 100, //beta variable
+  slide: false, //slides through children, if disabled will return a simplified wrapper
+  pos: 0, //position of the slide
+  auto: false, //auto dim based on content
+  dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
+  animate: false, //transitions
+  ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
+  ease_dur: 0.4, //slide easing duration
+  width: 0, //slide width manual override
+  height: 0, //slide height manual override
+  ratio: 0, //ratio dim helper
+  center: false, //css flex center
+  inverse: false, //css flex direction inverse
+  scroll: false, //css scroll overflow
+  className: null,
+  iclassName: null,
+  offset: 0,
+  offset_beta: 0
+};
+
+EVENT_REGEX = new RegExp('^on[A-Z]');
+
+/*
+@Slide class
+universal slide layout component.
+*/
+Slide = class Slide extends Component {
+  constructor(props) {
+    super(props);
+    // @checkProps(@props)
+    /*
+    @componentDidMount method
+    */
+    this.componentDidMount = this.componentDidMount.bind(this);
+    /*
+    @componentWillUpdate method
+    */
+    this.componentWillUpdate = this.componentWillUpdate.bind(this);
+    /*
+    @componentWillUnmount method
+    */
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    // @checkProps(props)
+    this.isVisible = this.isVisible.bind(this);
+    /*
+    @getChildContext method
+    */
+    this.getChildContext = this.getChildContext.bind(this);
+    /*
+    @updateVisibility method
+    update the visibility of slides that are not in the scrolled view
+    */
+    this.updateVisibility = this.updateVisibility.bind(this);
+    /*
+    @onSlideDone method
+    when slide animation is complete, this function is triggered.
+    */
+    // console.log 'UPDATE VISIBILITY',x,y,force_hide,@visibility_map
+    this.onSlideDone = this.onSlideDone.bind(this);
+    /*
+    @onSlideStart method
+    right before a slide animation starts, this function is triggered.
+    */
+    this.onSlideStart = this.onSlideStart.bind(this);
+    this.roundBetaHack = this.roundBetaHack.bind(this);
+    /*
+    @getBeta method
+    get beta dimention variable for the slide, either in pixels or percentages.
+    */
+    this.getBeta = this.getBeta.bind(this);
+    /*
+    @getOuterHW method
+    get outer height and width.
+    */
+    this.getOuterHW = this.getOuterHW.bind(this);
+    //resize event
+    this.resizeEvent = this.resizeEvent.bind(this);
+    //ref to inner div
+    this.inner_ref = this.inner_ref.bind(this);
+    //ref to outer div
+    this.outer_ref = this.outer_ref.bind(this);
+    /*
+    @renderSlide method
+    render component as a slideable, when props.slide is enabled, an extra div is rendered for panning/sliding.
+    */
+    this.renderSlide = this.renderSlide.bind(this);
+    /*
+    @renderStatic method
+    render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
+    */
+    this.renderStatic = this.renderStatic.bind(this);
+    /*
+    @render method
+    */
+    this.render = this.render.bind(this);
+    this.state = {
+      offset: 0,
+      x: 0, //x pos of _inner
+      y: 0, //y pos of _inner
+      dim: 0 //width/height of _outer
+    };
+    this.outer_rect = {
+      width: 0, //width of _outer
+      height: 0 //height of _outer
+    };
+    this.visibility_map = new Map();
+  }
+
+  /*
+  @componentWillMount method
+  */
+  componentWillMount() {
+    this.passProps(this.props); //do stuff with props 
+    return this.legacyProps(this.props); //legacy props support
+  }
+
+  componentDidMount() {
+    boundMethodCheck(this, Slide);
+    this.is_root = !this._outer.parentNode.className.match('-i-s-static|-i-s-inner');
+    setTimeout(this.onSlideDone, 0);
+    if (this.is_root) {
+      this.forceUpdate();
+      return addEventListener('resize', this.resizeEvent);
+    }
+  }
+
+  componentWillUpdate() {
+    boundMethodCheck(this, Slide);
+    return this.calculateBounds();
+  }
+
+  /*
+  @componentDidUpdate method
+  */
+  componentDidUpdate(p_props) {
+    return this.checkSlideUpdate(p_props);
+  }
+
+  componentWillUnmount() {
+    boundMethodCheck(this, Slide);
+    removeEventListener('resize', this.resizeEvent);
+    if (this.timer) {
+      return clearTimeout(this.timer);
+    }
+  }
+
+  /*
+  @componentWillReceiveProps method
+  */
+  componentWillReceiveProps(props) {
+    this.passProps(props);
+    return this.legacyProps(props);
+  }
+
+  isVisible(child) {
+    boundMethodCheck(this, Slide);
+    // if @visibility_map[child._outer] == undefined
+    // 	return true
+    if (this.visibility_map.get(child._outer) === false) {
+      // console.log 'NOT VISIBLE',child._outer
+      return false;
+    }
+    return true;
+  }
+
+  getChildContext() {
+    boundMethodCheck(this, Slide);
+    return {
+      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.outer_rect.width,
+      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
+      vert: this.props.vert || this.props.vert || false,
+      count: this.props.children.length,
+      isVisible: this.isVisible,
+      dim: this.props.vert ? this.outer_rect.width : this.outer_rect.height,
+      slide: this.props.slide,
+      _i_slide: true
+    };
+  }
+
+  /*
+  @calculateBounds method
+  calculate and store position and size.
+  */
+  calculateBounds() {
+    return this.outer_rect = this._outer.getBoundingClientRect();
+  }
+
+  /*
+  @legacyProps method
+  support for different option keys
+  */
+  legacyProps(props) {
+    if (!props.beta) {
+      return props.beta = 100;
+    }
+  }
+
+  // if props.size?
+  // 	props.dim = props.size
+  /*
+  @inViewBounds method
+  check to see if a line that starts at p with length d is overlapping a line starting at op with length od
+  */
+  inViewBounds(p, d, op, od) {
+    return p + d > op && p < op + od;
+  }
+
+  updateVisibility(x, y, force_hide) {
+    var child, i, j, len, rect, ref;
+    boundMethodCheck(this, Slide);
+    ref = this._inner.children;
+    for (i = j = 0, len = ref.length; j < len; i = ++j) {
+      child = ref[i];
+      rect = child.getBoundingClientRect();
+      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
+        this.visibility_map.set(child, true);
+      } else if (force_hide) {
+        this.visibility_map.set(child, false);
+      }
+    }
+  }
+
+  onSlideDone() {
+    boundMethodCheck(this, Slide);
+    if (!this._inner) {
+      return;
+    }
+    this.calculateBounds();
+    this.visibility_map = new Map;
+    this.updateVisibility(0, 0, true);
+    return this.setState({
+      in_transition: false
+    }, () => {
+      var base;
+      return typeof (base = this.props).onSlideDone === "function" ? base.onSlideDone(this.props.pos) : void 0;
+    });
+  }
+
+  onSlideStart(x, y) {
+    boundMethodCheck(this, Slide);
+    this.calculateBounds();
+    return this.updateVisibility(x, y, false);
+  }
+
+  /*
+  @checkSlideUpdate method
+  check if slide needs update, and update it if nessesary.
+  */
+  checkSlideUpdate(p_props) {
+    var pos;
+    if (!this._inner) {
+      return false;
+    }
+    
+    // console.log 'UPDATE'
+    pos = this.getIndexXY(this.props.pos);
+    if (this.props.pos !== p_props.pos || this.props.posOffset !== p_props.posOffset || this.props.posOffsetBeta !== p_props.posOffsetBeta) {
+      return this.toXY(pos);
+    }
+    if (this.state.x !== pos.x || this.state.y !== pos.y) {
+      // console.log 'SET XY'
+      return this.setXY(pos);
+    }
+  }
+
+  /*
+  @getTransition method
+  CSS transition easing/duration.
+  */
+  getTransition() {
+    return 'transform ' + this.props.ease_dur + 's ' + this.props.ease;
+  }
+
+  /*
+  @toXY method
+  CSS translate inner div to pos <x,y>
+  */
+  toXY(pos) {
+    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
+    return this.setState({
+      in_transition: true,
+      transition: this.getTransition(),
+      transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
+      x: pos.x,
+      y: pos.y
+    });
+  }
+
+  /*
+  @setXY method
+  same as toXY but instant.
+  */
+  setXY(pos) {
+    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
+    return this.setState({
+      in_transition: false,
+      transition: '',
+      transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
+      x: pos.x,
+      y: pos.y
+    }, () => {
+      return setTimeout(this.onSlideDone, 0);
+    });
+  }
+
+  /*
+  @passProps method
+  Extract events from props and pass them down to underlying div if nessesary.
+  */
+  passProps(props) {
+    var prop, prop_name, results;
+    this.pass_props = {};
+    results = [];
+    for (prop_name in props) {
+      prop = props[prop_name];
+      if (EVENT_REGEX.test(prop_name)) {
+        results.push(this.pass_props[prop_name] = prop);
+      } else {
+        results.push(void 0);
+      }
+    }
+    return results;
+  }
+
+  roundDim(d) {
+    var rd;
+    rd = Math.round(d) - d;
+    if (rd > -0.5 && rd < 0) {
+      d = Math.round(d + 0.5);
+    } else {
+      d = Math.round(d);
+    }
+    return d;
+  }
+
+  getChildHeight(c) {
+    var b;
+    b = (c.attributes && c.attributes.beta) || 100;
+    return (c.attributes && c.attributes.height) || (this.outer_rect.height / 100 * b);
+  }
+
+  getChildWidth(c) {
+    var b;
+    b = (c.attributes && c.attributes.beta) || 100;
+    return (c.attributes && c.attributes.width) || (this.outer_rect.width / 100 * b);
+  }
+
+  /*
+  @getIndexXY method
+  Get the index x and y position of where we want to slide/pan
+  */
+  getIndexXY(index) {
+    var _cc, cc, cc_rect, lc, max, x, y;
+    if (index == null) {
+      throw new Error('index position is undefined');
+    }
+    if (index >= this.props.children.length) {
+      throw new Error('index position out of bounds');
+    }
+    x = 0;
+    y = 0;
+    cc = this._inner.children[Math.floor(index)];
+    _cc = this.props.children[Math.floor(index)];
+    cc_rect = cc.getBoundingClientRect();
+    this.calculateBounds();
+    if (this.props.vert) {
+      if (cc.offsetTop > this.state.y) {
+        if (cc.clientHeight >= this.outer_rect.height) {
+          y = cc.offsetTop;
+        } else {
+          if (cc.offsetTop + cc.clientHeight <= this.state.y + this.outer_rect.height) {
+            y = this.state.y;
+          } else {
+            y = cc.offsetTop - this.outer_rect.height + cc.clientHeight;
+          }
+        }
+      } else {
+        y = cc.offsetTop;
+      }
+      if ((index % 1) !== 0) {
+        y += (Math.round((index % 1) * this.getChildHeight(_cc))) * (this.props.inverse && -1 || 1);
+      }
+    } else {
+      if (cc.offsetLeft > this.state.x) {
+        if (cc.clientWidth >= this.outer_rect.width) {
+          x = cc.offsetLeft;
+        } else {
+          if (cc.offsetLeft + cc.clientWidth <= this.state.x + this.outer_rect.width) {
+            x = this.state.x;
+          } else {
+            x = cc.offsetLeft - this.outer_rect.width + cc.clientWidth;
+          }
+        }
+      } else {
+        x = cc.offsetLeft;
+      }
+      if ((index % 1) !== 0) {
+        x += Math.round((index % 1) * this.getChildWidth(_cc)) * (this.props.inverse && -1 || 1);
+      }
+    }
+    lc = this._inner.children[this._inner.children.length - 1];
+    if (this.props.vert) {
+      max = lc.offsetTop - this.outer_rect.height + lc.clientHeight;
+      if (y > max && max > 0) {
+        y = max;
+      }
+    } else {
+      max = lc.offsetLeft - this.outer_rect.width + lc.clientWidth;
+      if (x > max && max > 0) {
+        x = max;
+      }
+    }
+    return {
+      x: Math.round(x) || 0,
+      y: Math.round(y) || 0
+    };
+  }
+
+  roundBetaHack(beta) {
+    boundMethodCheck(this, Slide);
+    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer.nextElementSibling) {
+      return 'calc(' + beta + '% + 0.5px)';
+    }
+    return beta + '%';
+  }
+
+  getBeta() {
+    var beta, d, offs, sign;
+    boundMethodCheck(this, Slide);
+    if (!this.props.beta || this.props.beta < 0) {
+      throw new Error('beta is ( <= 0 | null ) ');
+    }
+    if (!this.is_root && this.context.outer_width && !this.context.vert && this.context.slide) {
+      d = this.context.outer_width / 100 * this.props.beta + this.props.offset + this.context.outer_width / 100 * this.props.offset_beta;
+      this.state.dim = this.roundDim(d);
+      return this.state.dim + 'px';
+    } else if (!this.is_root && this.context.outer_height && this.context.vert && this.context.slide) {
+      d = this.context.outer_height / 100 * this.props.beta + this.props.offset + this.context.outer_height / 100 * this.props.offset_beta;
+      this.state.dim = this.roundDim(d);
+      return this.state.dim + 'px';
+    }
+    // base case scenario, this is legacy fallback for relative betas using css % 
+    // CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
+    beta = this.roundBetaHack(this.props.beta);
+    if (this.props.offset) {
+      sign = this.props.offset < 0 && '-' || '+';
+      offs = Math.abs(this.props.offset) + 'px';
+    } else if (this.props.offset_beta) {
+      sign = this.props.offset_beta < 0 && '-' || '+';
+      offs = Math.abs(this.props.offset_beta) + '%';
+    }
+    if (offs) {
+      return 'calc(#{beta} #{sign} #{offs})';
+    } else {
+      return beta;
+    }
+  }
+
+  getOuterHW() {
+    var dim, height, ph, pw, vert, width;
+    boundMethodCheck(this, Slide);
+    // square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
+    if (this.props.ratio) {
+      dim = {};
+      if (this.context.vert) {
+        dim.height = this.context.dim * this.props.ratio;
+        dim.width = '100%';
+      } else {
+        //dim.height = '100%' CSS is weird...
+        dim.width = this.context.dim * this.props.ratio;
+      }
+      return dim;
+    }
+    // w/h passed down from props override
+    if (this.context.vert) {
+      width = this.props.width || null;
+      height = this.props.dim || this.props.height || null;
+    } else {
+      width = this.props.dim || this.props.width || null;
+      height = this.props.height || null;
+    }
+    if (this.props.vert == null) {
+      vert = this.context.vert;
+    } else {
+      vert = this.props.vert;
+    }
+    if (vert && this.props.auto) {
+      ph = 'auto';
+    } else if (height) {
+      ph = height + 'px';
+    }
+    if (!vert && this.props.auto) {
+      pw = 'auto';
+    } else if (width) {
+      pw = width + 'px';
+    }
+    
+    // insert calculated beta if width or height is still null
+    if (this.context.vert) {
+      pw = pw || '100%';
+      ph = ph || this.getBeta();
+    } else {
+      pw = pw || this.getBeta();
+      ph = ph || '100%'; //CSS is weird...
+    }
+    return {
+      height: ph,
+      width: pw
+    };
+  }
+
+  resizeEvent() {
+    boundMethodCheck(this, Slide);
+    return this.forceUpdate();
+  }
+
+  inner_ref(e) {
+    boundMethodCheck(this, Slide);
+    return this._inner = e;
+  }
+
+  outer_ref(e) {
+    boundMethodCheck(this, Slide);
+    return this._outer = e;
+  }
+
+  renderSlide() {
+    var c_name, class_auto, class_center, class_fixed, class_reverse, class_scroll, class_vert, hidden, inner_c_name, inner_props, slide_props;
+    boundMethodCheck(this, Slide);
+    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
+    c_name = this.props.className && (" " + this.props.className) || '';
+    class_center = this.props.center && ' -i-s-center' || '';
+    class_vert = this.props.vert && ' -i-s-vertical' || '';
+    class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
+    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
+    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
+    class_auto = this.props.auto && ' -i-s-auto' || '';
+    inner_props = {
+      ref: this.inner_ref,
+      style: {
+        transition: this.state.transition,
+        transform: this.state.transform
+      },
+      className: "-i-s-inner" + class_vert + inner_c_name + class_center + class_reverse + class_auto
+    };
+    if (this.props.innerStyle) {
+      inner_props.style = Object.assign(inner_props.style, this.props.innerStyle);
+    }
+    inner_props.onTransitionEnd = this.onSlideDone;
+    slide_props = this.pass_props;
+    slide_props.ref = this.outer_ref;
+    slide_props.className = "-i-s-outer" + c_name + class_fixed;
+    if (this.context._i_slide || this.props.height || this.props.width) {
+      slide_props.style = this.getOuterHW();
+    }
+    if (this.props.outerStyle || this.props.style) {
+      slide_props.style = Object.assign(slide_props.style, this.props.outerStyle || this.props.style);
+    }
+    hidden = this.context.isVisible && !this.context.isVisible(this) || false;
+    if (hidden) {
+      slide_props.style.visibility = 'hidden';
+    }
+    return h('div', slide_props, !hidden && h('div', inner_props, this.props.children), !hidden && this.props.outer_children);
+  }
+
+  renderStatic() {
+    var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, hidden, inner_c_name, outer_props;
+    boundMethodCheck(this, Slide);
+    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
+    c_name = this.props.className && (" " + this.props.className) || '';
+    class_center = this.props.center && ' -i-s-center' || '';
+    class_vert = this.props.vert && ' -i-s-vertical' || '';
+    class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
+    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
+    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
+    outer_props = this.pass_props;
+    hidden = this.context.isVisible && !this.context.isVisible(this) || false;
+    if (this.context._i_slide || this.props.height || this.props.width) {
+      outer_props.style = this.getOuterHW();
+      if (hidden) {
+        outer_props.style.visibility = 'hidden';
+      }
+    }
+    outer_props.className = "-i-s-static" + c_name + class_fixed + class_vert + class_center + class_reverse + class_scroll;
+    outer_props.id = this.props.id;
+    outer_props.ref = this.outer_ref;
+    if (this.props.outerStyle || this.props.style) {
+      outer_props.style = Object.assign(outer_props.style, this.props.outerStyle || this.props.style);
+    }
+    if (this.context.isVisible && !this.context.isVisible(this)) {
+      return h('div', outer_props);
+    } else {
+      return h('div', outer_props, this.props.children, this.props.outer_children);
+    }
+  }
+
+  render() {
+    boundMethodCheck(this, Slide);
+    if (this.props.slide) {
+      return this.renderSlide();
+    } else {
+      return this.renderStatic();
+    }
+  }
+
+};
+
+Slide.defaultProps = DEFAULT_PROPS;
+
+module.exports = Slide;
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports) {
 
 /*
@@ -1167,7 +1792,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -1223,7 +1848,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(8);
+var	fixUrls = __webpack_require__(7);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -1539,645 +2164,6 @@ function updateLink (link, options, obj) {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Component, DEFAULT_PROPS, EVENT_REGEX, Slide, h,
-  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
-
-__webpack_require__(9);
-
-({h, Component} = __webpack_require__(0));
-
-DEFAULT_PROPS = {
-  vert: null, //css flex direction column
-  beta: 100, //beta variable
-  slide: false, //slides through children, if disabled will return a simplified wrapper
-  pos: 0, //position of the slide
-  auto: false, //auto dim based on content
-  dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
-  animate: false, //transitions
-  ease: 'cubic-bezier(0.25, 0.34, 0, 1)', //slide easing
-  ease_dur: 0.4, //slide easing duration
-  width: 0, //slide width manual override
-  height: 0, //slide height manual override
-  ratio: 0, //ratio dim helper
-  center: false, //css flex center
-  inverse: false, //css flex direction inverse
-  scroll: false, //css scroll overflow
-  className: null,
-  iclassName: null,
-  offset: 0,
-  offset_beta: 0
-};
-
-EVENT_REGEX = new RegExp('^on[A-Z]');
-
-/*
-@Slide class
-universal slide layout component.
-*/
-Slide = class Slide extends Component {
-  constructor(props) {
-    super(props);
-    // @checkProps(@props)
-    /*
-    @componentDidMount method
-    */
-    this.componentDidMount = this.componentDidMount.bind(this);
-    /*
-    @componentWillUpdate method
-    */
-    this.componentWillUpdate = this.componentWillUpdate.bind(this);
-    /*
-    @componentWillUnmount method
-    */
-    this.componentWillUnmount = this.componentWillUnmount.bind(this);
-    // @checkProps(props)
-    this.isVisible = this.isVisible.bind(this);
-    /*
-    @getChildContext method
-    */
-    this.getChildContext = this.getChildContext.bind(this);
-    /*
-    @updateVisibility method
-    update the visibility of slides that are not in the scrolled view
-    */
-    this.updateVisibility = this.updateVisibility.bind(this);
-    /*
-    @onSlideDone method
-    when slide animation is complete, this function is triggered.
-    */
-    this.onSlideDone = this.onSlideDone.bind(this);
-    /*
-    @onSlideStart method
-    right before a slide animation starts, this function is triggered.
-    */
-    this.onSlideStart = this.onSlideStart.bind(this);
-    this.roundBetaHack = this.roundBetaHack.bind(this);
-    /*
-    @getBeta method
-    get beta dimention variable for the slide, either in pixels or percentages.
-    */
-    this.getBeta = this.getBeta.bind(this);
-    /*
-    @getOuterHW method
-    get outer height and width.
-    */
-    this.getOuterHW = this.getOuterHW.bind(this);
-    //resize event
-    this.resizeEvent = this.resizeEvent.bind(this);
-    //ref to inner div
-    this.inner_ref = this.inner_ref.bind(this);
-    //ref to outer div
-    this.outer_ref = this.outer_ref.bind(this);
-    /*
-    @renderSlide method
-    render component as a slideable, when props.slide is enabled, an extra div is rendered for panning/sliding.
-    */
-    this.renderSlide = this.renderSlide.bind(this);
-    /*
-    @renderStatic method
-    render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
-    */
-    this.renderStatic = this.renderStatic.bind(this);
-    /*
-    @render method
-    */
-    this.render = this.render.bind(this);
-    this.state = {
-      offset: 0,
-      x: 0, //x pos of _inner
-      y: 0, //y pos of _inner
-      dim: 0 //width/height of _outer
-    };
-    this.outer_rect = {
-      width: 0, //width of _outer
-      height: 0 //height of _outer
-    };
-    this.visibility_map = new Map();
-  }
-
-  /*
-  @componentWillMount method
-  */
-  componentWillMount() {
-    this.passProps(this.props); //do stuff with props 
-    return this.legacyProps(this.props); //legacy props support
-  }
-
-  componentDidMount() {
-    boundMethodCheck(this, Slide);
-    this.is_root = !this._outer.parentNode.className.match('-i-s-static|-i-s-inner');
-    this._outer.style.visibility = null;
-    setTimeout(this.onSlideDone, 0);
-    if (this.is_root) {
-      this.forceUpdate();
-      return addEventListener('resize', this.resizeEvent);
-    }
-  }
-
-  componentWillUpdate() {
-    var r;
-    boundMethodCheck(this, Slide);
-    this.calculateBounds(); //recalculate bounds for further processing...
-    r = this.outer_rect.width % Math.floor(this.outer_rect.width);
-    if (r) {
-      return this.state.offset = r;
-    } else {
-      return this.state.offset = 0;
-    }
-  }
-
-  // dim = @getOuterHW()
-  // @_outer.style.width = 'calc('+dim.width+ ' + 0.5px)'
-  /*
-  @componentDidUpdate method
-  */
-  componentDidUpdate(p_props) {
-    return this.checkSlideUpdate(p_props);
-  }
-
-  componentWillUnmount() {
-    boundMethodCheck(this, Slide);
-    removeEventListener('resize', this.resizeEvent);
-    if (this.timer) {
-      return clearTimeout(this.timer);
-    }
-  }
-
-  /*
-  @componentWillReceiveProps method
-  */
-  componentWillReceiveProps(props) {
-    this.passProps(props);
-    return this.legacyProps(props);
-  }
-
-  isVisible(child) {
-    boundMethodCheck(this, Slide);
-    // console.log @visibility_map[child._outer]
-    return true;
-  }
-
-  getChildContext() {
-    boundMethodCheck(this, Slide);
-    return {
-      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.outer_rect.width,
-      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
-      vert: this.props.vert || this.props.vert || false,
-      count: this.props.children.length,
-      isVisible: this.isVisible,
-      dim: this.props.vert ? this.outer_rect.width : this.outer_rect.height,
-      slide: this.props.slide,
-      _i_slide: true
-    };
-  }
-
-  /*
-  @calculateBounds method
-  calculate and store position and size.
-  */
-  calculateBounds() {
-    return this.outer_rect = this._outer.getBoundingClientRect();
-  }
-
-  /*
-  @legacyProps method
-  support for different option keys
-  */
-  legacyProps(props) {
-    if (!props.beta) {
-      return props.beta = 100;
-    }
-  }
-
-  // if props.size?
-  // 	props.dim = props.size
-  /*
-  @inViewBounds method
-  check to see if a line that starts at p with length d is overlapping a line starting at op with length od
-  */
-  inViewBounds(p, d, op, od) {
-    return p + d > op && p < op + od;
-  }
-
-  updateVisibility(x, y, force_hide) {
-    var child, i, j, len, rect, ref, results;
-    boundMethodCheck(this, Slide);
-    ref = this._inner.children;
-    results = [];
-    for (i = j = 0, len = ref.length; j < len; i = ++j) {
-      child = ref[i];
-      rect = child.getBoundingClientRect();
-      if (i === 0) {
-        console.log(rect.x);
-      }
-      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
-        child.style.visibility = null;
-        results.push(this.visibility_map[child] = true);
-      } else if (force_hide) {
-        child.style.visibility = 'hidden';
-        results.push(this.visibility_map[child] = false);
-      } else {
-        results.push(void 0);
-      }
-    }
-    return results;
-  }
-
-  onSlideDone() {
-    var base;
-    boundMethodCheck(this, Slide);
-    console.log('on slide done');
-    if (!this.props.slide) {
-      return;
-    }
-    this.calculateBounds();
-    this.updateVisibility(0, 0, true);
-    this.state.in_transition = false;
-    if (typeof (base = this.props).onSlideDone === "function") {
-      base.onSlideDone(this.props.pos);
-    }
-    return this.timer = null;
-  }
-
-  onSlideStart(x, y) {
-    boundMethodCheck(this, Slide);
-    this.calculateBounds();
-    return this.updateVisibility(x, y, false);
-  }
-
-  /*
-  @checkSlideUpdate method
-  check if slide needs update, and update it if nessesary.
-  */
-  checkSlideUpdate(p_props) {
-    var pos;
-    if (!this.props.slide) {
-      return false;
-    }
-    pos = this.getIndexXY(this.props.pos);
-    if (this.props.pos !== p_props.pos || this.props.posOffset !== p_props.posOffset || this.props.posOffsetBeta !== p_props.posOffsetBeta) {
-      return this.toXY(pos);
-    }
-    if (this.state.x !== pos.x || this.state.y !== pos.y) {
-      return this.setXY(pos);
-    }
-  }
-
-  /*
-  @getTransition method
-  CSS transition easing/duration.
-  */
-  getTransition() {
-    return 'transform ' + this.props.ease_dur + 's ' + this.props.ease;
-  }
-
-  /*
-  @toXY method
-  CSS translate inner div to pos <x,y>
-  */
-  toXY(pos) {
-    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
-    return this.setState({
-      in_transition: true,
-      transition: this.getTransition(),
-      transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
-      x: pos.x,
-      y: pos.y
-    });
-  }
-
-  /*
-  @setXY method
-  same as toXY but instant.
-  */
-  setXY(pos) {
-    this.onSlideStart(this.state.x - pos.x, this.state.y - pos.y);
-    return this.setState({
-      in_transition: false,
-      transition: '',
-      transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
-      x: pos.x,
-      y: pos.y
-    }, this.onSlideDone);
-  }
-
-  /*
-  @passProps method
-  Extract events from props and pass them down to underlying div if nessesary.
-  */
-  passProps(props) {
-    var prop, prop_name, results;
-    this.pass_props = {};
-    results = [];
-    for (prop_name in props) {
-      prop = props[prop_name];
-      if (EVENT_REGEX.test(prop_name)) {
-        results.push(this.pass_props[prop_name] = prop);
-      } else {
-        results.push(void 0);
-      }
-    }
-    return results;
-  }
-
-  roundDim(d) {
-    var rd;
-    rd = Math.round(d) - d;
-    if (rd > -0.5 && rd < 0) {
-      d = Math.round(d + 0.5);
-    } else {
-      d = Math.round(d);
-    }
-    return d;
-  }
-
-  getChildHeight(c) {
-    var b;
-    b = (c.attributes && c.attributes.beta) || 100;
-    return (c.attributes && c.attributes.height) || (this.outer_rect.height / 100 * b);
-  }
-
-  getChildWidth(c) {
-    var b;
-    b = (c.attributes && c.attributes.beta) || 100;
-    return (c.attributes && c.attributes.width) || (this.outer_rect.width / 100 * b);
-  }
-
-  /*
-  @getIndexXY method
-  Get the index x and y position of where we want to slide/pan
-  */
-  getIndexXY(index) {
-    var _cc, cc, cc_rect, x, y;
-    if (index == null) {
-      throw new Error('index position is undefined');
-    }
-    if (index >= this.props.children.length) {
-      throw new Error('index position out of bounds');
-    }
-    x = 0;
-    y = 0;
-    cc = this._inner.children[Math.floor(index)];
-    _cc = this.props.children[Math.floor(index)];
-    cc_rect = cc.getBoundingClientRect();
-    if (this.props.vert) {
-      if (cc.offsetTop > this.state.y) {
-        if (cc.clientHeight >= this.outer_rect.height) {
-          y = cc.offsetTop;
-        } else {
-          if (cc.offsetTop + cc.clientHeight <= this.state.y + this.outer_rect.height) {
-            y = this.state.y;
-          } else {
-            y = cc.offsetTop - this.outer_rect.height + cc.clientHeight;
-          }
-        }
-      } else {
-        y = cc.offsetTop;
-      }
-      if ((index % 1) !== 0) {
-        y += (Math.round((index % 1) * this.getChildHeight(_cc))) * (this.props.inverse && -1 || 1);
-      }
-    } else {
-      if (cc.offsetLeft > this.state.x) {
-        if (cc.clientWidth >= this.outer_rect.width) {
-          x = cc.offsetLeft;
-        } else {
-          if (cc.offsetLeft + cc.clientWidth <= this.state.x + this.outer_rect.width) {
-            x = this.state.x;
-          } else {
-            x = cc.offsetLeft - this.outer_rect.width + cc.clientWidth;
-          }
-        }
-      } else {
-        x = cc.offsetLeft;
-      }
-      if ((index % 1) !== 0) {
-        x += Math.round((index % 1) * this.getChildWidth(_cc)) * (this.props.inverse && -1 || 1);
-      }
-    }
-    return {
-      
-      // d = 0
-      // for c in @props.children
-      // 	# if c.nodeName.name != 'Slide'
-      // 	# 	throw new Error 'attempted to do calculations on child that is not a Slide class! Slides that slide can'
-      // 	if c.attributes
-      // 		c.attributes.beta = c.attributes.beta || 100
-
-      // 	if @props.vert
-      // 		d += @getChildHeight(c)
-      // 	else
-      // 		d += @getChildWidth(c)
-
-      // if @props.vert
-      // 	d -= @outer_rect.height
-      // else 
-      // 	d -= @outer_rect.width
-
-      // d = @roundDim(d) #round off max width/height based on rounding algorithm 
-
-      // if @props.vert && y > d && d > 0
-      // 	y = d
-      // else if x > d && d > 0
-      // 	x = d 
-
-      // x: x || 0
-      // y: y || 0			
-      x: Math.round(x) || 0,
-      y: Math.round(y) || 0
-    };
-  }
-
-  roundBetaHack(beta) {
-    boundMethodCheck(this, Slide);
-    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer.nextElementSibling) {
-      return 'calc(' + beta + '% + 0.5px)';
-    }
-    return beta + '%';
-  }
-
-  getBeta() {
-    var beta, d, offs, sign;
-    boundMethodCheck(this, Slide);
-    if (!this.props.beta || this.props.beta < 0) {
-      throw new Error('beta is ( <= 0 | null ) ');
-    }
-    if (!this.is_root && this.context.outer_width && !this.context.vert && this.context.slide) {
-      d = this.context.outer_width / 100 * this.props.beta + this.props.offset + this.context.outer_width / 100 * this.props.offset_beta;
-      this.state.dim = this.roundDim(d);
-      return this.state.dim + 'px';
-    } else if (!this.is_root && this.context.outer_height && this.context.vert && this.context.slide) {
-      d = this.context.outer_height / 100 * this.props.beta + this.props.offset + this.context.outer_height / 100 * this.props.offset_beta;
-      this.state.dim = this.roundDim(d);
-      return this.state.dim + 'px';
-    }
-    // base case scenario, this is legacy fallback for relative betas using css % 
-    // CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
-    beta = this.roundBetaHack(this.props.beta);
-    if (this.props.offset) {
-      sign = this.props.offset < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset) + 'px';
-    } else if (this.props.offset_beta) {
-      sign = this.props.offset_beta < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset_beta) + '%';
-    }
-    if (offs) {
-      return 'calc(#{beta} #{sign} #{offs})';
-    } else {
-      return beta;
-    }
-  }
-
-  getOuterHW() {
-    var dim, height, ph, pw, vert, width;
-    boundMethodCheck(this, Slide);
-    // square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
-    if (this.props.ratio) {
-      dim = {};
-      if (this.context.vert) {
-        dim.height = this.context.dim * this.props.ratio;
-        dim.width = '100%';
-      } else {
-        //dim.height = '100%' CSS is weird...
-        dim.width = this.context.dim * this.props.ratio;
-      }
-      return dim;
-    }
-    // w/h passed down from props override
-    if (this.context.vert) {
-      width = this.props.width || null;
-      height = this.props.dim || this.props.height || null;
-    } else {
-      width = this.props.dim || this.props.width || null;
-      height = this.props.height || null;
-    }
-    if (this.props.vert == null) {
-      vert = this.context.vert;
-    } else {
-      vert = this.props.vert;
-    }
-    if (vert && this.props.auto) {
-      ph = 'auto';
-    } else if (height) {
-      ph = height + 'px';
-    }
-    if (!vert && this.props.auto) {
-      pw = 'auto';
-    } else if (width) {
-      pw = width + 'px';
-    }
-    
-    // insert calculated beta if width or height is still null
-    if (this.context.vert) {
-      pw = pw || '100%';
-      ph = ph || this.getBeta();
-    } else {
-      pw = pw || this.getBeta();
-      ph = ph || '100%'; //CSS is weird...
-    }
-    return {
-      height: ph,
-      width: pw
-    };
-  }
-
-  resizeEvent() {
-    boundMethodCheck(this, Slide);
-    return this.forceUpdate();
-  }
-
-  inner_ref(e) {
-    boundMethodCheck(this, Slide);
-    return this._inner = e;
-  }
-
-  outer_ref(e) {
-    boundMethodCheck(this, Slide);
-    return this._outer = e;
-  }
-
-  renderSlide() {
-    var c_name, class_auto, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, inner_props, slide_props;
-    boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
-    c_name = this.props.className && (" " + this.props.className) || '';
-    class_center = this.props.center && ' -i-s-center' || '';
-    class_vert = this.props.vert && ' -i-s-vertical' || '';
-    class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
-    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
-    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
-    class_auto = this.props.auto && ' -i-s-auto' || '';
-    inner_props = {
-      ref: this.inner_ref,
-      style: {
-        transition: this.state.transition,
-        transform: this.state.transform
-      },
-      className: "-i-s-inner" + class_vert + inner_c_name + class_center + class_reverse + class_auto
-    };
-    if (this.props.innerStyle) {
-      inner_props.style = Object.assign(inner_props.style, this.props.innerStyle);
-    }
-    inner_props.onTransitionEnd = this.onSlideDone;
-    slide_props = this.pass_props;
-    slide_props.ref = this.outer_ref;
-    slide_props.className = "-i-s-outer" + c_name + class_fixed;
-    if (this.context._i_slide || this.props.height || this.props.width) {
-      slide_props.style = this.getOuterHW();
-    }
-    if (this.props.oStyle || this.props.style) {
-      slide_props.style = Object.assign(slide_props.style, this.props.outerStyle || this.props.style);
-    }
-    return h('div', slide_props, h('div', inner_props, this.props.children), this.props.outer_children);
-  }
-
-  renderStatic() {
-    var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, inner_c_name, outer_props;
-    boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
-    c_name = this.props.className && (" " + this.props.className) || '';
-    class_center = this.props.center && ' -i-s-center' || '';
-    class_vert = this.props.vert && ' -i-s-vertical' || '';
-    class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
-    class_reverse = this.props.inverse && ' -i-s-reverse' || '';
-    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
-    outer_props = this.pass_props;
-    if (this.context._i_slide || this.props.height || this.props.width) {
-      outer_props.style = this.getOuterHW();
-    }
-    outer_props.className = "-i-s-static" + c_name + class_fixed + class_vert + class_center + class_reverse + class_scroll;
-    outer_props.id = this.props.id;
-    outer_props.ref = this.outer_ref;
-    if (this.props.oStyle || this.props.style) {
-      outer_props.style = Object.assign(outer_props.style, this.props.outerStyle || this.props.style);
-    }
-    if (this.context.isVisible) {
-      return h('div', outer_props, this.context.isVisible(this) && this.props.children, this.context.isVisible(this) && this.props.outer_children);
-    } else {
-      return h('div', outer_props, this.props.children, this.props.outer_children);
-    }
-  }
-
-  render() {
-    boundMethodCheck(this, Slide);
-    if (this.props.slide) {
-      return this.renderSlide();
-    } else {
-      return this.renderStatic();
-    }
-  }
-
-};
-
-Slide.defaultProps = DEFAULT_PROPS;
-
-module.exports = Slide;
-
-
-/***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
@@ -2205,14 +2191,13 @@ module.exports = g;
 
 
 /***/ }),
-/* 5 */,
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(7);
+var content = __webpack_require__(6);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -2220,14 +2205,14 @@ var transform;
 var options = {"hmr":true}
 options.transform = transform
 // add the styles to the DOM
-var update = __webpack_require__(2)(content, options);
+var update = __webpack_require__(3)(content, options);
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./site.less", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./site.less");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./preact-slide.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./preact-slide.less");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -2237,21 +2222,21 @@ if(false) {
 }
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(1)(false);
+exports = module.exports = __webpack_require__(2)(false);
 // imports
-exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto:400,500|Architects+Daughter);", ""]);
+
 
 // module
-exports.push([module.i, "body {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  height: 100%;\n  width: 100%;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.52156863);\n  width: 340px;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: \"Architects Daughter\", cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 600;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: center;\n}\nfooter img {\n  width: 25px;\n  height: 25px;\n  padding: 10px;\n  margin: 0px auto;\n  opacity: 0.3;\n}\n.footer-author {\n  color: black;\n  line-height: 46px;\n  font-family: monospace;\n  opacity: 0.3;\n}\n", ""]);
+exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-shrink: 0;\n}\n.-i-s-center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\n.-i-s-static {\n  box-sizing: border-box;\n  position: relative;\n  flex-direction: row;\n  display: flex;\n  overflow: hidden;\n}\n.-i-s-static.-i-s-reverse {\n  flex-direction: row-reverse;\n}\n.-i-s-outer {\n  position: relative;\n  overflow: hidden;\n}\n.-i-s-inner {\n  height: 100%;\n  display: flex;\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n}\n.-i-s-inner > .-i-s-in {\n  transition: transform 0.3s cubic-bezier(0, 0.93, 0.27, 1);\n  transform: scale(1) rotateY(0deg) !important;\n}\n.-i-s-inner > .-i-s-in_pre.-i-s-right {\n  transform-origin: 0% 50%;\n  transform: scale(1) rotateY(10deg);\n}\n.-i-s-inner > .-i-s-in_pre.-i-s-left {\n  transform-origin: 100% 50%;\n  transform: scale(1) rotateY(-10deg);\n}\n.-i-s-inner.-i-s-reverse {\n  flex-direction: row-reverse;\n}\n.-i-s-inner > .-i-s-outer {\n  flex-shrink: 0;\n}\n.-i-s-inner > .-i-s-static {\n  flex-shrink: 0;\n}\n.-i-s-horizontal {\n  flex-direction: row;\n}\n.-i-s-vertical {\n  flex-direction: column;\n}\n.-i-s-vertical.-i-s-inner {\n  height: 100%;\n}\n.-i-s-vertical > .-i-s-in_pre.-i-s-right {\n  transform-origin: 50% 0%;\n  transform: scale(1) rotateX(-60deg);\n}\n.-i-s-vertical > .-i-s-in_pre.-i-s-left {\n  transform-origin: 50% 100%;\n  transform: scale(1) rotateX(60deg);\n}\n.-i-s-vertical.-i-s-reverse {\n  flex-direction: column-reverse;\n}\n.-i-s-scroll {\n  overflow-x: scroll;\n  -webkit-overflow-scrolling: touch;\n  overflow-y: hidden;\n}\n.-i-s-scroll.-i-s-vertical {\n  overflow-y: scroll;\n  overflow-x: hidden;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports) {
 
 
@@ -2346,6 +2331,7 @@ module.exports = function (css) {
 
 
 /***/ }),
+/* 8 */,
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2360,14 +2346,14 @@ var transform;
 var options = {"hmr":true}
 options.transform = transform
 // add the styles to the DOM
-var update = __webpack_require__(2)(content, options);
+var update = __webpack_require__(3)(content, options);
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./preact-slide.less", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./preact-slide.less");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./site.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./site.less");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -2380,12 +2366,12 @@ if(false) {
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(1)(false);
+exports = module.exports = __webpack_require__(2)(false);
 // imports
-
+exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto:400,500|Architects+Daughter);", ""]);
 
 // module
-exports.push([module.i, ".-i-s-fixed {\n  transform: none !important;\n  flex-shrink: 0;\n}\n.-i-s-center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\n.-i-s-static {\n  box-sizing: border-box;\n  position: relative;\n  flex-direction: row;\n  display: flex;\n  overflow: hidden;\n}\n.-i-s-static.-i-s-reverse {\n  flex-direction: row-reverse;\n}\n.-i-s-outer {\n  position: relative;\n  overflow: hidden;\n}\n.-i-s-inner {\n  height: 100%;\n  display: flex;\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n}\n.-i-s-inner > .-i-s-in {\n  transition: transform 0.3s cubic-bezier(0, 0.93, 0.27, 1);\n  transform: scale(1) rotateY(0deg) !important;\n}\n.-i-s-inner > .-i-s-in_pre.-i-s-right {\n  transform-origin: 0% 50%;\n  transform: scale(1) rotateY(10deg);\n}\n.-i-s-inner > .-i-s-in_pre.-i-s-left {\n  transform-origin: 100% 50%;\n  transform: scale(1) rotateY(-10deg);\n}\n.-i-s-inner.-i-s-reverse {\n  flex-direction: row-reverse;\n}\n.-i-s-inner > .-i-s-outer {\n  flex-shrink: 0;\n}\n.-i-s-inner > .-i-s-static {\n  flex-shrink: 0;\n}\n.-i-s-horizontal {\n  flex-direction: row;\n}\n.-i-s-vertical {\n  flex-direction: column;\n}\n.-i-s-vertical.-i-s-inner {\n  height: 100%;\n}\n.-i-s-vertical > .-i-s-in_pre.-i-s-right {\n  transform-origin: 50% 0%;\n  transform: scale(1) rotateX(-60deg);\n}\n.-i-s-vertical > .-i-s-in_pre.-i-s-left {\n  transform-origin: 50% 100%;\n  transform: scale(1) rotateX(60deg);\n}\n.-i-s-vertical.-i-s-reverse {\n  flex-direction: column-reverse;\n}\n.-i-s-scroll {\n  overflow-x: scroll;\n  -webkit-overflow-scrolling: touch;\n  overflow-y: hidden;\n}\n.-i-s-scroll.-i-s-vertical {\n  overflow-y: scroll;\n  overflow-x: hidden;\n}\n", ""]);
+exports.push([module.i, "body {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  height: 100%;\n  width: 100%;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.52156863);\n  width: 340px;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: \"Architects Daughter\", cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 600;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: center;\n}\nfooter img {\n  width: 25px;\n  height: 25px;\n  padding: 10px;\n  margin: 0px auto;\n  opacity: 0.3;\n}\n.footer-author {\n  color: black;\n  line-height: 46px;\n  font-family: monospace;\n  opacity: 0.3;\n}\n", ""]);
 
 // exports
 
@@ -3434,23 +3420,22 @@ module.exports = {
 /* 27 */,
 /* 28 */,
 /* 29 */,
-/* 30 */,
-/* 31 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Card, Component, Slide, Test, _, h, rand, randomColor, rbg, rc, render, seed, shuffle;
 
 ({h, render, Component} = __webpack_require__(0));
 
-Slide = __webpack_require__(3);
+Slide = __webpack_require__(1);
 
-randomColor = __webpack_require__(32);
+randomColor = __webpack_require__(31);
 
-seed = __webpack_require__(42);
+seed = __webpack_require__(41);
 
-_ = __webpack_require__(43);
+_ = __webpack_require__(42);
 
-__webpack_require__(6);
+__webpack_require__(9);
 
 rand = seed('128j3b1');
 
@@ -3516,28 +3501,36 @@ Card = class Card extends Component {
   }
 
   render() {
-    return h(Slide, {
-      slide: this.props.slide != null ? this.props.slide : true,
-      vert: false,
-      pos: this.state.pos,
-      style: {
-        'cursor': 'pointer'
-      },
-      onClick: () => {
-        return this.setState({
-          pos: (this.state.pos + 1) % 3
-        });
-      }
-    }, h(Slide, {
-      center: true,
-      style: this.state.rbg1
-    }, this.state.rc), (this.props.slide == null) && h(Slide, {
-      center: true,
-      style: this.state.rbg2
-    }, this.state.rc), (this.props.slide == null) && h(Slide, {
-      center: true,
-      style: this.state.rbg3
-    }, this.state.rc));
+    this.state.rbg1.cursor = 'pointer';
+    if (!this.props.slide) {
+      return h(Slide, {
+        center: true,
+        style: this.state.rbg1
+      }, this.state.rc);
+    } else {
+      return h(Slide, {
+        slide: true,
+        vert: false,
+        pos: this.state.pos,
+        style: {
+          'cursor': 'pointer'
+        },
+        onClick: () => {
+          return this.setState({
+            pos: (this.state.pos + 1) % 3
+          });
+        }
+      }, h(Slide, {
+        center: true,
+        style: this.state.rbg1
+      }, this.state.rc), h(Slide, {
+        center: true,
+        style: this.state.rbg2
+      }, this.state.rc), h(Slide, {
+        center: true,
+        style: this.state.rbg3
+      }, this.state.rc));
+    }
   }
 
 };
@@ -3679,13 +3672,13 @@ this.docs_el = render(h(Test), document.body, this.docs_el);
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var color = __webpack_require__(33);
+var color = __webpack_require__(32);
 
 var ratio = 0.618033988749895;
 var hue   = Math.random();
@@ -3712,13 +3705,13 @@ module.exports = function (saturation, value) {
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
-var clone = __webpack_require__(34);
-var convert = __webpack_require__(39);
-var string = __webpack_require__(41);
+var clone = __webpack_require__(33);
+var convert = __webpack_require__(38);
+var string = __webpack_require__(40);
 
 var Color = function (obj) {
 	if (obj instanceof Color) {
@@ -4177,7 +4170,7 @@ module.exports = Color;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {var clone = (function() {
@@ -4341,10 +4334,10 @@ if (typeof module === 'object' && module.exports) {
   module.exports = clone;
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(35).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(34).Buffer))
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4358,9 +4351,9 @@ if (typeof module === 'object' && module.exports) {
 
 
 
-var base64 = __webpack_require__(36)
-var ieee754 = __webpack_require__(37)
-var isArray = __webpack_require__(38)
+var base64 = __webpack_require__(35)
+var ieee754 = __webpack_require__(36)
+var isArray = __webpack_require__(37)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -6141,7 +6134,7 @@ function isnan (val) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6262,7 +6255,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -6352,7 +6345,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -6363,11 +6356,11 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var conversions = __webpack_require__(11);
-var route = __webpack_require__(40);
+var route = __webpack_require__(39);
 
 var convert = {};
 
@@ -6447,7 +6440,7 @@ module.exports = convert;
 
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var conversions = __webpack_require__(11);
@@ -6550,7 +6543,7 @@ module.exports = function (fromModel) {
 
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
@@ -6777,7 +6770,7 @@ for (var name in colorNames) {
 
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6958,7 +6951,7 @@ mixkey(Math.random(), pool);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -24047,10 +24040,10 @@ mixkey(Math.random(), pool);
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(44)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(43)(module)))
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {

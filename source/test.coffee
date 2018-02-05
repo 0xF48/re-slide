@@ -48,27 +48,34 @@ class Card extends Component
 			rbg3: rbg()
 			rc: rc()
 	render: ->
-		h Slide,
-			slide: if @props.slide? then @props.slide else true 
-			vert: false
-			pos: @state.pos
-			style: 
-				'cursor':'pointer'
-			onClick: =>
-				@setState
-					pos: (@state.pos+1)%3
-			h Slide,
-				center: true
+		@state.rbg1.cursor = 'pointer'
+		if !@props.slide
+			return h Slide,
+				center: yes
 				style: @state.rbg1
 				@state.rc
-			!@props.slide? && h Slide,
-				center: true
-				style: @state.rbg2
-				@state.rc
-			!@props.slide? && h Slide,
-				center: true
-				style: @state.rbg3
-				@state.rc
+		else
+			return h Slide,
+				slide: true
+				vert: false
+				pos: @state.pos
+				style: 
+					'cursor':'pointer'
+				onClick: =>
+					@setState
+						pos: (@state.pos+1)%3
+				h Slide,
+					center: true
+					style: @state.rbg1
+					@state.rc
+				h Slide,
+					center: true
+					style: @state.rbg2
+					@state.rc
+				h Slide,
+					center: true
+					style: @state.rbg3
+					@state.rc
 
 
 class Test extends Component

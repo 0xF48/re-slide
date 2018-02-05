@@ -1,5 +1,5 @@
 {h,render,Component} = require 'preact'
-Slide = require '../index.js'
+Slide = require './preact-slide.coffee'
 {Box,Shader} = require 'shader-box'
 Markdown = require 'preact-markdown'
 Markup = require 'preact-markup'

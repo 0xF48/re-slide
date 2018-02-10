@@ -14,12 +14,15 @@ DEFAULT_PROPS =
 	height: 0 #slide height manual override
 	ratio: 0 #ratio dim helper
 	center: no #css flex center
+	hide: yes
 	inverse: no #css flex direction inverse
 	scroll: no #css scroll overflow
 	className: null
 	iclassName: null
 	offset: 0
-	
+	x: null
+	y: null
+	align: false
 
 
 EVENT_REGEX = new RegExp('^on[A-Z]')
@@ -77,20 +80,31 @@ class Slide extends Component
 		@calculateBounds()
 
 
+
 	###
 	@componentDidUpdate method
 	###
 	componentDidUpdate: (p_props)->
 		@checkSlideUpdate(p_props)
-	
+		if @context.slide && @_outer
+			if @state.offset != 0 && @state.offset != @_outer.offsetTop
+				offs = @_outer.offsetTop - @state.offset
+				# console.log 'OFFS',offs
+				@_outer.style.transition = ''
+				@_outer.style.transform = 'matrix(1, 0.00001, 0, 1, ' + (0) + ', ' + (-offs) + ')'
+				setTimeout ()=>
+					if @_outer
+						@_outer.style.transition = @props.ease
+						@_outer.style.transform = null
+				,0
+			@state.offset = @_outer.offsetTop
+		
 
 	###
 	@componentWillUnmount method
 	###	
 	componentWillUnmount: ()=>
 		removeEventListener 'resize',@resizeEvent
-		if @timer
-			clearTimeout @timer
 	
 
 	###
@@ -106,7 +120,7 @@ class Slide extends Component
 	isVisible: (child)=>
 		# if @visibility_map[child._outer] == undefined
 		# 	return true
-		if @visibility_map.get(child._outer) == false
+		if @visibility_map.get(child._outer) == false && @props.hide
 			# console.log 'NOT VISIBLE',child._outer
 			return false
 		return true
@@ -118,8 +132,8 @@ class Slide extends Component
 	@getChildContext method
 	###	
 	getChildContext: ()=>
-		outer_width: @context.vert && !@is_root && @context.outer_width || @outer_rect.width
-		outer_height: !@context.vert && !@is_root && @context.outer_height || @outer_rect.height
+		outer_width: @context.vert && !@is_root && @context.outer_width || @props.width || @outer_rect.width
+		outer_height: !@context.vert && !@is_root && @context.outer_height || @props.height || @outer_rect.height
 		vert: @props.vert || @props.vert || false
 		count: @props.children.length
 		isVisible: @isVisible
@@ -156,8 +170,8 @@ class Slide extends Component
 	@inViewBounds method
 	check to see if a line that starts at p with length d is overlapping a line starting at op with length od
 	###	
-	inViewBounds: (p,d,op,od)->
-		return p+d > op && p < op + od
+	inViewBounds: (el_pos,el_size,parent_pos,parent_size)->
+		return Math.round(el_pos+el_size) > Math.round(parent_pos) && Math.round(el_pos) < Math.round(parent_pos + parent_size)
 
 
 	###
@@ -165,10 +179,10 @@ class Slide extends Component
 	update the visibility of slides that are not in the scrolled view
 	###	
 	updateVisibility: (x,y,force_hide)=>
-		
+		@calculateBounds()
 		for child,i in @_inner.children
 			rect = child.getBoundingClientRect()
-			if  ( !@props.vert && @inViewBounds(rect.x+x,rect.width,@outer_rect.x,@outer_rect.width) ) || ( @props.vert && @inViewBounds(rect.y+y,rect.height,@outer_rect.y,@outer_rect.height) )
+			if  ( !@props.vert && @inViewBounds(rect.x+x,rect.width,@outer_rect.x,@props.width || @outer_rect.width) ) || ( @props.vert && @inViewBounds(rect.y+y,rect.height,@outer_rect.y,@props.height || @outer_rect.height) )
 				@visibility_map.set(child,true)
 			else if force_hide
 				@visibility_map.set(child,false)
@@ -185,9 +199,10 @@ class Slide extends Component
 	onSlideDone: ()=>
 		if !@_inner
 			return
-		@calculateBounds()
-		@visibility_map = new Map
-		@updateVisibility(0,0,true)
+
+		if @props.hide
+			@visibility_map = new Map
+			@updateVisibility(0,0,true)
 		@setState
 			in_transition: false
 		,()=>
@@ -198,8 +213,8 @@ class Slide extends Component
 	right before a slide animation starts, this function is triggered.
 	###
 	onSlideStart: (x,y)=>
-		@calculateBounds()
-		@updateVisibility(x,y,false)
+		if @props.hide
+			@updateVisibility(x,y,false)
 
 
 	###
@@ -213,13 +228,17 @@ class Slide extends Component
 
 		
 		# console.log 'UPDATE'
-		pos = @getIndexXY(@props.pos)
+		if @props.y != null || @props.x != null
+			pos = 
+				x: @props.x
+				y: @props.y
+		else
+			pos = @getIndexXY(@props.pos)
 		
-		if @props.pos != p_props.pos || @props.posOffset != p_props.posOffset || @props.posOffsetBeta != p_props.posOffsetBeta
+		if @props.x != p_props.x || @props.y != p_props.y || @props.pos != p_props.pos || @props.offset != p_props.offset
 			return @toXY pos
 
-		if @state.x != pos.x || @state.y != pos.y
-			# console.log 'SET XY'
+		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto
 			return @setXY pos
 
 	
@@ -240,7 +259,7 @@ class Slide extends Component
 		@setState
 			in_transition: true
 			transition: @getTransition()
-			transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
+			transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
 			x: pos.x
 			y: pos.y
 
@@ -294,7 +313,6 @@ class Slide extends Component
 	Get the index x and y position of where we want to slide/pan
 	###
 	getIndexXY: (index)->
-
 		if !index?
 			throw new Error 'index position is undefined'
 		if index >= @props.children.length
@@ -308,19 +326,21 @@ class Slide extends Component
 		cc_rect = cc.getBoundingClientRect()
 		@calculateBounds()	
 
+		o_h = @outer_rect.height || @props.height
+		o_w = @outer_rect.width || @props.width
 	
 
 
 		if @props.vert
 		
 			if cc.offsetTop > @state.y
-				if cc.clientHeight >= @outer_rect.height
+				if cc.clientHeight >= o_h || @props.align
 					y = cc.offsetTop
 				else
-					if cc.offsetTop + cc.clientHeight <= @state.y+@outer_rect.height
+					if cc.offsetTop + cc.clientHeight <= @state.y+o_h
 						y = @state.y
 					else
-						y = cc.offsetTop - @outer_rect.height + cc.clientHeight
+						y = cc.offsetTop - (o_h) + cc.clientHeight
 			else
 				y = cc.offsetTop
 			
@@ -329,13 +349,13 @@ class Slide extends Component
 		
 		else
 			if cc.offsetLeft > @state.x
-				if cc.clientWidth >= @outer_rect.width
+				if cc.clientWidth >= o_w || @props.align
 					x = cc.offsetLeft
 				else
-					if cc.offsetLeft + cc.clientWidth <= @state.x+@outer_rect.width
+					if cc.offsetLeft + cc.clientWidth <= @state.x+o_w
 						x = @state.x
 					else
-						x = cc.offsetLeft - @outer_rect.width + cc.clientWidth
+						x = cc.offsetLeft - o_w + cc.clientWidth
 			else
 				x = cc.offsetLeft
 			
@@ -346,11 +366,11 @@ class Slide extends Component
 
 		lc = @_inner.children[@_inner.children.length-1]
 		if @props.vert
-			max = lc.offsetTop - @outer_rect.height + lc.clientHeight
+			max = lc.offsetTop - o_h + lc.clientHeight
 			if y > max && max > 0
 				y = max
 		else
-			max = lc.offsetLeft - @outer_rect.width + lc.clientWidth
+			max = lc.offsetLeft - o_w + lc.clientWidth
 			if x > max && max > 0
 				x = max 
 
@@ -362,7 +382,7 @@ class Slide extends Component
 
 
 	roundBetaHack: (beta)=>
-		if @context.count == 2 && (@context.outer_width/2 % Math.floor(@context.outer_width/2) == 0.5) && @_outer.nextElementSibling
+		if @context.count == 2 && (@context.outer_width/2 % Math.floor(@context.outer_width/2) == 0.5) && @_outer && @_outer.nextElementSibling
 			return 'calc('+beta+'% + 0.5px)'
 		
 		return  beta + '%'
@@ -495,9 +515,10 @@ class Slide extends Component
 		inner_props = 
 			ref: @inner_ref
 			style:
-				transition: @state.transition
 				transform: @state.transform
 			className: "-i-s-inner"+class_vert+inner_c_name+class_center+class_reverse+class_auto
+		if @state.transition
+			inner_props.style.transition = @state.transition
 		if @props.innerStyle
 			inner_props.style = Object.assign inner_props.style,@props.innerStyle
 		inner_props.onTransitionEnd = @onSlideDone

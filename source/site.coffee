@@ -13,15 +13,16 @@ SimpleMenuExample = require './examples/SimpleMenuExample.coffee'
 LayoutExample = require './examples/LayoutExample.coffee'
 ButtonsExample = require './examples/ButtonsExample.coffee'
 CarouselExample = require './examples/CarouselExample.coffee'
-
+TreeMenuExample = require './examples/TreeMenuExample.coffee'
 
 
 
 EXAMPLES = [
-	['Layout',require('./examples/layout.md'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
-	['Simple Menu',require('./examples/simple-menu.md'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
-	['Buttons',require('./examples/buttons.md'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
-	['Carousel',require('./examples/carousel.md'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
+	['Layout',require('./examples/LayoutExample.md'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
+	['Simple Menu',require('./examples/SimpleMenuExample.md'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
+	['Buttons',require('./examples/ButtonsExample.md'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
+	['Carousel',require('./examples/CarouselExample.md'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
+	['Tree Menu',require('./examples/TreeMenuExample.md'),TreeMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/TreeMenuExample.coffee?ts=4'],
 ]
 
 

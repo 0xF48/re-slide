@@ -39,14 +39,16 @@ With increasing modern UI complexity, its easy to get lost in overly complex jav
 			vert: true
 			slide: true
 			pos: 1
-			h Slide,
+			h Slide, //#0 20% of parent width (visibility:hidden because parent is pos:1) 
 				beta: 20
-				center: true
-				'hi, im child #1 and im 20% of parent width (im also viibility:hidden because my parents pos is set to 1 and im not visible in the viewport.)'
-				h Slide,
+				slide:yes
+				h Slide, //beta is 100 by default, vert is false by default
 					center: true
 					'im not rendered in the DOM because my parent is not in the viewport!'
-			h Slide,
+				h Slide,
+					center: true
+					'I am not rendered to the dom until the top most slide is at pos:0 and my parent pos is set to 1'
+			h Slide, //#1 100% of parent 
 				beta: 100
 				center: true
 				'hi im child #2! and im 100% of parent width. since i take up the entire height and width of my parent i am the only visible child.'
@@ -55,9 +57,9 @@ With increasing modern UI complexity, its easy to get lost in overly complex jav
 
 
 ## Demos and Examples
-[piarts (very old library version)](http://slide-checki.lerp.io)
-[checki (olde library version)](http://slide-checki.lerp.io)
-[preact-slide homepage (newest version)](https://arxii.github.io/preact-slide/)
+* [piarts (very old library version)](http://slide-checki.lerp.io)
+* [checki (olde library version)](http://slide-checki.lerp.io)
+* [preact-slide homepage (newest version)](https://arxii.github.io/preact-slide/)
 
 
 

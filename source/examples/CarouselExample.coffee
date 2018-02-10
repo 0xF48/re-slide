@@ -70,8 +70,17 @@ class CarouselExample extends Component
 				pos: @state.c_pos
 				@slides(10)
 			@ctrl(10)
-			
-				
+	
+
+
+
+
+
+
+
+
+
+
 
 
 

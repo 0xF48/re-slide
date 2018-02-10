@@ -1,0 +1,2 @@
+This example is a bit more advanced and really pushes the limits of what you can practically do. This example shows how you can actually "hack" the ui with the `Slide`, creating components that would otherwise be impossible or would have taken thousands of lines of code. Check out the example source code and see if you can grasp how I used the nested slide offset trick to create a smooth and optimized tree menu from a single list state object in just 150 lines of code.
+>Hint: recursion & nested slides

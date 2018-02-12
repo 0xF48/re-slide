@@ -1,5 +1,6 @@
 # Preact Slide
-![alt text](https://raw.githubusercontent.com/arxii/preact-slide/master/logo.png "Slide")
+<a href = "http://arxii.github.io/preact-slide" ><div style="text-align:center"><img src ="https://raw.githubusercontent.com/arxii/preact-slide/master/logo.png" /></div></a>
+
 
 [homepage](http://arxii.github.io/preact-slide)
 

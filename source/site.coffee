@@ -184,37 +184,37 @@ class Header extends Component
 				'?'
 
 			h 'div',
-				className: 'title center'
-				h 'a',
-					href: "https://github.com/arxii/preact-slide"
-					className: 'title-name'
-					'Slide'
+				className: 'header-description',
+				h 'div',
+					className: 'title center'
+					h 'a',
+						href: "https://github.com/arxii/preact-slide"
+						className: 'title-name'
+						'Slide'
 
-				h Slide,
-					className: 'title-snippet'
-					vert: true
-					pos: @state.title_snippet_pos_b
-					slide: true
 					h Slide,
-						className: 'dark center'
+						className: 'title-snippet'
+						vert: true
+						pos: @state.title_snippet_pos_b
+						slide: true
 						h Slide,
-							# beta:50
+							className: 'dark center'
+							h Slide,
+								# beta:50
+								className: 'center'
+								h 'div',
+									className: 'title-snippet-text'
+									'npm i preact preact-slide'
+						h Slide,
 							className: 'center'
 							h 'div',
 								className: 'title-snippet-text'
-								'npm i preact preact-slide'
-					h Slide,
-						className: 'center'
-						h 'div',
-							className: 'title-snippet-text'
-							"var Slide = require('preact-slide')"
-				h 'a',
-					href: "https://github.com/arxii/preact-slide"
-					className: 'center github-link'
-					h 'img',
-						src: './site/github.svg'
-			h 'div',
-				className: 'header-description',
+								"var Slide = require('preact-slide')"
+					h 'a',
+						href: "https://github.com/arxii/preact-slide"
+						className: 'center github-link'
+						h 'img',
+							src: './site/github.svg'
 				h 'p',
 					className:'header-description-sub'
 					'Experimental'

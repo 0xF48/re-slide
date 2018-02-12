@@ -1108,11 +1108,15 @@ DEFAULT_PROPS = {
   height: 0, //slide height manual override
   ratio: 0, //ratio dim helper
   center: false, //css flex center
+  hide: true,
   inverse: false, //css flex direction inverse
   scroll: false, //css scroll overflow
   className: null,
   iclassName: null,
-  offset: 0
+  offset: 0,
+  x: null,
+  y: null,
+  align: false
 };
 
 EVENT_REGEX = new RegExp('^on[A-Z]');
@@ -1235,10 +1239,7 @@ Slide = class Slide extends Component {
 
   componentWillUnmount() {
     boundMethodCheck(this, Slide);
-    removeEventListener('resize', this.resizeEvent);
-    if (this.timer) {
-      return clearTimeout(this.timer);
-    }
+    return removeEventListener('resize', this.resizeEvent);
   }
 
   /*
@@ -1253,7 +1254,7 @@ Slide = class Slide extends Component {
     boundMethodCheck(this, Slide);
     // if @visibility_map[child._outer] == undefined
     // 	return true
-    if (this.visibility_map.get(child._outer) === false) {
+    if (this.visibility_map.get(child._outer) === false && this.props.hide) {
       // console.log 'NOT VISIBLE',child._outer
       return false;
     }
@@ -1263,8 +1264,8 @@ Slide = class Slide extends Component {
   getChildContext() {
     boundMethodCheck(this, Slide);
     return {
-      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.outer_rect.width,
-      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
+      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.props.width || this.outer_rect.width,
+      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.props.height || this.outer_rect.height,
       vert: this.props.vert || this.props.vert || false,
       count: this.props.children.length,
       isVisible: this.isVisible,
@@ -1298,18 +1299,19 @@ Slide = class Slide extends Component {
   @inViewBounds method
   check to see if a line that starts at p with length d is overlapping a line starting at op with length od
   */
-  inViewBounds(p, d, op, od) {
-    return p + d > op && p < op + od;
+  inViewBounds(el_pos, el_size, parent_pos, parent_size) {
+    return Math.round(el_pos + el_size) > Math.round(parent_pos) && Math.round(el_pos) < Math.round(parent_pos + parent_size);
   }
 
   updateVisibility(x, y, force_hide) {
     var child, i, j, len, rect, ref;
     boundMethodCheck(this, Slide);
+    this.calculateBounds();
     ref = this._inner.children;
     for (i = j = 0, len = ref.length; j < len; i = ++j) {
       child = ref[i];
       rect = child.getBoundingClientRect();
-      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
+      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.props.width || this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.props.height || this.outer_rect.height))) {
         this.visibility_map.set(child, true);
       } else if (force_hide) {
         this.visibility_map.set(child, false);
@@ -1322,9 +1324,10 @@ Slide = class Slide extends Component {
     if (!this._inner) {
       return;
     }
-    this.calculateBounds();
-    this.visibility_map = new Map;
-    this.updateVisibility(0, 0, true);
+    if (this.props.hide) {
+      this.visibility_map = new Map;
+      this.updateVisibility(0, 0, true);
+    }
     return this.setState({
       in_transition: false
     }, () => {
@@ -1335,8 +1338,9 @@ Slide = class Slide extends Component {
 
   onSlideStart(x, y) {
     boundMethodCheck(this, Slide);
-    this.calculateBounds();
-    return this.updateVisibility(x, y, false);
+    if (this.props.hide) {
+      return this.updateVisibility(x, y, false);
+    }
   }
 
   /*
@@ -1350,12 +1354,18 @@ Slide = class Slide extends Component {
     }
     
     // console.log 'UPDATE'
-    pos = this.getIndexXY(this.props.pos);
-    if (this.props.pos !== p_props.pos || this.props.posOffset !== p_props.posOffset || this.props.posOffsetBeta !== p_props.posOffsetBeta) {
+    if (this.props.y !== null || this.props.x !== null) {
+      pos = {
+        x: this.props.x,
+        y: this.props.y
+      };
+    } else {
+      pos = this.getIndexXY(this.props.pos);
+    }
+    if (this.props.x !== p_props.x || this.props.y !== p_props.y || this.props.pos !== p_props.pos || this.props.offset !== p_props.offset) {
       return this.toXY(pos);
     }
-    if (this.state.x !== pos.x || this.state.y !== pos.y) {
-      // console.log 'SET XY'
+    if (this.state.x !== pos.x || this.state.y !== pos.y || this.props.height !== p_props.height || this.props.width !== p_props.width || this.props.auto !== p_props.auto) {
       return this.setXY(pos);
     }
   }
@@ -1377,7 +1387,7 @@ Slide = class Slide extends Component {
     return this.setState({
       in_transition: true,
       transition: this.getTransition(),
-      transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
+      transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
       x: pos.x,
       y: pos.y
     });
@@ -1447,7 +1457,7 @@ Slide = class Slide extends Component {
   Get the index x and y position of where we want to slide/pan
   */
   getIndexXY(index) {
-    var _cc, cc, cc_rect, lc, max, x, y;
+    var _cc, cc, cc_rect, lc, max, o_h, o_w, x, y;
     if (index == null) {
       throw new Error('index position is undefined');
     }
@@ -1460,15 +1470,17 @@ Slide = class Slide extends Component {
     _cc = this.props.children[Math.floor(index)];
     cc_rect = cc.getBoundingClientRect();
     this.calculateBounds();
+    o_h = this.outer_rect.height || this.props.height;
+    o_w = this.outer_rect.width || this.props.width;
     if (this.props.vert) {
       if (cc.offsetTop > this.state.y) {
-        if (cc.clientHeight >= this.outer_rect.height) {
+        if (cc.clientHeight >= o_h || this.props.align) {
           y = cc.offsetTop;
         } else {
-          if (cc.offsetTop + cc.clientHeight <= this.state.y + this.outer_rect.height) {
+          if (cc.offsetTop + cc.clientHeight <= this.state.y + o_h) {
             y = this.state.y;
           } else {
-            y = cc.offsetTop - this.outer_rect.height + cc.clientHeight;
+            y = cc.offsetTop - o_h + cc.clientHeight;
           }
         }
       } else {
@@ -1479,13 +1491,13 @@ Slide = class Slide extends Component {
       }
     } else {
       if (cc.offsetLeft > this.state.x) {
-        if (cc.clientWidth >= this.outer_rect.width) {
+        if (cc.clientWidth >= o_w || this.props.align) {
           x = cc.offsetLeft;
         } else {
-          if (cc.offsetLeft + cc.clientWidth <= this.state.x + this.outer_rect.width) {
+          if (cc.offsetLeft + cc.clientWidth <= this.state.x + o_w) {
             x = this.state.x;
           } else {
-            x = cc.offsetLeft - this.outer_rect.width + cc.clientWidth;
+            x = cc.offsetLeft - o_w + cc.clientWidth;
           }
         }
       } else {
@@ -1497,12 +1509,12 @@ Slide = class Slide extends Component {
     }
     lc = this._inner.children[this._inner.children.length - 1];
     if (this.props.vert) {
-      max = lc.offsetTop - this.outer_rect.height + lc.clientHeight;
+      max = lc.offsetTop - o_h + lc.clientHeight;
       if (y > max && max > 0) {
         y = max;
       }
     } else {
-      max = lc.offsetLeft - this.outer_rect.width + lc.clientWidth;
+      max = lc.offsetLeft - o_w + lc.clientWidth;
       if (x > max && max > 0) {
         x = max;
       }
@@ -1515,7 +1527,7 @@ Slide = class Slide extends Component {
 
   roundBetaHack(beta) {
     boundMethodCheck(this, Slide);
-    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer.nextElementSibling) {
+    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer && this._outer.nextElementSibling) {
       return 'calc(' + beta + '% + 0.5px)';
     }
     return beta + '%';
@@ -1632,11 +1644,13 @@ Slide = class Slide extends Component {
     inner_props = {
       ref: this.inner_ref,
       style: {
-        transition: this.state.transition,
         transform: this.state.transform
       },
       className: "-i-s-inner" + class_vert + inner_c_name + class_center + class_reverse + class_auto
     };
+    if (this.state.transition) {
+      inner_props.style.transition = this.state.transition;
+    }
     if (this.props.innerStyle) {
       inner_props.style = Object.assign(inner_props.style, this.props.innerStyle);
     }
@@ -2663,10 +2677,10 @@ if(false) {
 var escape = __webpack_require__(11);
 exports = module.exports = __webpack_require__(2)(false);
 // imports
-
+exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto:400,700);", ""]);
 
 // module
-exports.push([module.i, "@font-face {\n  font-family: \"Architects Daughter\";\n  src: url(" + escape(__webpack_require__(12)) + ");\n}\nbody {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  height: 100%;\n  width: 100%;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.52156863);\n  width: 340px;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: \"Architects Daughter\", cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 600;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: flex-end;\n  padding: 0px 10px;\n}\nfooter img {\n  width: 20px;\n  height: 20px;\n  opacity: 0.3;\n}\n.footer-text {\n  vertical-align: middle;\n  font-family: monospace;\n  color: #A1A1A1;\n  font-size: 12px;\n  margin: 10px 10px;\n}\n.footer-text:hover {\n  color: #6E6E6E;\n}\n.footer-text::before {\n  content: \"/\";\n  padding-right: 20px;\n}\n.footer-text:first-child.footer-text:first-child::before {\n  content: \"\";\n}\n", ""]);
+exports.push([module.i, "@font-face {\n  font-family: \"Architects Daughter\";\n  src: url(" + escape(__webpack_require__(12)) + ");\n}\nbody {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  height: 200px;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 14px;\n  font-weight: 600;\n  color: rgba(0, 0, 0, 0.22156863);\n  max-width: 340px;\n  width: 100%;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 30px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 30px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  background: #f7f7f7;\n  padding: 10px 8px;\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 700;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  background: #fffad5;\n  font-family: \"Architects Daughter\", cursive;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.example-tree {\n  height: auto;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 700;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: flex-end;\n  padding: 0px 10px;\n}\nfooter img {\n  width: 20px;\n  height: 20px;\n  opacity: 0.3;\n}\n.footer-text {\n  vertical-align: middle;\n  font-family: monospace;\n  color: #A1A1A1;\n  font-size: 12px;\n  margin: 10px 10px;\n}\n.footer-text:hover {\n  color: #6E6E6E;\n}\n.footer-text::before {\n  content: \"/\";\n  padding-right: 20px;\n}\n.footer-text:first-child.footer-text:first-child::before {\n  content: \"\";\n}\n", ""]);
 
 // exports
 
@@ -2705,7 +2719,7 @@ module.exports = "data:font/ttf;base64,AAEAAAANAIAAAwBQRkZUTVzdyC4AAKk8AAAAHE9TL
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, HEADER_TEXT, Header, LayoutExample, Markdown, Markup, PROPS, Shader, SimpleMenuExample, Slide, h, render,
+var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, HEADER_TEXT, Header, LayoutExample, Markdown, Markup, PROPS, Shader, SimpleMenuExample, Slide, TreeMenuExample, h, render,
   boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
 
 ({h, render, Component} = __webpack_require__(0));
@@ -2730,7 +2744,9 @@ ButtonsExample = __webpack_require__(24);
 
 CarouselExample = __webpack_require__(25);
 
-EXAMPLES = [['Layout', __webpack_require__(26), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(27), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(28), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(29), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4']];
+TreeMenuExample = __webpack_require__(26);
+
+EXAMPLES = [['Layout', __webpack_require__(27), LayoutExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4'], ['Simple Menu', __webpack_require__(28), SimpleMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'], ['Buttons', __webpack_require__(29), ButtonsExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'], ['Carousel', __webpack_require__(30), CarouselExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'], ['Tree Menu', __webpack_require__(31), TreeMenuExample, 'https://github.com/arxii/preact-slide/blob/master/source/examples/TreeMenuExample.coffee?ts=4']];
 
 HEADER_TEXT = 'A powerful and performant way to transition between different modules using a novel nested sliding approach. This smart base component can be used as a foundation for creating animated modular interfaces and widgets of any scale. We take the pretty parts of CSS Flexbox and build on top of it.';
 
@@ -2831,7 +2847,7 @@ Header = class Header extends Component {
       }
     });
     this.gradient = new Shader({
-      code: __webpack_require__(30)(),
+      code: __webpack_require__(32)(),
       uniforms: {
         pos: {
           type: '2fv',
@@ -2908,6 +2924,8 @@ Header = class Header extends Component {
       className: 'gradient-link center',
       href: 'https://github.com/arxii/shader-box-gradient'
     }, '?'), h('div', {
+      className: 'header-description'
+    }, h('div', {
       className: 'title center'
     }, h('a', {
       href: "https://github.com/arxii/preact-slide",
@@ -2933,9 +2951,7 @@ Header = class Header extends Component {
       className: 'center github-link'
     }, h('img', {
       src: './site/github.svg'
-    }))), h('div', {
-      className: 'header-description'
-    }, h('p', {
+    }))), h('p', {
       className: 'header-description-sub'
     }, 'Experimental'), h('p', {
       className: 'header-description-text'
@@ -2958,7 +2974,7 @@ Header = class Header extends Component {
 
 };
 
-ABOUT = __webpack_require__(31);
+ABOUT = __webpack_require__(33);
 
 Docs = class Docs {
   render() {
@@ -4793,7 +4809,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, ".carousel-example-square {\n  background: #FFEBCA;\n  color: black;\n  font-size: 14px;\n}\n.carousel-example-top {\n  background: red;\n  cursor: pointer;\n}\n.carousel-example-bot {\n  background: #333333;\n  color: white;\n}\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px;\n}\n.carousel-example-dots .dot {\n  cursor: pointer;\n}\n.carousel-example-dots .dot:hover {\n  color: #333333;\n}\n.carousel-example-dots .dot.active {\n  color: #333333;\n}\n.dots {\n  font-family: monospace;\n}\n.buttons-example {\n  background: #E2E2E2;\n  cursor: pointer;\n}\n.btn-example-dark {\n  background: black;\n  color: white;\n}\n.simple-menu-example {\n  height: 200px;\n}\n.simple-menu-example-main {\n  background: #E2E2E2;\n  padding: 50px;\n  box-sizing: border-box;\n}\n.simple-menu-example-menu {\n  background: black;\n  color: white;\n}\n.simple-menu-example-menu2 {\n  background: #FFEBCA;\n  color: black;\n}\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer;\n}\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer;\n}\n.layout-example {\n  background: #E2E2E2;\n}\n", ""]);
+exports.push([module.i, ".carousel-example-square {\n  background: #FFEBCA;\n  color: black;\n  font-size: 14px;\n}\n.carousel-example-top {\n  background: red;\n  cursor: pointer;\n}\n.carousel-example-bot {\n  background: #333333;\n  color: white;\n}\n.carousel-example-dots {\n  background: #DCDCDC;\n  color: #9F9F9F;\n  font-size: 30px;\n}\n.carousel-example-dots .dot {\n  cursor: pointer;\n}\n.carousel-example-dots .dot:hover {\n  color: #333333;\n}\n.carousel-example-dots .dot.active {\n  color: #333333;\n}\n.dots {\n  font-family: monospace;\n}\n.example-tree {\n  transition: height 0.4s cubic-bezier(0.25, 0.35, 0, 1);\n  background: white;\n  min-height: 400px;\n}\n.buttons-example {\n  cursor: pointer;\n}\n.btn-example-dark {\n  background: black;\n  color: white;\n}\n.simple-menu-example {\n  height: 200px;\n}\n.simple-menu-example-main {\n  padding: 50px;\n  box-sizing: border-box;\n}\n.simple-menu-example-menu {\n  background: black;\n  color: white;\n}\n.simple-menu-example-menu2 {\n  background: #FFEBCA;\n  color: black;\n}\n.simple-menu-example-icon {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: black;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer;\n}\n.simple-menu-example-icon2 {\n  position: absolute;\n  right: 0;\n  top: 0;\n  padding: 20px;\n  color: white;\n  font-size: 30px;\n  line-height: 15px;\n  cursor: pointer;\n}\n", ""]);
 
 // exports
 
@@ -5171,36 +5187,251 @@ module.exports = CarouselExample;
 
 /***/ }),
 /* 26 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "With Slide, you can layout your ui by splitting up each parent slide with nested slides. \n****\nThe `beta` property based on the css flexbox property, but stricter and stripped down to functionality that pertains to building a functional user interface. With a stricter layout mechanism that scales, its easy to layout different components of your app and their relationships in a complex way without getting your hands dirty in css and having to worry about side cases."
+var Component, Slide, TreeMenu, h, render,
+  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
+
+({h, render, Component} = __webpack_require__(0));
+
+Slide = __webpack_require__(1);
+
+TreeMenu = class TreeMenu extends Component {
+  constructor(props) {
+    super(props);
+    this.componentWillUpdate = this.componentWillUpdate.bind(this);
+    this.state = {
+      dim: 30,
+      list: this.makeList(0, 0, 3, 3),
+      size: 0
+    };
+    this.recalculateList(this.state.list);
+  }
+
+  recalculateList(list, level, parent) {
+    var item, k, len, ref;
+    list.parent = parent;
+    if (level === void 0 || level === null) {
+      level = -1;
+    }
+    list.level = level;
+    list.size = 0;
+    list.visible_size = 0;
+    ref = list.items;
+    for (k = 0, len = ref.length; k < len; k++) {
+      item = ref[k];
+      this.recalculateList(item, list.level + 1, list);
+      list.size += item.size + 1;
+      list.visible_size += item.visible_size + 1;
+    }
+    if (level === -1) {
+      list.toggle = true;
+    }
+    if (!list.toggle) {
+      list.visible_size = 0;
+    }
+    return [list.size, list.visible_size];
+  }
+
+  componentWillUpdate() {
+    var cnt;
+    boundMethodCheck(this, TreeMenu);
+    cnt = 0;
+    return this.recalculateList(this.state.list);
+  }
+
+  
+  // generate list of items
+  makeList(i, level, max, amount) {
+    var item, j, k, l, name, ref, ref1;
+    
+    // make a name
+    name = '';
+    for (j = k = 0, ref = level; 0 <= ref ? k < ref : k > ref; j = 0 <= ref ? ++k : --k) {
+      name += String.fromCharCode(97 + 26 * Math.random());
+    }
+    name = name.toUpperCase();
+    
+    // item object
+    item = {
+      name: name,
+      toggle: false,
+      items: []
+    };
+    // check max recursion
+    if (level === max) {
+      return item;
+    }
+    for (j = l = 0, ref1 = amount; 0 <= ref1 ? l < ref1 : l > ref1; j = 0 <= ref1 ? ++l : --l) {
+      item.items.push(this.makeList(i + j, level + 1, max, amount));
+    }
+    return item;
+  }
+
+  item(item) {
+    return h(Slide, {
+      onClick: () => {
+        var it, k, len, ref;
+        if (item.level === 0) {
+          ref = item.parent.items;
+          for (k = 0, len = ref.length; k < len; k++) {
+            it = ref[k];
+            if (it !== item) {
+              it.toggle = false;
+            }
+          }
+        }
+        item.toggle = !item.toggle;
+        return this.forceUpdate();
+      },
+      height: 30,
+      style: {
+        'cursor': item.items.length && 'pointer',
+        'padding-left': 10 + 10 * item.level
+      }
+    }, item.name);
+  }
+
+  list(items) {
+    if (items.length === 1) {
+      return this.item(items[0]);
+    }
+    return h(Slide, {
+      vert: true,
+      height: items.length * 30
+    }, items.map((item) => {
+      return this.item(item);
+    }));
+  }
+
+  makeItem(item, remainder = [], render_self) {
+    var c, child, children, i, j, k, l, len, list, new_remainder, ref, ref1, ref2, size, visible_size;
+    if (item.size === 0 && !remainder.length) {
+      return h(Slide, {
+        vert: true,
+        beta: 100
+      }, this.item(item));
+    } else if (item.size === 0 && remainder.length) {
+      return [this.item(item), this.makeItem(remainder[0], remainder.slice(1))];
+    } else {
+      size = item.size * this.state.dim;
+      visible_size = item.visible_size * this.state.dim;
+      list = [];
+      new_remainder = [];
+      ref = item.items;
+      for (i = k = 0, len = ref.length; k < len; i = ++k) {
+        child = ref[i];
+        if (child.size === 0) {
+          list.push(child);
+        } else {
+          list.push(child);
+          for (j = l = ref1 = i, ref2 = item.items.length; ref1 <= ref2 ? l < ref2 : l > ref2; j = ref1 <= ref2 ? ++l : --l) {
+            new_remainder.push(item.items[j]);
+          }
+          break;
+        }
+      }
+      c = 230 - item.level * 20;
+      children = h(Slide, {
+        vert: true,
+        beta: 100,
+        slide: true,
+        y: size - visible_size,
+        className: '1'
+      }, h(Slide, {
+        vert: true,
+        style: {
+          background: `rgb(${c},${c},${c})`
+        },
+        height: size,
+        slide: true,
+        className: '2',
+        y: -size + visible_size
+      }, this.list(list), new_remainder.length && this.makeItem(new_remainder[0], new_remainder.slice(1)) || null), remainder.length && this.makeItem(remainder[0], remainder.slice(1), true) || null);
+      if (render_self) {
+        return h(Slide, {
+          beta: 100,
+          vert: true
+        }, this.item(item), children);
+      } else {
+        return children;
+      }
+    }
+  }
+
+  componentDidMount() {
+    return setInterval(() => {
+      return this.setState({
+        size: this._root._outer.querySelectorAll('*').length
+      });
+    }, 500);
+  }
+
+  render() {
+    var items;
+    items = this.state.items;
+    return h(Slide, {
+      ref: (e) => {
+        return this._root = e;
+      },
+      className: 'example example-tree',
+      vert: true,
+      height: this.state.list.visible_size * this.state.dim + 100
+    }, h('blockquote', {
+      style: {
+        height: 100,
+        'font-family': 'monospace'
+      },
+      ref: (e) => {
+        return this._count = e;
+      },
+      className: 'center'
+    }, 'div count: ' + this.state.size), this.makeItem(this.state.list));
+  }
+
+};
+
+module.exports = TreeMenu;
+
 
 /***/ }),
 /* 27 */
 /***/ (function(module, exports) {
 
-module.exports = "Creating a typical sliding menu and/or page transitions is super easy. Click on the equals sign to see the sliding effect. Notice that the main slide is scrollable. This can be quickly enabled via the `scroll` shortcut property."
+module.exports = "With Slide, you can layout your ui by splitting up each parent slide with nested slides. \n****\nThe `beta` property based on the css flexbox property, but stricter and stripped down to functionality that pertains to building a functional user interface. With a stricter layout mechanism that scales, its easy to layout different components of your app and their relationships in a complex way without getting your hands dirty in css and having to worry about side cases."
 
 /***/ }),
 /* 28 */
 /***/ (function(module, exports) {
 
-module.exports = "`Slide` can generally be used as a wrapper for any ui element that requires some sort of \"reveal\", a quick and easy example is a simple button with underlines and transitions. by setting `pos:0.1` we can offset the slide by some percentage relative to the floored value. click and hover over each button to see the effect. Think of any other way you can use this? \n> hint: progress bars, input fields, toggle buttons...etc"
+module.exports = "Creating a typical sliding menu and/or page transitions is super easy. Click on the equals sign to see the sliding effect. Notice that the main slide is scrollable. This can be quickly enabled via the `scroll` shortcut property."
 
 /***/ }),
 /* 29 */
 /***/ (function(module, exports) {
 
-module.exports = "This example demonstrates how easy it is to build a carousel type component with just a few lines of code, just checkout the <a href = 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'>source file</a> and see for yourself!\n***\n**Notice** the red background when selecting slides that are 1 or more over, it's there to show that slides which are not visible relative to the parent are set to `visibility: hidden`. When you change the `pos` property, the component recalculates the visibility before and after the transition.\n"
+module.exports = "`Slide` can generally be used as a wrapper for any ui element that requires some sort of \"reveal\", a quick and easy example is a simple button with underlines and transitions. by setting `pos:0.1` we can offset the slide by some percentage relative to the floored value. click and hover over each button to see the effect. Think of any other way you can use this? \n> hint: progress bars, input fields, toggle buttons...etc"
 
 /***/ }),
 /* 30 */
 /***/ (function(module, exports) {
 
-module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * v_uv.y);\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
+module.exports = "This example demonstrates how easy it is to build a carousel type component with just a few lines of code, just checkout the <a href = 'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'>source file</a> and see for yourself!\n***\n**Notice** the red background when selecting slides that are 1 or more over, it's there to show that slides which are not visible relative to the parent are set to `visibility: hidden`. When you change the `pos` property, the component recalculates the visibility before and after the transition.\n"
 
 /***/ }),
 /* 31 */
+/***/ (function(module, exports) {
+
+module.exports = "This example is a bit more advanced and really pushes the limits of what you can practically do. This example shows how you can actually \"hack\" the ui with the `Slide`, creating components that would otherwise be impossible or would have taken thousands of lines of code. Check out the example source code and see if you can grasp how I used the nested slide offset trick to create a smooth and optimized tree menu from a single list state object in just 150 lines of code.\n\nNotice how the div count changes dynamically. This is automatically done by `Slide` so you dont have to worry about rendering components that are not visible. However, even though the components dont get rendered, the props are still passed down. If you want to avoid passing down to many props inside render you can always store your components in variables.\n>Hint: recursion & nested slides"
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
+module.exports=opts=>"precision lowp float;\nuniform float iTime;\nuniform vec3 seed;\nuniform float fade;\nuniform float speed;\nvarying vec2 v_uv;\nvoid main() {\n\tfloat t = iTime * speed;\n\tvec3 c = vec3(0.69 - (sin(((seed.x + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.713 - (cos(((seed.y + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3), 0.72 + (sin(((seed.z + (t / 3e3)) + v_uv.y) + v_uv.x) * 0.3));\n\tc += (fade * v_uv.y);\n\tgl_FragColor = vec4(c, 1.0);\n}\n";
+
+/***/ }),
+/* 33 */
 /***/ (function(module, exports) {
 
 module.exports = "\n\nWith increasing modern UI complexity, its easy to get lost in overly complex javascript and css solutions. Use this universal animated layout component to layout your app and slide between different ui components and modules with a simple nested sliding / beta approach! Parts of the UI that are not visible in the viewport are automatically not rendered because parts that you dont need are not in the viewport until you slide them in!\n\n<br>\nexamples:\n<br>\n<a href = 'http://checklist-preact.lerp.io'>checklist app (older library version)</a>\n"

@@ -86,19 +86,8 @@ class Slide extends Component
 	###
 	componentDidUpdate: (p_props)->
 		@checkSlideUpdate(p_props)
-		if @context.slide && @_outer
-			if @state.offset != 0 && @state.offset != @_outer.offsetTop
-				offs = @_outer.offsetTop - @state.offset
-				# console.log 'OFFS',offs
-				@_outer.style.transition = ''
-				@_outer.style.transform = 'matrix(1, 0.00001, 0, 1, ' + (0) + ', ' + (-offs) + ')'
-				setTimeout ()=>
-					if @_outer
-						@_outer.style.transition = @props.ease
-						@_outer.style.transform = null
-				,0
-			@state.offset = @_outer.offsetTop
-		
+
+
 
 	###
 	@componentWillUnmount method

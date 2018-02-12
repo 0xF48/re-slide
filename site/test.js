@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/site/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 32);
+/******/ 	return __webpack_require__(__webpack_require__.s = 34);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1108,11 +1108,15 @@ DEFAULT_PROPS = {
   height: 0, //slide height manual override
   ratio: 0, //ratio dim helper
   center: false, //css flex center
+  hide: true,
   inverse: false, //css flex direction inverse
   scroll: false, //css scroll overflow
   className: null,
   iclassName: null,
-  offset: 0
+  offset: 0,
+  x: null,
+  y: null,
+  align: false
 };
 
 EVENT_REGEX = new RegExp('^on[A-Z]');
@@ -1235,10 +1239,7 @@ Slide = class Slide extends Component {
 
   componentWillUnmount() {
     boundMethodCheck(this, Slide);
-    removeEventListener('resize', this.resizeEvent);
-    if (this.timer) {
-      return clearTimeout(this.timer);
-    }
+    return removeEventListener('resize', this.resizeEvent);
   }
 
   /*
@@ -1253,7 +1254,7 @@ Slide = class Slide extends Component {
     boundMethodCheck(this, Slide);
     // if @visibility_map[child._outer] == undefined
     // 	return true
-    if (this.visibility_map.get(child._outer) === false) {
+    if (this.visibility_map.get(child._outer) === false && this.props.hide) {
       // console.log 'NOT VISIBLE',child._outer
       return false;
     }
@@ -1263,8 +1264,8 @@ Slide = class Slide extends Component {
   getChildContext() {
     boundMethodCheck(this, Slide);
     return {
-      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.outer_rect.width,
-      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.outer_rect.height,
+      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.props.width || this.outer_rect.width,
+      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.props.height || this.outer_rect.height,
       vert: this.props.vert || this.props.vert || false,
       count: this.props.children.length,
       isVisible: this.isVisible,
@@ -1298,18 +1299,19 @@ Slide = class Slide extends Component {
   @inViewBounds method
   check to see if a line that starts at p with length d is overlapping a line starting at op with length od
   */
-  inViewBounds(p, d, op, od) {
-    return p + d > op && p < op + od;
+  inViewBounds(el_pos, el_size, parent_pos, parent_size) {
+    return Math.round(el_pos + el_size) > Math.round(parent_pos) && Math.round(el_pos) < Math.round(parent_pos + parent_size);
   }
 
   updateVisibility(x, y, force_hide) {
     var child, i, j, len, rect, ref;
     boundMethodCheck(this, Slide);
+    this.calculateBounds();
     ref = this._inner.children;
     for (i = j = 0, len = ref.length; j < len; i = ++j) {
       child = ref[i];
       rect = child.getBoundingClientRect();
-      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.outer_rect.height))) {
+      if ((!this.props.vert && this.inViewBounds(rect.x + x, rect.width, this.outer_rect.x, this.props.width || this.outer_rect.width)) || (this.props.vert && this.inViewBounds(rect.y + y, rect.height, this.outer_rect.y, this.props.height || this.outer_rect.height))) {
         this.visibility_map.set(child, true);
       } else if (force_hide) {
         this.visibility_map.set(child, false);
@@ -1322,9 +1324,10 @@ Slide = class Slide extends Component {
     if (!this._inner) {
       return;
     }
-    this.calculateBounds();
-    this.visibility_map = new Map;
-    this.updateVisibility(0, 0, true);
+    if (this.props.hide) {
+      this.visibility_map = new Map;
+      this.updateVisibility(0, 0, true);
+    }
     return this.setState({
       in_transition: false
     }, () => {
@@ -1335,8 +1338,9 @@ Slide = class Slide extends Component {
 
   onSlideStart(x, y) {
     boundMethodCheck(this, Slide);
-    this.calculateBounds();
-    return this.updateVisibility(x, y, false);
+    if (this.props.hide) {
+      return this.updateVisibility(x, y, false);
+    }
   }
 
   /*
@@ -1350,12 +1354,18 @@ Slide = class Slide extends Component {
     }
     
     // console.log 'UPDATE'
-    pos = this.getIndexXY(this.props.pos);
-    if (this.props.pos !== p_props.pos || this.props.posOffset !== p_props.posOffset || this.props.posOffsetBeta !== p_props.posOffsetBeta) {
+    if (this.props.y !== null || this.props.x !== null) {
+      pos = {
+        x: this.props.x,
+        y: this.props.y
+      };
+    } else {
+      pos = this.getIndexXY(this.props.pos);
+    }
+    if (this.props.x !== p_props.x || this.props.y !== p_props.y || this.props.pos !== p_props.pos || this.props.offset !== p_props.offset) {
       return this.toXY(pos);
     }
-    if (this.state.x !== pos.x || this.state.y !== pos.y) {
-      // console.log 'SET XY'
+    if (this.state.x !== pos.x || this.state.y !== pos.y || this.props.height !== p_props.height || this.props.width !== p_props.width || this.props.auto !== p_props.auto) {
       return this.setXY(pos);
     }
   }
@@ -1377,7 +1387,7 @@ Slide = class Slide extends Component {
     return this.setState({
       in_transition: true,
       transition: this.getTransition(),
-      transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
+      transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')',
       x: pos.x,
       y: pos.y
     });
@@ -1447,7 +1457,7 @@ Slide = class Slide extends Component {
   Get the index x and y position of where we want to slide/pan
   */
   getIndexXY(index) {
-    var _cc, cc, cc_rect, lc, max, x, y;
+    var _cc, cc, cc_rect, lc, max, o_h, o_w, x, y;
     if (index == null) {
       throw new Error('index position is undefined');
     }
@@ -1460,15 +1470,17 @@ Slide = class Slide extends Component {
     _cc = this.props.children[Math.floor(index)];
     cc_rect = cc.getBoundingClientRect();
     this.calculateBounds();
+    o_h = this.outer_rect.height || this.props.height;
+    o_w = this.outer_rect.width || this.props.width;
     if (this.props.vert) {
       if (cc.offsetTop > this.state.y) {
-        if (cc.clientHeight >= this.outer_rect.height) {
+        if (cc.clientHeight >= o_h || this.props.align) {
           y = cc.offsetTop;
         } else {
-          if (cc.offsetTop + cc.clientHeight <= this.state.y + this.outer_rect.height) {
+          if (cc.offsetTop + cc.clientHeight <= this.state.y + o_h) {
             y = this.state.y;
           } else {
-            y = cc.offsetTop - this.outer_rect.height + cc.clientHeight;
+            y = cc.offsetTop - o_h + cc.clientHeight;
           }
         }
       } else {
@@ -1479,13 +1491,13 @@ Slide = class Slide extends Component {
       }
     } else {
       if (cc.offsetLeft > this.state.x) {
-        if (cc.clientWidth >= this.outer_rect.width) {
+        if (cc.clientWidth >= o_w || this.props.align) {
           x = cc.offsetLeft;
         } else {
-          if (cc.offsetLeft + cc.clientWidth <= this.state.x + this.outer_rect.width) {
+          if (cc.offsetLeft + cc.clientWidth <= this.state.x + o_w) {
             x = this.state.x;
           } else {
-            x = cc.offsetLeft - this.outer_rect.width + cc.clientWidth;
+            x = cc.offsetLeft - o_w + cc.clientWidth;
           }
         }
       } else {
@@ -1497,12 +1509,12 @@ Slide = class Slide extends Component {
     }
     lc = this._inner.children[this._inner.children.length - 1];
     if (this.props.vert) {
-      max = lc.offsetTop - this.outer_rect.height + lc.clientHeight;
+      max = lc.offsetTop - o_h + lc.clientHeight;
       if (y > max && max > 0) {
         y = max;
       }
     } else {
-      max = lc.offsetLeft - this.outer_rect.width + lc.clientWidth;
+      max = lc.offsetLeft - o_w + lc.clientWidth;
       if (x > max && max > 0) {
         x = max;
       }
@@ -1515,7 +1527,7 @@ Slide = class Slide extends Component {
 
   roundBetaHack(beta) {
     boundMethodCheck(this, Slide);
-    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer.nextElementSibling) {
+    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer && this._outer.nextElementSibling) {
       return 'calc(' + beta + '% + 0.5px)';
     }
     return beta + '%';
@@ -1632,11 +1644,13 @@ Slide = class Slide extends Component {
     inner_props = {
       ref: this.inner_ref,
       style: {
-        transition: this.state.transition,
         transform: this.state.transform
       },
       className: "-i-s-inner" + class_vert + inner_c_name + class_center + class_reverse + class_auto
     };
+    if (this.state.transition) {
+      inner_props.style.transition = this.state.transition;
+    }
     if (this.props.innerStyle) {
       inner_props.style = Object.assign(inner_props.style, this.props.innerStyle);
     }
@@ -2364,10 +2378,10 @@ if(false) {
 var escape = __webpack_require__(11);
 exports = module.exports = __webpack_require__(2)(false);
 // imports
-
+exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto:400,700);", ""]);
 
 // module
-exports.push([module.i, "@font-face {\n  font-family: \"Architects Daughter\";\n  src: url(" + escape(__webpack_require__(12)) + ");\n}\nbody {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  height: 100%;\n  width: 100%;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 12px;\n  color: rgba(0, 0, 0, 0.52156863);\n  width: 340px;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 10px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 10px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  /* margin: 0px 10px; */\n  padding: 10px 8px;\n  /* color: black; */\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 500;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  font-family: \"Architects Daughter\", cursive;\n  -webkit-font-smoothing: auto;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 600;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: flex-end;\n  padding: 0px 10px;\n}\nfooter img {\n  width: 20px;\n  height: 20px;\n  opacity: 0.3;\n}\n.footer-text {\n  vertical-align: middle;\n  font-family: monospace;\n  color: #A1A1A1;\n  font-size: 12px;\n  margin: 10px 10px;\n}\n.footer-text:hover {\n  color: #6E6E6E;\n}\n.footer-text::before {\n  content: \"/\";\n  padding-right: 20px;\n}\n.footer-text:first-child.footer-text:first-child::before {\n  content: \"\";\n}\n", ""]);
+exports.push([module.i, "@font-face {\n  font-family: \"Architects Daughter\";\n  src: url(" + escape(__webpack_require__(12)) + ");\n}\nbody {\n  font-family: \"Roboto\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-size: 14px;\n  line-height: 1.5;\n  font-size: 16px;\n  color: #24292e;\n  background-color: #fff;\n  min-height: 100vh;\n  text-rendering: optimizeSpeed;\n  -webkit-font-smoothing: antialiased;\n}\nbody:after {\n  background: none;\n  content: \"\";\n  height: 1px;\n  position: fixed;\n}\n.test {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 20px;\n  color: white;\n  height: 100%;\n  width: 100%;\n}\n.center {\n  align-items: center;\n  display: flex;\n  align-content: center;\n  justify-content: center;\n}\na {\n  text-decoration: none;\n}\nhr {\n  border: none;\n  border-bottom: 1px solid #e8e8e8;\n  background: none;\n  height: 0;\n}\ncode {\n  background: #fffad5;\n}\nblockquote {\n  opacity: 0.5;\n  font-style: oblique;\n}\n.gradient-link {\n  position: absolute;\n  z-index: 10;\n  font-size: 20px;\n  width: 30px;\n  height: 30px;\n  text-decoration: none;\n  color: rgba(0, 0, 0, 0.3);\n  left: 0;\n  top: 0;\n  padding: 10px;\n}\n.header {\n  position: relative;\n  width: 100vw;\n  height: 100vh;\n}\n.canvas {\n  position: relative;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n.title {\n  height: 200px;\n  flex-direction: column;\n}\n.title-name {\n  font-family: \"Architects Daughter\", cursive;\n  font-size: 50px;\n  line-height: 50px;\n  color: #555555;\n}\n.github-link {\n  padding: 0px;\n  opacity: 0.3;\n}\n.github-link img {\n  fill: white;\n  width: 25px;\n  height: 25px;\n}\n.title-snippet {\n  margin: 10px;\n  font-family: monospace;\n  font-size: 14px;\n  font-weight: 600;\n  color: rgba(0, 0, 0, 0.22156863);\n  max-width: 340px;\n  width: 100%;\n  height: 30px;\n}\n.title-snippet-text {\n  text-align: left;\n  padding: 6px 8px;\n  display: inline-block;\n}\n.header-description-sub {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.header-description {\n  position: absolute;\n  bottom: 0px;\n  box-sizing: border-box;\n  left: 0px;\n  margin: 50px 0px;\n  padding: 0px 30px;\n  width: 100%;\n}\n.header-description p {\n  position: relative;\n  margin: 20px auto;\n  max-width: 600px;\n}\n.shields {\n  margin: 10px 0px;\n}\n.shields a {\n  margin-right: 4px;\n}\nh1 {\n  font-style: oblique;\n  font-family: \"Architects Daughter\", cursive;\n  opacity: 0.4;\n  color: #1E1E1E;\n  font-size: 20px;\n  font-weight: 100;\n}\n.section {\n  max-width: 600px;\n  padding: 0px 30px;\n  margin: 0px auto;\n  margin-bottom: 100px;\n}\n.section-title {\n  color: #5A3D3C;\n  display: flex;\n  border-left: 4px solid #F1E0D9;\n  padding-left: 5px;\n  align-children: center;\n  line-height: 20px;\n  font-size: 20px;\n  text-decoration: none;\n}\n.section-title .section-title-name {\n  font-weight: 700;\n}\n.section-title-link {\n  color: #39383a;\n  background: #f7f7f7;\n  padding: 10px 8px;\n  text-decoration: none;\n  text-align: center;\n  vertical-align: middle;\n  line-height: 40px;\n  margin-top: 50px;\n  font-size: 16px;\n  position: relative;\n  font-weight: 700;\n}\n.section-text {\n  padding: 0px;\n}\n.section-text p {\n  margin: 10px 0px;\n}\n.example {\n  max-width: 600px;\n  height: 300px;\n  background: #fffad5;\n  font-family: \"Architects Daughter\", cursive;\n  text-rendering: optimizeSpeed;\n}\n.example-section {\n  margin-bottom: 80px;\n}\n.example-tree {\n  height: auto;\n}\n.prop {\n  width: auto;\n  margin-bottom: 30px;\n}\n.prop div {\n  padding: 0px 2px;\n  /* font-size: 12px; */\n  /* margin: 0px 10px; */\n  display: inline-block;\n}\n.prop .prop-name {\n  margin-right: 0px;\n  font-weight: 700;\n  color: #35405b;\n  border-left: 4px solid #f1f1f1;\n  padding-left: 5px;\n  font-size: 20px;\n}\n.prop .prop-default {\n  margin-left: 0px;\n  opacity: 0.5;\n  font-size: 15px;\n}\n.prop .prop-text {\n  margin-top: 5px;\n  display: block;\n  padding-top: 0px;\n  color: #3e3e3e;\n}\n.prop .prop-text p {\n  margin-top: 0px;\n}\nfooter {\n  display: flex;\n  justify-content: flex-end;\n  padding: 0px 10px;\n}\nfooter img {\n  width: 20px;\n  height: 20px;\n  opacity: 0.3;\n}\n.footer-text {\n  vertical-align: middle;\n  font-family: monospace;\n  color: #A1A1A1;\n  font-size: 12px;\n  margin: 10px 10px;\n}\n.footer-text:hover {\n  color: #6E6E6E;\n}\n.footer-text::before {\n  content: \"/\";\n  padding-right: 20px;\n}\n.footer-text:first-child.footer-text:first-child::before {\n  content: \"\";\n}\n", ""]);
 
 // exports
 
@@ -3444,7 +3458,9 @@ module.exports = {
 /* 29 */,
 /* 30 */,
 /* 31 */,
-/* 32 */
+/* 32 */,
+/* 33 */,
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Card, Component, Slide, Test, _, h, rand, randomColor, rbg, rc, render, seed, shuffle;
@@ -3453,11 +3469,11 @@ var Card, Component, Slide, Test, _, h, rand, randomColor, rbg, rc, render, seed
 
 Slide = __webpack_require__(1);
 
-randomColor = __webpack_require__(33);
+randomColor = __webpack_require__(35);
 
-seed = __webpack_require__(43);
+seed = __webpack_require__(45);
 
-_ = __webpack_require__(44);
+_ = __webpack_require__(46);
 
 __webpack_require__(9);
 
@@ -3696,13 +3712,13 @@ this.docs_el = render(h(Test), document.body, this.docs_el);
 
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var color = __webpack_require__(34);
+var color = __webpack_require__(36);
 
 var ratio = 0.618033988749895;
 var hue   = Math.random();
@@ -3729,13 +3745,13 @@ module.exports = function (saturation, value) {
 
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
-var clone = __webpack_require__(35);
-var convert = __webpack_require__(40);
-var string = __webpack_require__(42);
+var clone = __webpack_require__(37);
+var convert = __webpack_require__(42);
+var string = __webpack_require__(44);
 
 var Color = function (obj) {
 	if (obj instanceof Color) {
@@ -4194,7 +4210,7 @@ module.exports = Color;
 
 
 /***/ }),
-/* 35 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {var clone = (function() {
@@ -4358,10 +4374,10 @@ if (typeof module === 'object' && module.exports) {
   module.exports = clone;
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(38).Buffer))
 
 /***/ }),
-/* 36 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4375,9 +4391,9 @@ if (typeof module === 'object' && module.exports) {
 
 
 
-var base64 = __webpack_require__(37)
-var ieee754 = __webpack_require__(38)
-var isArray = __webpack_require__(39)
+var base64 = __webpack_require__(39)
+var ieee754 = __webpack_require__(40)
+var isArray = __webpack_require__(41)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -6158,7 +6174,7 @@ function isnan (val) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 37 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6279,7 +6295,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -6369,7 +6385,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -6380,11 +6396,11 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 40 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var conversions = __webpack_require__(13);
-var route = __webpack_require__(41);
+var route = __webpack_require__(43);
 
 var convert = {};
 
@@ -6464,7 +6480,7 @@ module.exports = convert;
 
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var conversions = __webpack_require__(13);
@@ -6567,7 +6583,7 @@ module.exports = function (fromModel) {
 
 
 /***/ }),
-/* 42 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
@@ -6794,7 +6810,7 @@ for (var name in colorNames) {
 
 
 /***/ }),
-/* 43 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6975,7 +6991,7 @@ mixkey(Math.random(), pool);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 44 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -24064,10 +24080,10 @@ mixkey(Math.random(), pool);
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(45)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(47)(module)))
 
 /***/ }),
-/* 45 */
+/* 47 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {

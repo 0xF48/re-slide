@@ -8,6 +8,7 @@ class TreeMenu extends Component
 		@state =
 			dim: 30
 			list: @makeList(0,0,3,3)
+			size: 0
 		
 		@recalculateList(@state.list)
 
@@ -73,6 +74,7 @@ class TreeMenu extends Component
 				@forceUpdate()
 			height: 30
 			style:
+				'cursor': item.items.length && 'pointer'
 				'padding-left':10+10*item.level
 			item.name
 	
@@ -125,8 +127,8 @@ class TreeMenu extends Component
 					className: '2'
 					y: -size + visible_size
 					@list list
-					new_remainder.length && @makeItem(new_remainder[0],new_remainder.slice(1))
-				remainder.length && @makeItem(remainder[0],remainder.slice(1),true)
+					new_remainder.length && @makeItem(new_remainder[0],new_remainder.slice(1)) || null
+				remainder.length && @makeItem(remainder[0],remainder.slice(1),true) || null
 
 			if render_self
 				return h Slide,
@@ -138,12 +140,28 @@ class TreeMenu extends Component
 				return children
 
 	
+	componentDidMount: ->
+		setInterval ()=>
+			@setState
+				size: @_root._outer.querySelectorAll('*').length
+		,500
+	
 	render: ->
 		items = @state.items
 		h Slide,
+			ref: (e)=>
+				@_root = e
 			className: 'example example-tree'
 			vert: true
-			height: @state.list.visible_size * @state.dim
+			height: @state.list.visible_size * @state.dim + 100
+			h 'blockquote',
+				style:
+					height: 100
+					'font-family':'monospace'
+				ref: (e)=>
+					@_count = e
+				className: 'center'
+				'div count: '+@state.size
 			@makeItem @state.list
 
 

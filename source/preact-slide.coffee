@@ -23,6 +23,7 @@ DEFAULT_PROPS =
 	x: null
 	y: null
 	align: false
+	outerChildren: null
 
 
 EVENT_REGEX = new RegExp('^on[A-Z]')
@@ -533,7 +534,7 @@ class Slide extends Component
 			!hidden && h 'div',
 				inner_props
 				@props.children
-			!hidden && @props.outer_children
+			!hidden && @props.outerChildren
 
 
 
@@ -570,7 +571,7 @@ class Slide extends Component
 			h 'div',
 				outer_props
 				@props.children
-				@props.outer_children
+				@props.outerChildren
 		
 
 	###

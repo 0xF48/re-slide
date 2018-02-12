@@ -1,5 +1,5 @@
-# Preact Slide
 <p align="center"><a href = "http://arxii.github.io/preact-slide" ><img src ="https://raw.githubusercontent.com/arxii/preact-slide/master/logo.png" /></a></p>
+# preact-slide
 
 
 [homepage](http://arxii.github.io/preact-slide)
@@ -35,24 +35,23 @@ With increasing modern UI complexity, its easy to get lost in overly complex jav
 
 ## Simple Snippet
 ```coffeescript
-	render: ->
+h Slide,
+	vert: true
+	slide: true
+	pos: 1
+	h Slide, #20% of parent height, hidden because not in viewport (parent pos:1)
+		beta: 20
+		slide:yes
+		h Slide, #beta is 100 by default, vert is false by default
+			center: true
+			'child 1.a' #not rendered in DOM because parent is hidden.
 		h Slide,
-			vert: true
-			slide: true
-			pos: 1
-			h Slide, //#0 20% of parent width (visibility:hidden because parent is pos:1) 
-				beta: 20
-				slide:yes
-				h Slide, //beta is 100 by default, vert is false by default
-					center: true
-					'im not rendered in the DOM because my parent is not in the viewport!'
-				h Slide,
-					center: true
-					'I am not rendered to the dom until the top most slide is at pos:0 and my parent pos is set to 1'
-			h Slide, //#1 100% of parent 
-				beta: 100
-				center: true
-				'hi im child #2! and im 100% of parent width. since i take up the entire height and width of my parent i am the only visible child.'
+			center: true
+			'child 1.b' #not rendered in DOM because parent is hidden.
+	h Slide, # 100% of parent 
+		beta: 100
+		center: true
+		'child 2' #100% of parent height.
 
 ```
 

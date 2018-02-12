@@ -105,7 +105,8 @@ DEFAULT_PROPS = {
   offset: 0,
   x: null,
   y: null,
-  align: false
+  align: false,
+  outerChildren: null
 };
 
 EVENT_REGEX = new RegExp('^on[A-Z]');
@@ -657,7 +658,7 @@ Slide = class Slide extends Component {
     if (hidden) {
       slide_props.style.visibility = 'hidden';
     }
-    return h('div', slide_props, !hidden && h('div', inner_props, this.props.children), !hidden && this.props.outer_children);
+    return h('div', slide_props, !hidden && h('div', inner_props, this.props.children), !hidden && this.props.outerChildren);
   }
 
   renderStatic() {
@@ -687,7 +688,7 @@ Slide = class Slide extends Component {
     if (this.context.isVisible && !this.context.isVisible(this)) {
       return h('div', outer_props);
     } else {
-      return h('div', outer_props, this.props.children, this.props.outer_children);
+      return h('div', outer_props, this.props.children, this.props.outerChildren);
     }
   }
 

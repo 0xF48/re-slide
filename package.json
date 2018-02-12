@@ -4,10 +4,10 @@
   "description": "📏 Preact Universal Layout Component",
   "main": "index.js",
   "scripts": {
-    "test": "node eval.js",
+    "test": "node test/eval.js",
     "dev": "webpack-dev-server --config site.config.js",
-    "build": "webpack --config site.config.js && webpack --config lib.config.js && minify --keepClassName -o index.min.js index.js",
-    "write-test": "node write.js",
+    "build": "webpack --config site.config.js && webpack --config lib.config.js && npm run test",
+    "write": "node test/write.js",
     "republishOnly": "npm run build && npm run test"
   },
   "repository": {

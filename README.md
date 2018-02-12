@@ -1,4 +1,5 @@
-<p align="center"><a href = "http://arxii.github.io/preact-slide" ><img src ="https://raw.githubusercontent.com/arxii/preact-slide/master/logo.png" /></a></p>
+<p align="center"><a href = "http://arxii.github.io/preact-slide" ><img src ="https://raw.githubusercontent.com/arxii/preact-slide/master/site/logo.png" /></a></p>
+
 # preact-slide
 
 

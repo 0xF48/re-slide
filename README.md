@@ -1,4 +1,9 @@
 <p align="center"><a href = "http://arxii.github.io/preact-slide" ><img src ="https://raw.githubusercontent.com/arxii/preact-slide/master/site/logo.png" /></a></p>
+<p align="center">
+<a href="https://npmjs.com/package/preact-slide" alt="npm preact-slide"><img src="https://img.shields.io/npm/v/preact-slide.svg" /></a>
+<a href="https://github.com/developit/preact" alt="npm preact-slide"><img src="https://img.shields.io/badge/preact-v8.2.7-blue.svg" /></a>
+<a href="https://travis-ci.org/arxii/preact-slide" alt="npm preact-slide"><img src="https://img.shields.io/travis/arxii/preact-slide.svg" /></a>
+</p>
 
 # preact-slide
 
@@ -6,6 +11,9 @@
 [visit the homepage for examples and demos](http://arxii.github.io/preact-slide)
 
 `npm install preact preact-slide`
+
+[![npm][npm]][npm-url]
+[![tests][tests]][tests-url]
 
 
 ## About

@@ -2949,15 +2949,15 @@ Header = class Header extends Component {
     }, h('a', {
       href: 'https://npmjs.com/package/preact-slide'
     }, h('img', {
-      src: 'https://img.shields.io/badge/npm-0.2.0-orange.svg?style=flat-square'
+      src: 'https://img.shields.io/npm/v/preact-slide.svg?style=for-the-badge'
     })), h('a', {
       href: 'https://github.com/developit/preact'
     }, h('img', {
-      src: 'https://img.shields.io/badge/preact-v5.x-blue.svg?style=flat-square'
+      src: 'https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=for-the-badge'
     })), h('a', {
-      href: 'https://github.com/developit/preact'
+      href: 'https://travis-ci.org/arxii/preact-slide'
     }, h('img', {
-      src: 'https://img.shields.io/badge/build-passing-green.svg?style=flat-square'
+      src: 'https://img.shields.io/travis/arxii/preact-slide.svg?style=for-the-badge'
     }))))));
   }
 

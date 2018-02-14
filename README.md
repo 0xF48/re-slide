@@ -1,13 +1,16 @@
-<h1 align="center"> 📏 preact-slide 📏 </h1>
 <p align="center">
-<a href="https://npmjs.com/package/preact-slide" alt="npm link"><img src="https://img.shields.io/npm/v/preact-slide.svg" /></a>
-<a href="https://github.com/developit/preact" alt="preact dependency v8.2.7"><img src="https://img.shields.io/badge/preact-v8.2.7-blue.svg" /></a>
-<a href="https://travis-ci.org/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/preact-slide.svg" /></a>
+<a href="http://arxii.github.io/preact-slide" alt="logo"><img src="/site/logo" /></a>
+<a href="https://npmjs.com/package/preact-slide" alt="npm link"><img src="https://img.shields.io/npm/v/preact-slide.svg?style=flat-square" /></a>
+<a href="https://github.com/developit/preact" alt="preact dependency v8.2.7"><img src="https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=flat-square" /></a>
+<a href="https://travis-ci.org/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/preact-slide.svg?style=flat-square" /></a>
 </p>
 
 
+[documentation / examples / demos](http://arxii.github.io/preact-slide)
 
-[visit the homepage for examples and demos](http://arxii.github.io/preact-slide)
+
+
+`npm i preact-slide`
 
 
 ## About

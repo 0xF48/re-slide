@@ -16,6 +16,9 @@
   },
   "keywords": [
     "preact",
+    "react",
+    "carousel",
+    "layout",
     "slide",
     "component"
   ],
@@ -49,9 +52,7 @@
     "style-loader": "^0.19.1",
     "tape": "^4.8.0",
     "url-loader": "^0.6.2",
-    "webpack": "^3.10.0"
-  },
-  "dependencies": {
+    "webpack": "^3.10.0",
     "shader-box": "^1.1.1"
   }
 }

@@ -28,7 +28,7 @@ EXAMPLES = [
 
 
 
-HEADER_TEXT = 'A powerful and performant way to transition between different modules using a novel nested sliding approach. This smart base component can be used as a foundation for creating animated modular interfaces and widgets of any scale. We take the pretty parts of CSS Flexbox and build on top of it.'
+HEADER_TEXT = 'A powerful and performant way to transition between different components using a nested sliding approach. This component can be used as a foundation for creating animated modular interfaces and widgets of any scale. scroll down to see the props and examples.'
 
 PROPS = [
 	['vert','false','The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.']

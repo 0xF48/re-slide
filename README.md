@@ -10,14 +10,10 @@
 
 [visit the homepage for examples and demos](http://arxii.github.io/preact-slide)
 
-`npm install preact preact-slide`
-
-[![npm][npm]][npm-url]
-[![tests][tests]][tests-url]
-
 
 ## About
-With increasing modern UI complexity, its easy to get lost in overly complex javascript and css solutions. Use this universal animated layout component to layout your app and slide between different ui components and modules with a simple nested sliding / beta approach! Parts of the UI that are not visible in the viewport are automatically not rendered because parts that you dont need are not in the viewport until you slide them in!
+> Sliders....sliders everywhere.
+With increasing modern UI complexity, its easy to get lost in complex solutions and css hacks. Use this universal component to layout your app and slide between different ui components and modules. Parts of the UI that are not visible in the viewport are automatically not rendered because parts that you dont need are not in the viewport until you slide them in!
 
 
 

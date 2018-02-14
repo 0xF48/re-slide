@@ -3606,7 +3606,12 @@ Test = class Test extends Component {
       vert: false
     // auto: true
     }, h(Slide, {
-      beta: 50
+      beta: 50,
+      outerChildren: h('div', {
+        style: {
+          position: 'absolute'
+        }
+      }, 'outer child.')
     }, h(Card, {
       slide: false
     })), h(Slide, {

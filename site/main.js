@@ -2751,7 +2751,7 @@ EXAMPLES = [['Layout', __webpack_require__(27), LayoutExample, 'https://github.c
 
 HEADER_TEXT = 'A powerful and performant way to transition between different modules using a novel nested sliding approach. This smart base component can be used as a foundation for creating animated modular interfaces and widgets of any scale. We take the pretty parts of CSS Flexbox and build on top of it.';
 
-PROPS = [['vert', 'false', 'The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.'], ['beta', '100', 'The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.'], ['dim', 'null', 'The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.'], ['width', '0', 'force width in pixels shortcut (or use a css class override for root elements)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['ratio', '0', 'Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.'], ['offset', '0', 'For edge cases, you may want to add or subtract some extra pixels to the `beta` property.'], ['slide', 'false', 'If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. Children can only be other slides. '], ['animate', 'true', 'Set this to `false` to disable slide transitions for edge cases.'], ['ease', '0.4s cubic-bezier(0.25, 0.35, 0, 1)', 'The CSS ease function for the slide transition.'], ['x', 'null', 'overrides `pos` with X pixels'], ['y', 'null', 'overrides `pos` with Y pixels'], ['align', 'null', 'force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.'], ['pos', '0', 'When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.'], ['auto', 'false (unstable)', 'If `true`, parent will resize based on content inside.'], ['center', 'false', 'CSS flex center shortcut'], ['inverse', 'false', 'The slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'If set to true, outer wrapper will be scrollable.'], ['className', 'null', 'When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.'], ['outerChildren', 'null', 'Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.'], ['iclassName', 'null', 'className for the inner element if `slide:true`.'], ['onSlideStart', 'null', 'When component starts a slide transition, or a new `pos` is set.'], ['onSlideEnd', 'null', 'When parent slide ends the sliding transition. This will still get called even if there was no animation as long as a new `pos` is set.']];
+PROPS = [['vert', 'false', 'The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.'], ['beta', '100', 'The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.'], ['dim', 'null', 'The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.'], ['width', '0', 'force width in pixels shortcut (or use a css class override for root elements)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['ratio', '0', 'Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.'], ['offset', '0', 'For edge cases, you may want to add or subtract some extra pixels to the `beta` property.'], ['slide', 'false', 'If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. all children will be rendered inside the inner wrapper. children can only be slides. If you want to append children to the outer wrapper, use the `outerChildren` prop. '], ['animate', 'true', 'Set this to `false` to disable slide transitions for edge cases.'], ['ease', '0.4s cubic-bezier(0.25, 0.35, 0, 1)', 'The CSS ease function for the slide transition.'], ['x', 'null', 'overrides `pos` with X pixels'], ['y', 'null', 'overrides `pos` with Y pixels'], ['align', 'null', 'force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.'], ['pos', '0', 'When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.'], ['auto', 'false (unstable)', 'If `true`, parent will resize based on content inside.'], ['center', 'false', 'CSS flex center shortcut'], ['inverse', 'false', 'The slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'If set to true, outer wrapper will be scrollable.'], ['className', 'null', 'When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.'], ['outerChildren', 'null', 'Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.'], ['iclassName', 'null', 'className for the inner element if `slide:true`.'], ['onSlideStart', 'null', 'When component starts a slide transition, or a new `pos` is set.'], ['onSlideEnd', 'null', 'When parent slide ends the sliding transition. This will still get called even if there was no animation as long as a new `pos` is set.']];
 
 Card = (function() {
   class Card extends Component {
@@ -2824,8 +2824,6 @@ Card = (function() {
 Header = class Header extends Component {
   constructor() {
     super();
-    // setInterval @switchTitleSnippetTextA,1000
-    // setInterval @switchTitleSnippetTextB,2000
     this.switchTitleSnippetTextA = this.switchTitleSnippetTextA.bind(this);
     this.switchTitleSnippetTextB = this.switchTitleSnippetTextB.bind(this);
     this.tick = this.tick.bind(this);
@@ -2874,7 +2872,9 @@ Header = class Header extends Component {
     });
     this.box.add(this.gradient);
     this.box.clear().draw(this.gradient);
-    return this.tick(this.t);
+    this.tick(this.t);
+    // setInterval @switchTitleSnippetTextA,1000
+    return setInterval(this.switchTitleSnippetTextB, 2000);
   }
 
   switchTitleSnippetTextA() {
@@ -2934,20 +2934,8 @@ Header = class Header extends Component {
     }, 'Slide'), h(Slide, {
       className: 'title-snippet',
       vert: true,
-      pos: this.state.title_snippet_pos_b,
-      slide: true
-    }, h(Slide, {
-      className: 'dark center'
-    }, h(Slide, {
-      // beta:50
-      className: 'center'
-    }, h('div', {
-      className: 'title-snippet-text'
-    }, 'npm i preact preact-slide'))), h(Slide, {
-      className: 'center'
-    }, h('div', {
-      className: 'title-snippet-text'
-    }, "var Slide = require('preact-slide')"))), h('a', {
+      center: true
+    }, 'npm i preact preact-slide'), h('a', {
       href: "https://github.com/arxii/preact-slide",
       className: 'center github-link'
     }, h('img', {
@@ -3032,9 +3020,6 @@ Docs = class Docs {
       href: "https://github.com/arxii/preact-slide",
       className: 'footer-text'
     }, 'Source'), h('a', {
-      href: "test.html",
-      className: 'footer-text'
-    }, 'Test'), h('a', {
       href: "https://github.com/arxii/preact-slide/blob/master/LICENSE",
       className: 'footer-text'
     }, 'Apache License 2.0')));

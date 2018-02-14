@@ -38,7 +38,7 @@ PROPS = [
 	['height','0','force set height shortcut (or use a css class override)']
 	['ratio','0','Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.']
 	['offset','0','For edge cases, you may want to add or subtract some extra pixels to the `beta` property.']
-	['slide','false','If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. Children can only be other slides. ']
+	['slide','false','If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. all children will be rendered inside the inner wrapper. children can only be slides. If you want to append children to the outer wrapper, use the `outerChildren` prop. ']
 	['animate','true','Set this to `false` to disable slide transitions for edge cases.']
 	['ease','0.4s cubic-bezier(0.25, 0.35, 0, 1)','The CSS ease function for the slide transition.']
 	['x','null','overrides `pos` with X pixels']
@@ -145,7 +145,7 @@ class Header extends Component
 		@box.clear().draw(@gradient)
 		@tick(@t)
 		# setInterval @switchTitleSnippetTextA,1000
-		# setInterval @switchTitleSnippetTextB,2000
+		setInterval @switchTitleSnippetTextB,2000
 
 	
 	switchTitleSnippetTextA: =>
@@ -199,21 +199,8 @@ class Header extends Component
 					h Slide,
 						className: 'title-snippet'
 						vert: true
-						pos: @state.title_snippet_pos_b
-						slide: true
-						h Slide,
-							className: 'dark center'
-							h Slide,
-								# beta:50
-								className: 'center'
-								h 'div',
-									className: 'title-snippet-text'
-									'npm i preact preact-slide'
-						h Slide,
-							className: 'center'
-							h 'div',
-								className: 'title-snippet-text'
-								"var Slide = require('preact-slide')"
+						center: yes
+						'npm i preact preact-slide'
 					h 'a',
 						href: "https://github.com/arxii/preact-slide"
 						className: 'center github-link'
@@ -311,10 +298,6 @@ class Docs
 					href: "https://github.com/arxii/preact-slide"
 					className: 'footer-text'
 					'Source'
-				h 'a',
-					href: "test.html"
-					className: 'footer-text'
-					'Test'
 				h 'a',
 					href: "https://github.com/arxii/preact-slide/blob/master/LICENSE"
 					className: 'footer-text'

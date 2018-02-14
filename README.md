@@ -3,7 +3,7 @@
 # preact-slide
 
 
-[homepage](http://arxii.github.io/preact-slide)
+[visit the homepage for examples and demos](http://arxii.github.io/preact-slide)
 
 `npm install preact preact-slide`
 
@@ -57,14 +57,10 @@ h Slide,
 ```
 
 
-## Demos and Examples
-* [piarts (very old library version)](http://slide-checki.lerp.io)
-* [checki (olde library version)](http://slide-checki.lerp.io)
-* [preact-slide homepage (newest version)](https://arxii.github.io/preact-slide/)
-
-
 
 ### Todos
-+ add a prop for responsive slides (switching slide prop/betas based on parent outer width)
 + clean up code.
 + upgrade test.
++ responsive queries?
++ touch gestures?
++ react native?

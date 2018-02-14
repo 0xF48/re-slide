@@ -23,7 +23,7 @@ class SimpleMenuExample extends Component
 			height: 200
 			pos: @state.toggle
 			h Slide,
-				outer_children:
+				outerChildren: 
 					h 'div',
 						onClick: @toggle
 						className: 'simple-menu-example-icon'

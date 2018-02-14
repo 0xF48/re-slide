@@ -10,4 +10,4 @@ branches:
 os: linux
 install:
   - npm i
-script: node test.js
+script: node test/eval.js

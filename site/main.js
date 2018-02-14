@@ -4846,7 +4846,7 @@ SimpleMenuExample = class SimpleMenuExample extends Component {
       height: 200,
       pos: this.state.toggle
     }, h(Slide, {
-      outer_children: h('div', {
+      outerChildren: h('div', {
         onClick: this.toggle,
         className: 'simple-menu-example-icon'
       }, '=')

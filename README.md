@@ -31,11 +31,15 @@ With increasing modern UI complexity, its easy to get lost in complex solutions 
 * **`animate`** *`true`* Set this to `false` to disable slide transitions for edge cases.
 * **`ease`** *`'0.4s cubic-bezier(0.25, 0.35, 0, 1)`* The CSS ease function for the slide transition.
 * **`pos`** *`0`* Setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.
+* **`x`** *`null`* overrides `pos` with X pixels
+* **`y`** *`null`* overrides `pos` with Y pixels
+* **`align`** *`null`* force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.
 * **`auto`** *`false (unstable)`* If `true`, parent will resize based on content inside.
 * **`center`** *`false`* CSS flex center shortcut
 * **`inverse`** *`false`* The slide split is inverted, meaning the last child is the first and the first child is the last.
 * **`scroll`** *`false`* If set to true, outer wrapper will be scrollable.
-* **`className`** *`null`* When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.
+* **`outerChildren`** *`null`* Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.
+* **`className`** *`null`* When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide, handy for overlays. Take a look at the icon on the menu example in the docs.
 * **`iclassName`** *`null`* className for the inner element if `slide:true`.
 * **`onSlideStart`** *`null`* When component starts a slide transition
 * **`onSlideEnd`** *`null`* When component ends a slide transition or slide pos is set

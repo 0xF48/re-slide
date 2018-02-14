@@ -1682,7 +1682,7 @@ Slide = class Slide extends Component {
     class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
     class_reverse = this.props.inverse && ' -i-s-reverse' || '';
     class_scroll = this.props.scroll && ' -i-s-scroll' || '';
-    outer_props = this.pass_props;
+    outer_props = this.pass_props || {};
     hidden = this.context.isVisible && !this.context.isVisible(this) || false;
     if (this.context._i_slide || this.props.height || this.props.width) {
       outer_props.style = this.getOuterHW();
@@ -1694,7 +1694,7 @@ Slide = class Slide extends Component {
     outer_props.id = this.props.id;
     outer_props.ref = this.outer_ref;
     if (this.props.outerStyle || this.props.style) {
-      outer_props.style = Object.assign(outer_props.style, this.props.outerStyle || this.props.style);
+      outer_props.style = Object.assign(outer_props.style || {}, this.props.outerStyle || this.props.style);
     }
     if (this.context.isVisible && !this.context.isVisible(this)) {
       return h('div', outer_props);

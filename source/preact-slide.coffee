@@ -550,8 +550,9 @@ class Slide extends Component
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
-		outer_props = @pass_props
+		outer_props = @pass_props || {}
 		hidden = @context.isVisible && !@context.isVisible(@) || false
+
 		if @context._i_slide || @props.height || @props.width
 			outer_props.style = @getOuterHW()
 			if hidden
@@ -561,7 +562,7 @@ class Slide extends Component
 		outer_props.ref = @outer_ref
 
 		if @props.outerStyle || @props.style
-			outer_props.style = Object.assign outer_props.style,(@props.outerStyle || @props.style)
+			outer_props.style = Object.assign outer_props.style || {},(@props.outerStyle || @props.style)
 	
 	
 		if @context.isVisible && !@context.isVisible(@)

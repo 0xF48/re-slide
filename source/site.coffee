@@ -49,58 +49,14 @@ PROPS = [
 	['center','false','CSS flex center shortcut']
 	['inverse','false','The slide is inverted, meaning the last child is the first and the first child is the last']
 	['scroll','false','If set to true, outer wrapper will be scrollable.']
+	['style','null','style gets passed down to outermost component']
 	['className','null','When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.']
 	['outerChildren','null','Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.']
 	['iclassName','null','className for the inner element if `slide:true`.']
 	['onSlideStart','null','When component starts a slide transition, or a new `pos` is set.']
 	['onSlideEnd','null','When parent slide ends the sliding transition. This will still get called even if there was no animation as long as a new `pos` is set.']
+	['on[EventName]','null','All events get passed down to outermost component.']
 ]
-
-
-
-
-class Card extends Component
-	componentWillMount: ()->
-		
-		if @props.color
-			
-			@bg = @props.color.hexString()
-			@color = @props.color.clone().darken(0.7).hexString()
-			@icon = @props.icon
-		else
-			@c = randomColor(0.7,0.99)
-			@bg = @c.hexString()
-			@color = @c.darken(0.7).hexString()
-			@icon = icons[Math.floor(Math.random()*icons.length)]
-			@forceUpdate()
-
-	render: ()->
-		h 'div',
-			style:
-				background: @bg
-				color: @color
-			className: 'center card'
-			h 'i',
-				className: 'material-icons'
-				@icon
-
-	vert: null #css flex direction column
-	beta: 100 #beta variable
-	slide: no #slides through children, if disabled will return a simplified wrapper
-	pos: 0 #position of the slide
-	auto: false #auto dim based on content
-	dim: 0 #dim is width/height but relative to split direction, so u dont have to ;)
-	animate: false #transitions
-	ease: 'cubic-bezier(0.25, 0.34, 0, 1)' #slide easing
-	ease_dur: 0.4 #slide easing duration
-	width: 0 #slide width manual override
-	height: 0 #slide height manual override
-	square: no #square dim helper
-	center: no #css flex center
-	inverse: no #css flex direction inverse
-	scroll: no #css scroll overflow
-	oclassName: null
-	iclassName: null
 
 
 

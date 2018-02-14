@@ -56,6 +56,8 @@ With increasing modern UI complexity, its easy to get lost in complex solutions 
 
 * **`outerChildren`** *`null`* Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.
 
+* **`style`** *`null`* style prop gets passed down to outermost component.
+
 * **`className`** *`null`* When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide, handy for overlays. Take a look at the icon on the menu example in the docs.
 
 * **`iclassName`** *`null`* className for the inner element if `slide:true`.
@@ -63,6 +65,8 @@ With increasing modern UI complexity, its easy to get lost in complex solutions 
 * **`onSlideStart`** *`null`* When component starts a slide transition
 
 * **`onSlideEnd`** *`null`* When component ends a slide transition or slide pos is set
+
+* **`on[EventName]`** *`undefined`* All events get passed down to outermost component.
 
 
 

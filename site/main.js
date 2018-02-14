@@ -1682,7 +1682,7 @@ Slide = class Slide extends Component {
     class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
     class_reverse = this.props.inverse && ' -i-s-reverse' || '';
     class_scroll = this.props.scroll && ' -i-s-scroll' || '';
-    outer_props = this.pass_props;
+    outer_props = this.pass_props || {};
     hidden = this.context.isVisible && !this.context.isVisible(this) || false;
     if (this.context._i_slide || this.props.height || this.props.width) {
       outer_props.style = this.getOuterHW();
@@ -1694,7 +1694,7 @@ Slide = class Slide extends Component {
     outer_props.id = this.props.id;
     outer_props.ref = this.outer_ref;
     if (this.props.outerStyle || this.props.style) {
-      outer_props.style = Object.assign(outer_props.style, this.props.outerStyle || this.props.style);
+      outer_props.style = Object.assign(outer_props.style || {}, this.props.outerStyle || this.props.style);
     }
     if (this.context.isVisible && !this.context.isVisible(this)) {
       return h('div', outer_props);
@@ -2720,7 +2720,7 @@ module.exports = "data:font/ttf;base64,AAEAAAANAIAAAwBQRkZUTVzdyC4AAKk8AAAAHE9TL
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ABOUT, Box, ButtonsExample, Card, CarouselExample, Component, Docs, EXAMPLES, HEADER_TEXT, Header, LayoutExample, Markdown, Markup, PROPS, Shader, SimpleMenuExample, Slide, TreeMenuExample, h, render,
+var ABOUT, Box, ButtonsExample, CarouselExample, Component, Docs, EXAMPLES, HEADER_TEXT, Header, LayoutExample, Markdown, Markup, PROPS, Shader, SimpleMenuExample, Slide, TreeMenuExample, h, render,
   boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
 
 ({h, render, Component} = __webpack_require__(0));
@@ -2751,75 +2751,7 @@ EXAMPLES = [['Layout', __webpack_require__(27), LayoutExample, 'https://github.c
 
 HEADER_TEXT = 'A powerful and performant way to transition between different components using a nested sliding approach. This component can be used as a foundation for creating animated modular interfaces and widgets of any scale. scroll down to see the props and examples.';
 
-PROPS = [['vert', 'false', 'The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.'], ['beta', '100', 'The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.'], ['dim', 'null', 'The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.'], ['width', '0', 'force width in pixels shortcut (or use a css class override for root elements)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['ratio', '0', 'Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.'], ['offset', '0', 'For edge cases, you may want to add or subtract some extra pixels to the `beta` property.'], ['slide', 'false', 'If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. all children will be rendered inside the inner wrapper. children can only be slides. If you want to append children to the outer wrapper, use the `outerChildren` prop. '], ['animate', 'true', 'Set this to `false` to disable slide transitions for edge cases.'], ['ease', '0.4s cubic-bezier(0.25, 0.35, 0, 1)', 'The CSS ease function for the slide transition.'], ['x', 'null', 'overrides `pos` with X pixels'], ['y', 'null', 'overrides `pos` with Y pixels'], ['align', 'null', 'force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.'], ['pos', '0', 'When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.'], ['auto', 'false (unstable)', 'If `true`, parent will resize based on content inside.'], ['center', 'false', 'CSS flex center shortcut'], ['inverse', 'false', 'The slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'If set to true, outer wrapper will be scrollable.'], ['className', 'null', 'When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.'], ['outerChildren', 'null', 'Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.'], ['iclassName', 'null', 'className for the inner element if `slide:true`.'], ['onSlideStart', 'null', 'When component starts a slide transition, or a new `pos` is set.'], ['onSlideEnd', 'null', 'When parent slide ends the sliding transition. This will still get called even if there was no animation as long as a new `pos` is set.']];
-
-Card = (function() {
-  class Card extends Component {
-    componentWillMount() {
-      if (this.props.color) {
-        this.bg = this.props.color.hexString();
-        this.color = this.props.color.clone().darken(0.7).hexString();
-        return this.icon = this.props.icon;
-      } else {
-        this.c = randomColor(0.7, 0.99);
-        this.bg = this.c.hexString();
-        this.color = this.c.darken(0.7).hexString();
-        this.icon = icons[Math.floor(Math.random() * icons.length)];
-        return this.forceUpdate();
-      }
-    }
-
-    render() {
-      return h('div', {
-        style: {
-          background: this.bg,
-          color: this.color
-        },
-        className: 'center card'
-      }, h('i', {
-        className: 'material-icons'
-      }, this.icon));
-    }
-
-  };
-
-  Card.prototype.vert = null; //css flex direction column
-
-  Card.prototype.beta = 100; //beta variable
-
-  Card.prototype.slide = false; //slides through children, if disabled will return a simplified wrapper
-
-  Card.prototype.pos = 0; //position of the slide
-
-  Card.prototype.auto = false; //auto dim based on content
-
-  Card.prototype.dim = 0; //dim is width/height but relative to split direction, so u dont have to ;)
-
-  Card.prototype.animate = false; //transitions
-
-  Card.prototype.ease = 'cubic-bezier(0.25, 0.34, 0, 1)'; //slide easing
-
-  Card.prototype.ease_dur = 0.4; //slide easing duration
-
-  Card.prototype.width = 0; //slide width manual override
-
-  Card.prototype.height = 0; //slide height manual override
-
-  Card.prototype.square = false; //square dim helper
-
-  Card.prototype.center = false; //css flex center
-
-  Card.prototype.inverse = false; //css flex direction inverse
-
-  Card.prototype.scroll = false; //css scroll overflow
-
-  Card.prototype.oclassName = null;
-
-  Card.prototype.iclassName = null;
-
-  return Card;
-
-}).call(this);
+PROPS = [['vert', 'false', 'The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.'], ['beta', '100', 'The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.'], ['dim', 'null', 'The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.'], ['width', '0', 'force width in pixels shortcut (or use a css class override for root elements)'], ['height', '0', 'force set height shortcut (or use a css class override)'], ['ratio', '0', 'Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.'], ['offset', '0', 'For edge cases, you may want to add or subtract some extra pixels to the `beta` property.'], ['slide', 'false', 'If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. all children will be rendered inside the inner wrapper. children can only be slides. If you want to append children to the outer wrapper, use the `outerChildren` prop. '], ['animate', 'true', 'Set this to `false` to disable slide transitions for edge cases.'], ['ease', '0.4s cubic-bezier(0.25, 0.35, 0, 1)', 'The CSS ease function for the slide transition.'], ['x', 'null', 'overrides `pos` with X pixels'], ['y', 'null', 'overrides `pos` with Y pixels'], ['align', 'null', 'force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.'], ['pos', '0', 'When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.'], ['auto', 'false (unstable)', 'If `true`, parent will resize based on content inside.'], ['center', 'false', 'CSS flex center shortcut'], ['inverse', 'false', 'The slide is inverted, meaning the last child is the first and the first child is the last'], ['scroll', 'false', 'If set to true, outer wrapper will be scrollable.'], ['style', 'null', 'style gets passed down to outermost component'], ['className', 'null', 'When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.'], ['outerChildren', 'null', 'Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.'], ['iclassName', 'null', 'className for the inner element if `slide:true`.'], ['onSlideStart', 'null', 'When component starts a slide transition, or a new `pos` is set.'], ['onSlideEnd', 'null', 'When parent slide ends the sliding transition. This will still get called even if there was no animation as long as a new `pos` is set.'], ['on[EventName]', 'null', 'All events get passed down to outermost component.']];
 
 Header = class Header extends Component {
   constructor() {

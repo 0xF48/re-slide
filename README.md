@@ -1,5 +1,5 @@
 <p align="center">
-<a href="http://arxii.github.io/preact-slide" alt="logo"><img src="/site/logo" /></a>
+<a href="http://arxii.github.io/preact-slide" alt="logo"><img src="/site/logo.png" /></a>
 <a href="https://npmjs.com/package/preact-slide" alt="npm link"><img src="https://img.shields.io/npm/v/preact-slide.svg?style=flat-square" /></a>
 <a href="https://github.com/developit/preact" alt="preact dependency v8.2.7"><img src="https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=flat-square" /></a>
 <a href="https://travis-ci.org/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/preact-slide.svg?style=flat-square" /></a>

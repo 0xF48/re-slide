@@ -10,4 +10,6 @@ branches:
 os: linux
 install:
   - npm i
-script: node test/eval.js
+script: 
+  - npm run build
+  - npm run test

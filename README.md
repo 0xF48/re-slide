@@ -1,5 +1,6 @@
-# 📏 preact-slide 📏
-
+<p align="center">
+<h1> 📏 preact-slide 📏 </h1>
+</p>
 
 <p align="center">
 <a href="https://npmjs.com/package/preact-slide" alt="npm link"><img src="https://img.shields.io/npm/v/preact-slide.svg" /></a>

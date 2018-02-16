@@ -1,6 +1,7 @@
 require './preact-slide.less'
 {h,Component} = require 'preact'
 
+
 DEFAULT_PROPS = 
 	vert: null #css flex direction column
 	beta: 100 #beta variable
@@ -57,22 +58,21 @@ class Slide extends Component
 	componentWillMount: ->
 		@passProps(@props) #do stuff with props 
 		@legacyProps(@props) #legacy props support
-		# @checkProps(@props)
 	
 
 	###
 	@componentDidMount method
+	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
 	###
 	componentDidMount: ()=>
-		
-		@is_root = !@_outer.parentNode.className.match('-i-s-static|-i-s-inner')
-		setTimeout @onSlideDone,0
-		if @is_root
-			@forceUpdate()
+		# console.log @_outer.parentElement.getBoundingClientRect()
+		if @context.dim != 0
 			addEventListener 'resize',@resizeEvent
+		if @context.dim != 0 || @props.slide 
+			@forceUpdate()
 
 
-	
+
 
 	###
 	@componentWillUpdate method
@@ -108,10 +108,7 @@ class Slide extends Component
 
 
 	isVisible: (child)=>
-		# if @visibility_map[child._outer] == undefined
-		# 	return true
 		if @visibility_map.get(child._outer) == false && @props.hide
-			# console.log 'NOT VISIBLE',child._outer
 			return false
 		return true
 		
@@ -177,13 +174,11 @@ class Slide extends Component
 			else if force_hide
 				@visibility_map.set(child,false)
 
-
-		# console.log 'UPDATE VISIBILITY',x,y,force_hide,@visibility_map
 		return
 
 
 	###
-	@onSlideDone method
+	@` method
 	when slide animation is complete, this function is triggered.
 	###
 	onSlideDone: ()=>
@@ -216,8 +211,7 @@ class Slide extends Component
 		if !@_inner
 			return false
 
-		
-		# console.log 'UPDATE'
+
 		if @props.y != null || @props.x != null
 			pos = 
 				x: @props.x

@@ -118,9 +118,9 @@ universal slide layout component.
 Slide = class Slide extends Component {
   constructor(props) {
     super(props);
-    // @checkProps(@props)
     /*
     @componentDidMount method
+    Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
     */
     this.componentDidMount = this.componentDidMount.bind(this);
     /*
@@ -143,10 +143,9 @@ Slide = class Slide extends Component {
     */
     this.updateVisibility = this.updateVisibility.bind(this);
     /*
-    @onSlideDone method
+    @` method
     when slide animation is complete, this function is triggered.
     */
-    // console.log 'UPDATE VISIBILITY',x,y,force_hide,@visibility_map
     this.onSlideDone = this.onSlideDone.bind(this);
     /*
     @onSlideStart method
@@ -207,11 +206,12 @@ Slide = class Slide extends Component {
 
   componentDidMount() {
     boundMethodCheck(this, Slide);
-    this.is_root = !this._outer.parentNode.className.match('-i-s-static|-i-s-inner');
-    setTimeout(this.onSlideDone, 0);
-    if (this.is_root) {
-      this.forceUpdate();
-      return addEventListener('resize', this.resizeEvent);
+    // console.log @_outer.parentElement.getBoundingClientRect()
+    if (this.context.dim !== 0) {
+      addEventListener('resize', this.resizeEvent);
+    }
+    if (this.context.dim !== 0 || this.props.slide) {
+      return this.forceUpdate();
     }
   }
 
@@ -242,10 +242,7 @@ Slide = class Slide extends Component {
 
   isVisible(child) {
     boundMethodCheck(this, Slide);
-    // if @visibility_map[child._outer] == undefined
-    // 	return true
     if (this.visibility_map.get(child._outer) === false && this.props.hide) {
-      // console.log 'NOT VISIBLE',child._outer
       return false;
     }
     return true;
@@ -342,8 +339,6 @@ Slide = class Slide extends Component {
     if (!this._inner) {
       return false;
     }
-    
-    // console.log 'UPDATE'
     if (this.props.y !== null || this.props.x !== null) {
       pos = {
         x: this.props.x,

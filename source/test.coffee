@@ -1,13 +1,13 @@
 {h,render,Component} = require 'preact'
 Slide = require './preact-slide.coffee'
-randomColor = require 'random-color'
-seed = require 'seed-random'
 _ = require 'lodash'
 require './site.less'
-
-
-rand = seed('128j3b1')
-
+nums = require './random.json'
+rn = 0
+rand = ()->
+	if rn >= nums.length
+		rn = 0
+	return nums[rn++]/100
 
 shuffle = (arr)->
 	ind = [0...arr.length].map rand
@@ -34,7 +34,6 @@ rbg = ->
 	else
 		c[0] = v1
 	c = [Math.floor(255-d-c[0]),Math.floor(255-d-c[1]),Math.floor(255-d-c[2])]
-	#randomColor(0.7,0.99).hexString()
 	background: "rgb(#{c[0]},#{c[1]},#{c[2]})"
 
 class Card extends Component
@@ -46,14 +45,16 @@ class Card extends Component
 			rbg1: rbg()
 			rbg2: rbg()
 			rbg3: rbg()
-			rc: rc()
+			rc1: rc()
+			rc2: rc()
+			rc3: rc()
 	render: ->
 		@state.rbg1.cursor = 'pointer'
 		if @props.slide == false
 			return h Slide,
 				center: yes
 				style: @state.rbg1
-				@state.rc
+				@state.rc1
 		else
 			return h Slide,
 				slide: true
@@ -67,15 +68,15 @@ class Card extends Component
 				h Slide,
 					center: true
 					style: @state.rbg1
-					@state.rc
+					@state.rc1
 				h Slide,
 					center: true
 					style: @state.rbg2
-					@state.rc
+					@state.rc2
 				h Slide,
 					center: true
 					style: @state.rbg3
-					@state.rc
+					@state.rc3
 
 
 class Test extends Component
@@ -85,6 +86,7 @@ class Test extends Component
 			pos_a: 2
 
 	componentDidMount: ->
+		
 		# setTimeout ()=>
 		# 	# toggle = !toggle
 		# 	# @forceUpdate()
@@ -124,14 +126,16 @@ class Test extends Component
 			h Slide,
 				vert: yes
 				h Slide,
-					slide:yes
 					dim: 50
-					h Slide,
-						ratio: 1
-						h Card
+					slide:yes
+					vert:no
 					h Slide,
 						ratio: 2
 						h Card
+					h Slide,
+						ratio: 1
+						h Card
+						
 				h Slide,
 					beta: 0
 					h Slide,

@@ -22,7 +22,7 @@ test 'diff test', (t)->
 			return document.body.innerHTML
 		await browser.close()
 		fs.readFile 'test/eval.txt','utf8',(err,file)->
-			t.equal(file,html,'should be equal')
+			t.equal(html,file,'should be equal')
 			t.end()
 			process.exit(0)
 	catch e

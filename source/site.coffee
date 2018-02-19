@@ -28,8 +28,6 @@ EXAMPLES = [
 
 
 
-HEADER_TEXT = 'A powerful and performant way to transition between different components using a nested sliding approach. This component can be used as a foundation for creating animated modular interfaces and widgets of any scale. scroll down to see the props and examples.'
-
 PROPS = [
 	['vert','false','The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.']
 	['beta','100','The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.']
@@ -164,10 +162,13 @@ class Header extends Component
 							src: './site/github.svg'
 				h 'p',
 					className:'header-description-sub'
-					'Experimental'
+					'About'
 				h 'p',
 					className:'header-description-text'
-					HEADER_TEXT
+					h Markdown,
+						markupOpts:
+							className: 'section-text'
+						markdown: ABOUT
 					h 'div',
 						className: 'shields'
 						h 'a',
@@ -194,17 +195,6 @@ class Docs
 		h 'div',
 			className: 'docs'
 			h Header
-
-			
-			h 'div',
-				className: 'section'
-				h 'h1',{},'About'
-				h Markdown,
-					markupOpts:
-						className: 'section-text'
-					markdown: ABOUT
-
-			
 			h 'div',
 				className: 'section'
 				h 'h1',{},'Props'

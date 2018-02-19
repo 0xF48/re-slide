@@ -494,7 +494,7 @@ class Slide extends Component
 		class_vert = @props.vert && ' -i-s-vertical' || ''
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
-		class_scroll = @props.scroll && ' -i-s-scroll' || ''
+		# class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		class_auto = @props.auto && ' -i-s-auto' || ''
 		inner_props = 
 			ref: @inner_ref
@@ -537,7 +537,7 @@ class Slide extends Component
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
 	###	
 	renderStatic: =>
-		inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
+		# inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
 		c_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''
 		class_vert = @props.vert && ' -i-s-vertical' || ''

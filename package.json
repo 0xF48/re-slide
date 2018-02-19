@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/eval.js",
-    "dev": "webpack-dev-server --config site.config.js",
+    "dev": "webpack-dev-server --config dev.config.js",
     "build": "webpack --config site.config.js && webpack --config lib.config.js && npm run test",
     "write": "node test/write.js",
     "republishOnly": "npm run build && npm run test"
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "await-fs": "^1.0.0",
+    "babel-minify-webpack-plugin": "^0.3.0",
     "coffee-loader": "^0.9.0",
     "coffeescript": "^2.1.1",
     "css-loader": "^0.28.9",
@@ -49,10 +50,10 @@
     "random-color": "^1.0.1",
     "raw-loader": "^0.5.1",
     "seed-random": "^2.2.0",
+    "shader-box": "^1.1.1",
     "style-loader": "^0.19.1",
     "tape": "^4.8.0",
     "url-loader": "^0.6.2",
-    "webpack": "^3.10.0",
-    "shader-box": "^1.1.1"
+    "webpack": "^3.10.0"
   }
 }

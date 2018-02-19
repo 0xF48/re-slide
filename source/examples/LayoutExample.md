@@ -1,3 +1,5 @@
-With Slide, you can layout your ui by splitting up each parent slide with nested slides. 
+With `Slide`, the layout of UI is sculpted by splitting up each parent slide into sections either vertically or horizontally. The underlying CSS is basically just flexbox, but stricter and stripped down. With a stricter top-down layout mechanism that scales, its easy to layout different components of the UI and their relationships in a complex way without getting dirty in CSS and having to worry about side cases.
 ****
-The `beta` property based on the css flexbox property, but stricter and stripped down to functionality that pertains to building a functional user interface. With a stricter layout mechanism that scales, its easy to layout different components of your app and their relationships in a complex way without getting your hands dirty in css and having to worry about side cases.
+The *important concept* to note is that slide based UIs are layed out from the root component down. Components that have a dynamic size (e.g. lists) are predetermined to be dynamic and their children static. With `slide` designing all the little components such as buttons and forms first and then wrapping those in their outer interface with "auto" will not play nice with `slide`.
+
+Designing the most outer components of the application first and working down to the smallest components may seem counter intuitive to some. However, when designing UIs this way, the developer is forced to think about the "bigger picture" enabling a more intuitive interface that makes sense to the user.

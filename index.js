@@ -616,7 +616,7 @@ Slide = class Slide extends Component {
   }
 
   renderSlide() {
-    var c_name, class_auto, class_center, class_fixed, class_reverse, class_scroll, class_vert, hidden, inner_c_name, inner_props, slide_props;
+    var c_name, class_auto, class_center, class_fixed, class_reverse, class_vert, hidden, inner_c_name, inner_props, slide_props;
     boundMethodCheck(this, Slide);
     inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
     c_name = this.props.className && (" " + this.props.className) || '';
@@ -624,7 +624,7 @@ Slide = class Slide extends Component {
     class_vert = this.props.vert && ' -i-s-vertical' || '';
     class_fixed = ((this.props.ratio || this.props.dim || this.props.width || this.props.height) && ' -i-s-fixed') || '';
     class_reverse = this.props.inverse && ' -i-s-reverse' || '';
-    class_scroll = this.props.scroll && ' -i-s-scroll' || '';
+    // class_scroll = @props.scroll && ' -i-s-scroll' || ''
     class_auto = this.props.auto && ' -i-s-auto' || '';
     inner_props = {
       ref: this.inner_ref,
@@ -657,9 +657,9 @@ Slide = class Slide extends Component {
   }
 
   renderStatic() {
-    var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, hidden, inner_c_name, outer_props;
+    var c_name, class_center, class_fixed, class_reverse, class_scroll, class_vert, hidden, outer_props;
     boundMethodCheck(this, Slide);
-    inner_c_name = this.props.iclassName && (" " + this.props.iclassName) || '';
+    // inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
     c_name = this.props.className && (" " + this.props.className) || '';
     class_center = this.props.center && ' -i-s-center' || '';
     class_vert = this.props.vert && ' -i-s-vertical' || '';

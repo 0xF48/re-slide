@@ -20,6 +20,7 @@ shuffle = (arr)->
 
 rc = ->
 	rand().toString(36).substring(7,8)
+
 rbg = ->
 	v = 200
 	d = 100

@@ -1,6 +1,7 @@
 var webpack = require("webpack");
 const MinifyPlugin = require("babel-minify-webpack-plugin");
 var cfg = {
+	devtool: 'source-map',
 	module: {
 		loaders: [
 			{ test: /\.coffee$/, use: "coffee-loader"},
@@ -25,9 +26,6 @@ var cfg = {
 	devServer: {
 		port: 3000,
 		compress: true
-	},
-	plugins: [
-		new MinifyPlugin()
-	]
+	}
 }
 module.exports = cfg;

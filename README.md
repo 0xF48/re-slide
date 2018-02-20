@@ -8,7 +8,7 @@
 
 [documentation / examples / demos](http://arxii.github.io/preact-slide)
 
-
+* this library is still in alpha *
 
 `npm i preact-slide`
 

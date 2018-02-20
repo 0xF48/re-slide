@@ -365,11 +365,7 @@ class Slide extends Component
 
 
 
-	roundBetaHack: (beta)=>
-		if @context.count == 2 && (@context.outer_width/2 % Math.floor(@context.outer_width/2) == 0.5) && @_outer && @_outer.nextElementSibling
-			return 'calc('+beta+'% + 0.5px)'
-		
-		return  beta + '%'
+
 		
 
 	###
@@ -381,15 +377,13 @@ class Slide extends Component
 		if !@props.beta || @props.beta < 0
 			throw new Error 'beta is ( <= 0 | null ) '
 
-		# split along horizontal
-
-
 
 		if !@is_root && @context.outer_width && !@context.vert && @context.slide
 			d = @context.outer_width / 100 * @props.beta + @props.offset
 			@state.dim = @roundDim(d)
 			return @state.dim + 'px'
 		
+
 		# split along vertical
 		else if !@is_root && @context.outer_height && @context.vert && @context.slide
 			d = @context.outer_height / 100 * @props.beta + @props.offset
@@ -400,17 +394,28 @@ class Slide extends Component
 		# base case scenario, this is legacy fallback for relative betas using css % 
 		# CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
 
-		beta = @roundBetaHack(@props.beta)
-
+		
 		if @props.offset
 			sign = @props.offset < 0 && '-' || '+'
-			offs = Math.abs(@props.offset) + 'px'
+			offs = Math.abs(@props.offset)
+
+		# round beta hack attempt to avoid subpixel rounding artifacts. mildly tested and seems to work??
+		if @context.count == 2 && (@context.outer_width/2 % Math.floor(@context.outer_width/2) == 0.5) && @_outer && @_outer.nextElementSibling
+			
+			if offs
+				return 'calc('+@props.beta+'% '+sign+' '+(offs+0.5)+'px)'
+			else
+				return 'calc('+@props.beta+'% + 0.5px)'
+		else
+			if offs
+				return 'calc('+@props.beta+'% '+sign+' '+offs+'px)'
+			else
+				return @props.beta+'%'
+
 		
 
-		if offs
-			return 'calc(#{beta} #{sign} #{offs})'
-		else
-			return beta
+
+
 
 
 	###

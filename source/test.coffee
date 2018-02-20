@@ -101,6 +101,7 @@ class Test extends Component
 			vert: false
 			h Slide,
 				beta:100
+				offset: -50
 				slide:true
 				pos: @state.pos_a
 				onClick: =>
@@ -125,6 +126,7 @@ class Test extends Component
 					beta: 10
 					h Card,slide:false
 			h Slide,
+				offset: -50
 				vert: yes
 				h Slide,
 					dim: 50

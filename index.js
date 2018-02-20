@@ -152,7 +152,6 @@ Slide = class Slide extends Component {
     right before a slide animation starts, this function is triggered.
     */
     this.onSlideStart = this.onSlideStart.bind(this);
-    this.roundBetaHack = this.roundBetaHack.bind(this);
     /*
     @getBeta method
     get beta dimention variable for the slide, either in pixels or percentages.
@@ -510,16 +509,8 @@ Slide = class Slide extends Component {
     };
   }
 
-  roundBetaHack(beta) {
-    boundMethodCheck(this, Slide);
-    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer && this._outer.nextElementSibling) {
-      return 'calc(' + beta + '% + 0.5px)';
-    }
-    return beta + '%';
-  }
-
   getBeta() {
-    var beta, d, offs, sign;
+    var d, offs, sign;
     boundMethodCheck(this, Slide);
     if (!this.props.beta || this.props.beta < 0) {
       throw new Error('beta is ( <= 0 | null ) ');
@@ -535,15 +526,23 @@ Slide = class Slide extends Component {
     }
     // base case scenario, this is legacy fallback for relative betas using css % 
     // CSS % use subpixel calculations for positions, this creates artifact borders with many nested slides, therfore this method is instantly overwritten on the first rerender as soon as the parents are mounted and we can descend down and calculate the positions with rounded off pixels.
-    beta = this.roundBetaHack(this.props.beta);
     if (this.props.offset) {
       sign = this.props.offset < 0 && '-' || '+';
-      offs = Math.abs(this.props.offset) + 'px';
+      offs = Math.abs(this.props.offset);
     }
-    if (offs) {
-      return 'calc(#{beta} #{sign} #{offs})';
+    // round beta hack attempt to avoid subpixel rounding artifacts. mildly tested and seems to work??
+    if (this.context.count === 2 && (this.context.outer_width / 2 % Math.floor(this.context.outer_width / 2) === 0.5) && this._outer && this._outer.nextElementSibling) {
+      if (offs) {
+        return 'calc(' + this.props.beta + '% ' + sign + ' ' + (offs + 0.5) + 'px)';
+      } else {
+        return 'calc(' + this.props.beta + '% + 0.5px)';
+      }
     } else {
-      return beta;
+      if (offs) {
+        return 'calc(' + this.props.beta + '% ' + sign + ' ' + offs + 'px)';
+      } else {
+        return this.props.beta + '%';
+      }
     }
   }
 

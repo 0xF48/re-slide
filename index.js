@@ -250,8 +250,8 @@ Slide = class Slide extends Component {
   getChildContext() {
     boundMethodCheck(this, Slide);
     return {
-      outer_width: this.context.vert && !this.is_root && this.context.outer_width || this.props.width || this.outer_rect.width,
-      outer_height: !this.context.vert && !this.is_root && this.context.outer_height || this.props.height || this.outer_rect.height,
+      outer_width: this.outer_rect.width,
+      outer_height: this.outer_rect.height,
       vert: this.props.vert || this.props.vert || false,
       count: this.props.children.length,
       isVisible: this.isVisible,

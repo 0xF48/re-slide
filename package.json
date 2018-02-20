@@ -1,6 +1,6 @@
 {
   "name": "preact-slide",
-  "version": "0.1.7",
+  "version": "0.1.7c",
   "description": "📏 Preact Universal Layout Component",
   "main": "index.js",
   "scripts": {

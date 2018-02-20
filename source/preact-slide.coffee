@@ -119,8 +119,8 @@ class Slide extends Component
 	@getChildContext method
 	###	
 	getChildContext: ()=>
-		outer_width: @context.vert && !@is_root && @context.outer_width || @props.width || @outer_rect.width
-		outer_height: !@context.vert && !@is_root && @context.outer_height || @props.height || @outer_rect.height
+		outer_width: @outer_rect.width
+		outer_height: @outer_rect.height
 		vert: @props.vert || @props.vert || false
 		count: @props.children.length
 		isVisible: @isVisible

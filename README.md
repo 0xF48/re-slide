@@ -8,7 +8,7 @@
 
 [documentation / examples / demos](http://arxii.github.io/preact-slide)
 
-* this library is still in alpha *
+**this library is still in alpha**
 
 `npm i preact-slide`
 
@@ -22,51 +22,51 @@ With increasing modern UI complexity, its easy to get lost in complex solutions 
 
 
 ## Props
-* **`vert`** *`false`* The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.
+**`vert`** *`false`* The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.
 
-* **`beta`** *`100`* The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.
+**`beta`** *`100`* The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.
 
-* **`dim`** *`100`* The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.
+**`dim`** *`100`* The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.
 
-* **`ratio`** *`0`* Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.
+**`ratio`** *`0`* Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.
 
-* **`offset`** *`0`* For edge cases, you may want to add or subtract some extra pixels to the `beta` property.
+**`offset`** *`0`* For edge cases, you may want to add or subtract some extra pixels to the `beta` property.
 
-* **`slide`** *`false`* If set to `true`, creates an outer wrapper enabling the children to scroll or slide
+**`slide`** *`false`* If set to `true`, creates an outer wrapper enabling the children to scroll or slide
 
-* **`animate`** *`true`* Set this to `false` to disable slide transitions for edge cases.
+**`animate`** *`true`* Set this to `false` to disable slide transitions for edge cases.
 
-* **`ease`** *`'0.4s cubic-bezier(0.25, 0.35, 0, 1)`* The CSS ease function for the slide transition.
+**`ease`** *`'0.4s cubic-bezier(0.25, 0.35, 0, 1)`* The CSS ease function for the slide transition.
 
-* **`pos`** *`0`* Setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.
+**`pos`** *`0`* Setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.
 
-* **`x`** *`null`* overrides `pos` with X pixels
+**`x`** *`null`* overrides `pos` with X pixels
 
-* **`y`** *`null`* overrides `pos` with Y pixels
+**`y`** *`null`* overrides `pos` with Y pixels
 
-* **`align`** *`null`* force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.
+**`align`** *`null`* force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.
 
-* **`auto`** *`false (unstable)`* If `true`, parent will resize based on content inside.
+**`auto`** *`false (unstable)`* If `true`, parent will resize based on content inside.
 
-* **`center`** *`false`* CSS flex center shortcut
+**`center`** *`false`* CSS flex center shortcut
 
-* **`inverse`** *`false`* The slide split is inverted, meaning the last child is the first and the first child is the last.
+**`inverse`** *`false`* The slide split is inverted, meaning the last child is the first and the first child is the last.
 
-* **`scroll`** *`false`* If set to true, outer wrapper will be scrollable.
+**`scroll`** *`false`* If set to true, outer wrapper will be scrollable.
 
-* **`outerChildren`** *`null`* Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.
+**`outerChildren`** *`null`* Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.
 
-* **`style`** *`null`* style prop gets passed down to outermost component.
+**`style`** *`null`* style prop gets passed down to outermost component.
 
-* **`className`** *`null`* When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide, handy for overlays. Take a look at the icon on the menu example in the docs.
+**`className`** *`null`* When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide, handy for overlays. Take a look at the icon on the menu example in the docs.
 
-* **`iclassName`** *`null`* className for the inner element if `slide:true`.
+**`iclassName`** *`null`* className for the inner element if `slide:true`.
 
-* **`onSlideStart`** *`null`* When component starts a slide transition
+**`onSlideStart`** *`null`* When component starts a slide transition
 
-* **`onSlideEnd`** *`null`* When component ends a slide transition or slide pos is set
+**`onSlideEnd`** *`null`* When component ends a slide transition or slide pos is set
 
-* **`on[EventName]`** *`undefined`* All events get passed down to outermost component.
+**`on[EventName]`** *`undefined`* All events get passed down to outermost component.
 
 
 
@@ -97,6 +97,4 @@ h Slide,
 ### Todos
 + clean up code.
 + upgrade test.
-+ responsive queries?
-+ touch gestures?
-+ react native?
++ responsive layout prop helpers.

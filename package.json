@@ -1,14 +1,14 @@
 {
   "name": "preact-slide",
-  "version": "0.1.7c",
+  "version": "0.2.0",
   "description": "📏 Preact Universal Layout Component",
   "main": "index.js",
   "scripts": {
     "test": "node test/eval.js",
     "dev": "webpack-dev-server --config dev.config.js",
-    "build": "webpack --config site.config.js && webpack --config lib.config.js && npm run test",
+    "build": "webpack --progress --config site.config.js",
     "write": "node test/write.js",
-    "republishOnly": "npm run build && npm run test"
+    "prepublishOnly": "npm run build && npm run test"
   },
   "repository": {
     "type": "git",
@@ -29,13 +29,21 @@
   },
   "homepage": "http://arxii.github.io/preact-slide",
   "peerDependencies": {
-    "preact": "8.x"
+    "preact": "^8.2.7",
+    "webpack": "^3.10.0",
+    "coffeescript": "^2.2.2",
+    "less": "^3.0.1",
+    "css-loader": "^0.28.9",
+    "less-loader": "^4.0.5",
+    "style-loader": "^0.19.1",
+    "coffee-loader": "^0.9.0"
   },
   "devDependencies": {
     "await-fs": "^1.0.0",
     "babel-minify-webpack-plugin": "^0.3.0",
     "coffee-loader": "^0.9.0",
     "coffeescript": "^2.1.1",
+    "coveralls": "^3.0.0",
     "css-loader": "^0.28.9",
     "express": "^4.16.2",
     "file-loader": "^1.1.6",

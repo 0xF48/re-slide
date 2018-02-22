@@ -1,12 +1,12 @@
 {
   "name": "preact-slide",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "📏 Preact Universal Layout Component",
   "main": "index.js",
   "scripts": {
     "test": "node test/eval.js",
     "dev": "webpack-dev-server --config dev.config.js",
-    "build": "webpack --progress --config site.config.js",
+    "build": "webpack --progress --config scripts/site.config.js && webpack --progress --config scripts/standalone.config.js",
     "write": "node test/write.js",
     "prepublishOnly": "npm run build && npm run test"
   },

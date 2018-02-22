@@ -13,6 +13,17 @@
 `npm i preact-slide`
 
 
+
+
+
+
+### normal version
+`require("preact-slide")` this will require the coffee and less files assuming you have everything set up in `webpack`.
+
+### standalone compiled version without preact:
+`require("preact-slide/build/preact-slide.js")`
+
+
 ## About
 > Sliders....sliders everywhere.
 

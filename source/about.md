@@ -1,4 +1,4 @@
-`Slide` is an opinionated way to progmatically design modularized UIs, enabling the creation of pixel perfect applications that are easy to expand and refactor.
+`Slide` is an opinionated way to programmaticallydesign modularized UIs, enabling the creation of pixel perfect applications that are easy to expand and refactor.
 <br>
 demos:
 <br>

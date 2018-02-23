@@ -1,1 +1,1 @@
-module.exports = require('source/preact-slide.coffee')
+module.exports = require('./source/preact-slide.coffee')

@@ -11,5 +11,6 @@ branches:
 os: osx
 install:
   - npm i
+  - npm i nyc -g
 script: 
   - npm run build

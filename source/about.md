@@ -1,4 +1,4 @@
-`Slide` is an opinionated way to programmaticallydesign modularized UIs, enabling the creation of pixel perfect applications that are easy to expand and refactor.
+`preact-slide` is an opinionated way to rapidly develop modularized and animated UIs, enabling the creation of high quality interfaces that are easy to scale and refactor.
 <br>
 demos:
 <br>

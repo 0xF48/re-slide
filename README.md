@@ -3,12 +3,15 @@
 <a href="https://npmjs.com/package/preact-slide" alt="npm link"><img src="https://img.shields.io/npm/v/preact-slide.svg?style=flat-square" /></a>
 <a href="https://github.com/developit/preact" alt="preact dependency v8.2.7"><img src="https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=flat-square" /></a>
 <a href="https://travis-ci.org/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/preact-slide.svg?style=flat-square" /></a>
+<a href="https://coveralls.io/github/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/coveralls/arxii/preact-slide.svg?style=flat-square" /></a>
+
 </p>
 
 
 [documentation / examples / demos](http://arxii.github.io/preact-slide)
 
-**this library is still in alpha**
+**this library is still in alpha, expect some combinations of props to not work as expected or simply break.**
+
 
 `npm i preact-slide`
 
@@ -28,8 +31,7 @@
 > Sliders....sliders everywhere.
 
 
-With increasing modern UI complexity, its easy to get lost in complex solutions and css hacks. Use this universal component to layout your app and slide between different ui components and modules. Parts of the UI that are not visible in the viewport are automatically not rendered because parts that you dont need are not in the viewport until you slide them in!
-
+`preact-slide` is an opinionated way to rapidly develop modularized and animated UIs, enabling the creation of both performant and polished interfaces that are easy to scale and refactor.
 
 
 ## Props
@@ -100,12 +102,18 @@ h Slide,
 		beta: 100
 		center: true
 		'child 2' #100% of parent height.
-
 ```
 
 
+## TODOS
++ clean up code and comments.
++ upgrade tests to 100% coverage.
++ responsive layout helpers and custom touch events for mobile devices.
 
-### Todos
-+ clean up code.
-+ upgrade test.
-+ responsive layout prop helpers.
+
+
+##Development
+`npm run dev` - fire up dev server, edit source coffee files and navigate to `http://localhost:3000/test/test.html` to view the changes or `http://localhost:3000` to view the homepage. 
+`npm run build` - build and minify the site and the bundled UMD version of the library.
+`npm run test` - run the tests (just basic diff for breaking changes for now)
+

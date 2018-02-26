@@ -8,7 +8,7 @@ DEFAULT_PROPS =
 	slide: no #slides through children, if disabled will return a simplified wrapper
 	pos: 0 #position of the slide
 	auto: false #auto dim based on content
-	dim: 0 #dim is width/height but relative to split direction, so u dont have to ;)
+	dim: 0 #dim is width/height if parent vert is true then this is the height, otherwise it is the width.
 	animate: false #transitions
 	ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
 	width: 0 #slide width manual override
@@ -198,6 +198,7 @@ class Slide extends Component
 	right before a slide animation starts, this function is triggered.
 	###
 	onSlideStart: (x,y)=>
+		@props.onSlideStart?(@props.pos)
 		if @props.hide
 			@updateVisibility(x,y,false)
 

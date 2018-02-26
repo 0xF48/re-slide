@@ -30,30 +30,36 @@ EXAMPLES = [
 
 PROPS = [
 	['vert','false','The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.']
-	['beta','100','The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.']
-	['dim','null','The width/height pixel relative to parent split direction. Setting dim to 0 will throw an error.']
-	['width','0','force width in pixels shortcut (or use a css class override for root elements)']
-	['height','0','force set height shortcut (or use a css class override)']
-	['ratio','0','Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its split direction, if set to 0 no ratio will be forced. for example setting the ratio to 1 will result in the slide being square but will take up 100% width/height depending on parent split direction.']
-	['offset','0','For edge cases, you may want to add or subtract some extra pixels to the `beta` property.']
-	['slide','false','If set to `true`, creates an outer wrapper enabling the children slides to scroll or slide. all children will be rendered inside the inner wrapper. children can only be slides. If you want to append children to the outer wrapper, use the `outerChildren` prop. ']
-	['animate','true','Set this to `false` to disable slide transitions for edge cases.']
+	['beta','100','The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.
+']
+	['dim','null','The width/height. If parents `vert` is true then this is the height, otherwise it is the width. This overrides `beta`.']
+	['width | height','0','Force width/height in pixels shortcut (or use a css to override width/height for root slides)']
+	['ratio','0','Set the automatic width over height ratio for the element which will be derived from the parent width/height based on its `vert`, if set to 0 no ratio will be forced. for example setting the ratio to .5 will result in the slide being square but will take up 50% width if the parent is `vert:true`']
+	['offset','0','For edge cases, you may want to add or subtract some extra pixels to the `beta` property, like CSS `calc()`.']
+	['slide','false','If set to `true`, creates an outer wrapper enabling the children to scroll or slide']
+	['animate','true','Set this to `false` to disable slide transitions.']
 	['ease','0.4s cubic-bezier(0.25, 0.35, 0, 1)','The CSS ease function for the slide transition.']
-	['x','null','overrides `pos` with X pixels']
-	['y','null','overrides `pos` with Y pixels']
+	['pos','0','Setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.']
+	['x|y','null','overrides `pos` with pixels.']
 	['align','null','force slide child to edge. For example, if child one is 100% and child 2 is 20%. when `vert:true,pos:2` the parent will be forced to align the 20% child to the very top, otherwise it will only slide until 20% is fully visible at the bottom.']
-	['pos','0','When `slide:true`, setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.']
+	
 	['auto','false (unstable)','If `true`, parent will resize based on content inside.']
-	['center','false','CSS flex center shortcut']
+	['center','false','CSS flex center shortcut.']
 	['inverse','false','The slide is inverted, meaning the last child is the first and the first child is the last']
 	['scroll','false','If set to true, outer wrapper will be scrollable.']
 	['style','null','style gets passed down to outermost component']
 	['className','null','When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.']
-	['outerChildren','null','Since slides that have `slide:true` can only have slides, you can pass down an extra component or array of components to append to the outer/static slide.']
+	['outerChildren','null','Since slides with `slide:true` can only have slides, you can pass down children to the outer/static slide.']
+	['outerStyle','null','Style object gets passed down to outermost component.']
+	['innerStyle','null','Style object gets passed down to inner component if there is one.']
+	
+	['iclassName','null','When `slide:true` className is applied for outer element. Otherwise it will fall back as className for the static slide.']
+	
 	['iclassName','null','className for the inner element if `slide:true`.']
-	['onSlideStart','null','When component starts a slide transition, or a new `pos` is set.']
-	['onSlideEnd','null','When parent slide ends the sliding transition. This will still get called even if there was no animation as long as a new `pos` is set.']
-	['on[EventName]','null','All events get passed down to outermost component.']
+	
+	['onSlideStart','null','Event fired when a transition starts or the `pos` prop is changed.']
+	['onSlideDone','null','Event fired when a transition ends or the `pos` prop is changed.']
+	['on[EventName]','null','Pass down events to the outer/static div.']
 ]
 
 

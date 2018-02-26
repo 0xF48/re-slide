@@ -90,7 +90,7 @@ DEFAULT_PROPS = {
   slide: false, //slides through children, if disabled will return a simplified wrapper
   pos: 0, //position of the slide
   auto: false, //auto dim based on content
-  dim: 0, //dim is width/height but relative to split direction, so u dont have to ;)
+  dim: 0, //dim is width/height if parent vert is true then this is the height, otherwise it is the width.
   animate: false, //transitions
   ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)', //slide easing
   width: 0, //slide width manual override
@@ -323,7 +323,11 @@ Slide = class Slide extends Component {
   }
 
   onSlideStart(x, y) {
+    var base;
     boundMethodCheck(this, Slide);
+    if (typeof (base = this.props).onSlideStart === "function") {
+      base.onSlideStart(this.props.pos);
+    }
     if (this.props.hide) {
       return this.updateVisibility(x, y, false);
     }

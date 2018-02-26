@@ -112,8 +112,10 @@ h Slide,
 
 
 
-##Development
+## Development
 `npm run dev` - fire up dev server, edit source coffee files and navigate to `http://localhost:3000/test/test.html` to view the changes or `http://localhost:3000` to view the homepage. 
+
 `npm run build` - build and minify the site and the bundled UMD version of the library.
+
 `npm run test` - run the tests (just basic diff for breaking changes for now)
 

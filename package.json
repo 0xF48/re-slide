@@ -59,7 +59,7 @@
     "seed-random": "^2.2.0",
     "shader-box": "^1.1.1",
     "style-loader": "^0.19.1",
-    "tape": "^4.8.0",
+    "tap": "^11.1.1",
     "url-loader": "^0.6.2",
     "webpack": "^3.10.0"
   }

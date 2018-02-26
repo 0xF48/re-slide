@@ -1,11 +1,10 @@
 p = require 'puppeteer'
 fs = require 'fs'
 express = require 'express'
-test = require 'tape'
+tap = require 'tap'
 path = require 'path'
 
-
-test 'diff test', (t)->
+tap.test 'diff innerHTML', (test)->
 	app = express()
 	app.use(express.static(path.join(__dirname,'..')))
 	await app.listen 3002
@@ -22,8 +21,11 @@ test 'diff test', (t)->
 			return document.body.innerHTML
 		await browser.close()
 		fs.readFile 'test/eval.txt','utf8',(err,file)->
-			t.equal(html,file,'should be equal')
-			t.end()
+			tap.equal(html,file,'innerHTML should be equal to text')
+			test.end()
 			process.exit(0)
+			
+
+			# process.exit(0)
 	catch e
 		throw new Error 'STOP'

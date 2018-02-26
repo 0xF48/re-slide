@@ -35,7 +35,9 @@
 
 
 ## Props
-**`vert`** *`false`* The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.
+### vert `false`
+The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.
+
 
 **`beta`** *`100`* The width/height percentage relative to parent split and size. Setting beta to 0 will throw an error.
 

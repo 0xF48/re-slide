@@ -35,7 +35,7 @@
 
 
 ## Props
-### vert `false`
+### vert *`false`*
 The slides flex or split direction. If `true`, the children will be positioned vertically from top to bottom.
 
 

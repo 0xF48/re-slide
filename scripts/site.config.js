@@ -1,5 +1,6 @@
 var webpack = require("webpack");
 const MinifyPlugin = require("babel-minify-webpack-plugin");
+var path = require('path')
 var cfg = {
 	module: {
 		loaders: [
@@ -18,7 +19,7 @@ var cfg = {
 		// "modules": [__dirname+"/node_modules"],
 	},
 	output: {
-		path: __dirname+'/site/',
+		path: path.join(__dirname,'..','/site/'),
 		publicPath: '/site/',
 		filename: "[name].js"
 	},

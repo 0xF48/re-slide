@@ -7,17 +7,15 @@
 
 </p>
 
+`preact-slide` is a universal layout component used to rapidly develop modularized and animated UIs, enabling the creation of high quality interfaces that are easy to scale and refactor.
 
 [documentation / examples / demos](http://arxii.github.io/preact-slide)
 
-**this library is still in alpha, expect some combinations of props to not work as expected or simply break.**
+
+**this library is still in alpha, expect a few bugs.**
 
 
 `npm i preact-slide`
-
-
-
-
 
 
 ### normal version

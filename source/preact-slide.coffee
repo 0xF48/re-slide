@@ -65,7 +65,6 @@ class Slide extends Component
 	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
 	###
 	componentDidMount: ()=>
-		# console.log @_outer.parentElement.getBoundingClientRect()
 		if @context.dim != 0
 			addEventListener 'resize',@resizeEvent
 		if @context.dim != 0 || @props.slide 
@@ -85,8 +84,9 @@ class Slide extends Component
 	###
 	@componentDidUpdate method
 	###
-	componentDidUpdate: (p_props)->
-		@checkSlideUpdate(p_props)
+	componentDidUpdate: (p_props,p_state)->
+		# @state._dim = @props.vert && @_outer.clientHeight || @_outer.clientWidth 
+		@checkSlideUpdate(p_props,p_state)
 
 
 
@@ -207,11 +207,11 @@ class Slide extends Component
 	@checkSlideUpdate method
 	check if slide needs update, and update it if nessesary.
 	###
-	checkSlideUpdate: (p_props)->
-
+	checkSlideUpdate: (p_props,p_state)->
 		if !@_inner
 			return false
 
+		
 
 		if @props.y != null || @props.x != null
 			pos = 
@@ -223,7 +223,7 @@ class Slide extends Component
 		if @props.x != p_props.x || @props.y != p_props.y || @props.pos != p_props.pos || @props.offset != p_props.offset
 			return @toXY pos
 
-		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto
+		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto #|| (@state._dim != p_state._dim)
 			return @setXY pos
 
 	
@@ -322,10 +322,10 @@ class Slide extends Component
 				if cc.clientHeight >= o_h || @props.align
 					y = cc.offsetTop
 				else
-					if cc.offsetTop + cc.clientHeight <= @state.y+o_h
-						y = @state.y
-					else
-						y = cc.offsetTop - (o_h) + cc.clientHeight
+					# if cc.offsetTop + cc.clientHeight <= @state.y+o_h
+					# 	y = @state.y
+					# else
+					y = cc.offsetTop - (o_h) + cc.clientHeight
 			else
 				y = cc.offsetTop
 			
@@ -337,10 +337,10 @@ class Slide extends Component
 				if cc.clientWidth >= o_w || @props.align
 					x = cc.offsetLeft
 				else
-					if cc.offsetLeft + cc.clientWidth <= @state.x+o_w
-						x = @state.x
-					else
-						x = cc.offsetLeft - o_w + cc.clientWidth
+					# if cc.offsetLeft + cc.clientWidth <= @state.x+o_w
+					# 	x = @state.x
+					# else
+					x = cc.offsetLeft - o_w + cc.clientWidth
 			else
 				x = cc.offsetLeft
 			
@@ -431,7 +431,7 @@ class Slide extends Component
 				dim.height = @context.dim*@props.ratio
 				dim.width = '100%'
 			else
-				#dim.height = '100%' CSS is weird...
+				dim.height = '100%' #CSS is weird...
 				dim.width = @context.dim*@props.ratio
 			return dim
 

@@ -13,5 +13,5 @@ install:
   - npm i
   - npm i nyc -g
 script: 
-  - npm run build
+  - npm run prod
   - npm run test

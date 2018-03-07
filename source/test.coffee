@@ -87,12 +87,9 @@ class Test extends Component
 			pos_a: 2
 
 	componentDidMount: ->
+		@setState
+			count: document.body.querySelectorAll("*").length
 		
-		# setTimeout ()=>
-		# 	# toggle = !toggle
-		# 	# @forceUpdate()
-		# ,1000
-	
 
 
 	render: ->
@@ -171,19 +168,23 @@ class Test extends Component
 						vert:true
 						# auto: true
 						h Slide,
-							beta: 50
+							beta: 100
 							h Card,slide:false
 						h Slide,
 							beta: 20
 							h Card,slide:false
 						h Slide,
-							dim: 50
-							h Card,slide:false
+							ratio: 1
+							center: yes
+							style: 
+								background: 'grey'
+								color: 'white'
+							@state.count
 						h Slide,
 							beta: 150
 							h Card,slide:false
 						h Slide,
-							beta: 100
+							dim: 50
 							h Card,slide:false
 
 

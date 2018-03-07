@@ -5,7 +5,7 @@ Markdown = require 'preact-markdown'
 Markup = require 'preact-markup'
 require './site.less'
 require './examples.less'
-
+gradient_shader = require('./gradient.glsl')
 
 
 
@@ -83,7 +83,7 @@ class Header extends Component
 				antialias: false
 				depth: false
 		@gradient = new Shader
-			code: require('./gradient.glsl')()
+			code: gradient_shader
 			uniforms:
 				pos:
 					type:'2fv'

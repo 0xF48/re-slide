@@ -1,10 +1,10 @@
 var webpack = require("webpack");
-var path = require 'path';
+var path = require("path");
 const MinifyPlugin = require("babel-minify-webpack-plugin");
 var cfg = {
 	devtool: 'source-map',
 	module: {
-		loaders: [
+		rules: [
 			{ test: /\.coffee$/, use: "coffee-loader"},
 			{ test: /\.glsl$/, use: "glsl-template-loader" },
 			{ test: /\.(xml|html|txt|md)$/, loader: "raw-loader" },
@@ -20,13 +20,12 @@ var cfg = {
 		// "modules": [__dirname+"/node_modules"],
 	},
 	output: {
-		path: __dirname+'/site/',
+		path: path.join(__dirname,'..','/site/'),
 		publicPath: '/site/',
 		filename: "[name].js"
 	},
 	devServer: {
-		port: 3000,
-		compress: true
+		port: 2998
 	}
 }
 module.exports = cfg;

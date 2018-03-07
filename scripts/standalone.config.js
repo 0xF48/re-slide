@@ -1,11 +1,9 @@
 var webpack = require("webpack");
 var path = require('path');
 var fs = require('fs');
-
-
 var cfg = {
 	module: {
-		loaders: [
+		rules: [
 			{ test: /\.coffee$/, use: "coffee-loader"},
 			{ test: /\.glsl$/, use: "glsl-template-loader" },
 			{ test: /\.(xml|html|txt|md)$/, loader: "raw-loader" },
@@ -18,7 +16,7 @@ var cfg = {
 	},
 	externals: ["preact"],
 	output: {
-		filename: "build/preact-slide.js",
+		filename: "preact-slide.js",
 		library: 'Slide',
 		libraryTarget: 'umd'
 	}

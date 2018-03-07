@@ -1,1 +1,0 @@
-module.exports = require('./source/preact-slide.coffee')

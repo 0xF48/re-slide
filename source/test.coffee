@@ -1,5 +1,5 @@
 {h,render,Component} = require 'preact'
-Slide = require '../index.js'
+Slide = require './preact-slide.coffee'
 _ = require 'lodash'
 require './site.less'
 nums = require './random.json'

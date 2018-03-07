@@ -104,20 +104,8 @@ class Header extends Component
 		@box.add(@gradient)
 		@box.clear().draw(@gradient)
 		@tick(@t)
-		# setInterval @switchTitleSnippetTextA,1000
-		setInterval @switchTitleSnippetTextB,2000
 
-	
-	switchTitleSnippetTextA: =>
-		@setState
-			title_snippet_pos_a: 1-@state.title_snippet_pos_a
-	
 
-	switchTitleSnippetTextB: =>
-		@setState
-			title_snippet_pos_b: 1-@state.title_snippet_pos_b
-		
-	
 	tick: ()=>
 		requestAnimationFrame(@tick)
 		if window.scrollY > window.innerHeight && @state.show_bg

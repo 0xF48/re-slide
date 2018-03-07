@@ -257,7 +257,7 @@ class Slide extends Component
 		@setState
 			in_transition: false
 			transition: ''
-			transform: 'matrix(1, 0.00001, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
+			transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
 			x: pos.x
 			y: pos.y
 		,()=>
@@ -350,19 +350,20 @@ class Slide extends Component
 
 
 		lc = @_inner.children[@_inner.children.length-1]
-		if @props.vert
-			max = lc.offsetTop - o_h + lc.clientHeight
-			if y > max && max > 0
-				y = max
-		else
-			max = lc.offsetLeft - o_w + lc.clientWidth
-			if x > max && max > 0
-				x = max 
+		if !@props.align
+			if @props.vert
+				max = lc.offsetTop - o_h + lc.clientHeight
+				if y > max && max > 0
+					y = max
+			else
+				max = lc.offsetLeft - o_w + lc.clientWidth
+				if x > max && max > 0
+					x = max 
 
 
 	
-		x: Math.round(x) || 0
-		y: Math.round(y) || 0
+		x: Math.round(x)
+		y: Math.round(y)
 
 
 

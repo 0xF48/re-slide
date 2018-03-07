@@ -1,6 +1,6 @@
 {
   "name": "preact-slide",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "📏 Preact Universal Layout Sliding Component",
   "main": "source/preact-slide.coffee",
   "scripts": {

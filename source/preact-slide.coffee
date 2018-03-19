@@ -255,7 +255,7 @@ class Slide extends Component
 		@setState
 			in_transition: true
 			transition: @getTransition()
-			transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
+			transform: 'translate('+(-pos.x) + 'px,' + (-pos.y) + 'px)'
 			x: pos.x
 			y: pos.y
 
@@ -268,7 +268,7 @@ class Slide extends Component
 		@setState
 			in_transition: false
 			transition: ''
-			transform: 'matrix(1, 0, 0, 1, ' + (-pos.x) + ', ' + (-pos.y) + ')'
+			transform: 'translate('+(-pos.x) + 'px,' + (-pos.y) + 'px)'
 			x: pos.x
 			y: pos.y
 		,()=>

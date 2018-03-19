@@ -1,10 +1,12 @@
+require './site.less'
+require './examples.less'
+
+
 {h,render,Component} = require 'preact'
 Slide = require './preact-slide.coffee'
 {Box,Shader} = require 'shader-box'
 Markdown = require 'preact-markdown'
 Markup = require 'preact-markup'
-require './site.less'
-require './examples.less'
 gradient_shader = require('./gradient.glsl')
 
 

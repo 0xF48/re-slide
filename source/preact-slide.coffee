@@ -67,8 +67,9 @@ class Slide extends Component
 	componentDidMount: ()=>
 		if @context.dim != 0
 			addEventListener 'resize',@resizeEvent
-		if @context.dim != 0 || @props.slide 
+		if @context.dim != 0 || @props.slide
 			@forceUpdate()
+
 
 
 
@@ -86,7 +87,12 @@ class Slide extends Component
 	###
 	componentDidUpdate: (p_props,p_state)->
 		# @state._dim = @props.vert && @_outer.clientHeight || @_outer.clientWidth 
-		@checkSlideUpdate(p_props,p_state)
+		
+		if !@state.initial
+			@state.initial = true
+			@checkSlideUpdate(p_props,p_state,true)
+		else
+			@checkSlideUpdate(p_props,p_state)
 
 
 
@@ -173,6 +179,9 @@ class Slide extends Component
 				@visibility_map.set(child,true)
 			else if force_hide
 				@visibility_map.set(child,false)
+				child.style.visibility = 'hidden'
+				while child.firstChild
+					child.removeChild(child.firstChild)
 
 		return
 
@@ -188,10 +197,9 @@ class Slide extends Component
 		if @props.hide
 			@visibility_map = new Map
 			@updateVisibility(0,0,true)
-		@setState
-			in_transition: false
-		,()=>
-			@props.onSlideDone?(@props.pos)
+		
+		@state.in_transition = false
+		@props.onSlideDone?(@props.pos)
 
 	###
 	@onSlideStart method
@@ -207,7 +215,7 @@ class Slide extends Component
 	@checkSlideUpdate method
 	check if slide needs update, and update it if nessesary.
 	###
-	checkSlideUpdate: (p_props,p_state)->
+	checkSlideUpdate: (p_props,p_state,force)->
 		if !@_inner
 			return false
 
@@ -219,6 +227,9 @@ class Slide extends Component
 				y: @props.y
 		else
 			pos = @getIndexXY(@props.pos)
+
+		if force
+			return @setXY(pos)
 		
 		if @props.x != p_props.x || @props.y != p_props.y || @props.pos != p_props.pos || @props.offset != p_props.offset
 			return @toXY pos

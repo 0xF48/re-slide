@@ -12,7 +12,7 @@
 [documentation / examples / demos](http://arxii.github.io/preact-slide)
 
 
-**this library is still in alpha, expect a few bugs.**
+**this library is still in alpha, I am actively fixing issues and bugs.**
 
 
 `npm i preact-slide`
@@ -57,8 +57,10 @@ If set to `true`, creates an outer wrapper enabling the children to scroll or sl
 ### `animate` (false)
 Set this to `false` to disable slide transitions.
 
-### `ease` ("0.4s cubic-bezier(0.25, 0.35, 0, 1)")
+### `ease` ("cubic-bezier(0.25, 0.35, 0, 1)")
 The CSS ease function for the slide transition.
+
+
 
 ### `pos` (0)
 Setting this to an `integer` will slide the parent to its child slide at that index. Setting the prop to a `float` will slide the parent to an interpolated offset between child at the index of the **floored** prop and the next child.

@@ -10,7 +10,7 @@ DEFAULT_PROPS =
 	auto: false #auto dim based on content
 	dim: 0 #dim is width/height if parent vert is true then this is the height, otherwise it is the width.
 	animate: false #transitions
-	ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
+	ease: '0.3s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
 	width: 0 #slide width manual override
 	height: 0 #slide height manual override
 	ratio: 0 #ratio dim helper
@@ -78,6 +78,8 @@ class Slide extends Component
 	@componentWillUpdate method
 	###
 	componentWillUpdate: ()=>
+		if !@base.isConnected
+			return
 		@calculateBounds()
 
 
@@ -87,10 +89,12 @@ class Slide extends Component
 	###
 	componentDidUpdate: (p_props,p_state)->
 		# @state._dim = @props.vert && @_outer.clientHeight || @_outer.clientWidth 
+		if !@props.slide || !@base.isConnected
+			return
 		
 		if !@state.initial
 			@state.initial = true
-			@checkSlideUpdate(p_props,p_state,true)
+			@setXY(@getIndexXY(@props.pos))
 		else
 			@checkSlideUpdate(p_props,p_state)
 
@@ -114,9 +118,11 @@ class Slide extends Component
 
 
 	isVisible: (child)=>
-		if @visibility_map.get(child._outer) == false && @props.hide
+		if @visibility_map.get(child._outer) == false && @props.hide == true
 			return false
-		return true
+		else
+			return true
+			
 		
 
 
@@ -167,23 +173,58 @@ class Slide extends Component
 		return Math.round(el_pos+el_size) > Math.round(parent_pos) && Math.round(el_pos) < Math.round(parent_pos + parent_size)
 
 
-	###
-	@updateVisibility method
-	update the visibility of slides that are not in the scrolled view
-	###	
-	updateVisibility: (x,y,force_hide)=>
+
+	# decide whcih slides to render after the transition.
+	updatePostVisibility: =>
+		
 		@calculateBounds()
 		for child,i in @_inner.children
-			rect = child.getBoundingClientRect()
-			if  ( !@props.vert && @inViewBounds(rect.x+x,rect.width,@outer_rect.x,@props.width || @outer_rect.width) ) || ( @props.vert && @inViewBounds(rect.y+y,rect.height,@outer_rect.y,@props.height || @outer_rect.height) )
-				@visibility_map.set(child,true)
-			else if force_hide
+			if (!@props.vert && !@inViewBounds(child.offsetLeft,child.clientWidth,@state.x,@outer_rect.width) ) || ( @props.vert && !@inViewBounds(child.offsetTop,child.clientHeight,@state.y,@outer_rect.height) )
+				
+				# hide
 				@visibility_map.set(child,false)
 				child.style.visibility = 'hidden'
 				while child.firstChild
 					child.removeChild(child.firstChild)
+		
+	
+	# decide whcih slides to render before the transition.
+	updatePreVisibility: (pos)=>
+		
+		@calculateBounds()
+		
+		for child,i in @_inner.children
+			if @props.vert
+				next_inbounds = @inViewBounds(child.offsetTop,child.clientHeight,pos.y,@outer_rect.height)
+				current_inbounds =  @inViewBounds(child.offsetTop,child.clientHeight,@state.y,@outer_rect.height)
+				if !next_inbounds && !current_inbounds
+					@visibility_map.set(child,false)
+			else
+				next_inbounds = @inViewBounds(child.offsetLeft,child.clientWidth,pos.x,@outer_rect.width)
+				current_inbounds =  @inViewBounds(child.offsetLeft,child.clientWidth,@state.x,@outer_rect.width)
+				if !next_inbounds && !current_inbounds
+					@visibility_map.set(child,false)
+			
 
-		return
+		
+
+	updateSetVisibility: (pos)=>
+		
+		@calculateBounds()
+		for child,i in @_inner.children
+			if @props.vert
+				next_inbounds = @inViewBounds(child.offsetTop,child.clientHeight,pos.y,@outer_rect.height)
+				if !next_inbounds
+					@visibility_map.set(child,false)
+			else
+				next_inbounds = @inViewBounds(child.offsetLeft,child.clientWidth,pos.x,@outer_rect.width)
+				if !next_inbounds
+					@visibility_map.set(child,false)
+			
+
+
+			
+				
 
 
 	###
@@ -191,35 +232,37 @@ class Slide extends Component
 	when slide animation is complete, this function is triggered.
 	###
 	onSlideDone: ()=>
+		
 		if !@_inner
 			return
 
 		if @props.hide
-			@visibility_map = new Map
-			@updateVisibility(0,0,true)
+			# @visibility_map = new Map
+			@updatePostVisibility()
 		
-		@state.in_transition = false
 		@props.onSlideDone?(@props.pos)
 
 	###
 	@onSlideStart method
 	right before a slide animation starts, this function is triggered.
 	###
-	onSlideStart: (x,y)=>
-		@props.onSlideStart?(@props.pos)
+	onSlideStart: (pos)=>
+		
+		
+		@props.onSlideStart?(pos)
 		if @props.hide
-			@updateVisibility(x,y,false)
+			@visibility_map = new Map
+			@updatePreVisibility(pos)
+		
 
 
 	###
 	@checkSlideUpdate method
 	check if slide needs update, and update it if nessesary.
 	###
-	checkSlideUpdate: (p_props,p_state,force)->
+	checkSlideUpdate: (p_props,p_state)->
 		if !@_inner
 			return false
-
-		
 
 		if @props.y != null || @props.x != null
 			pos = 
@@ -228,9 +271,7 @@ class Slide extends Component
 		else
 			pos = @getIndexXY(@props.pos)
 
-		if force
-			return @setXY(pos)
-		
+
 		if @props.x != p_props.x || @props.y != p_props.y || @props.pos != p_props.pos || @props.offset != p_props.offset
 			return @toXY pos
 
@@ -240,10 +281,10 @@ class Slide extends Component
 	
 	###
 	@getTransition method
-	CSS transition easing/duration.
+	CSS transition easing
 	###
 	getTransition: ()->
-		'transform ' + @props.ease
+		'transform '+@props.ease
 
 
 	###
@@ -251,9 +292,8 @@ class Slide extends Component
 	CSS translate inner div to pos <x,y>
 	###
 	toXY: (pos)->
-		@onSlideStart(@state.x - pos.x,@state.y - pos.y)
+		@onSlideStart(pos)
 		@setState
-			in_transition: true
 			transition: @getTransition()
 			transform: 'translate('+(-pos.x) + 'px,' + (-pos.y) + 'px)'
 			x: pos.x
@@ -264,15 +304,17 @@ class Slide extends Component
 	same as toXY but instant.
 	###
 	setXY: (pos)->
-		@onSlideStart(@state.x - pos.x,@state.y - pos.y)
+		
+		if @props.hide
+			@visibility_map = new Map
+			@updateSetVisibility(pos)
 		@setState
-			in_transition: false
 			transition: ''
 			transform: 'translate('+(-pos.x) + 'px,' + (-pos.y) + 'px)'
 			x: pos.x
 			y: pos.y
 		,()=>
-			setTimeout @onSlideDone,0
+			setTimeout @props.onSlideDone,0
 
 
 
@@ -528,7 +570,7 @@ class Slide extends Component
 		
 		slide_props.ref = @outer_ref
 		slide_props.className = "-i-s-outer"+c_name+class_fixed
-
+		slide_props.style = {}
 
 		if @context._i_slide || @props.height || @props.width
 			slide_props.style = @getOuterHW()
@@ -540,6 +582,8 @@ class Slide extends Component
 		
 		if hidden
 			slide_props.style.visibility = 'hidden'
+		else
+			slide_props.style.visibility = ''
 	
 		h 'div',
 			slide_props
@@ -564,11 +608,13 @@ class Slide extends Component
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		outer_props = @pass_props || {}
 		hidden = @context.isVisible && !@context.isVisible(@) || false
-
+		
 		if @context._i_slide || @props.height || @props.width
 			outer_props.style = @getOuterHW()
 			if hidden
 				outer_props.style.visibility = 'hidden'
+			else
+				outer_props.style.visibility = ''
 		outer_props.className = "-i-s-static"+c_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
 		outer_props.id = @props.id
 		outer_props.ref = @outer_ref
@@ -577,7 +623,7 @@ class Slide extends Component
 			outer_props.style = Object.assign outer_props.style || {},(@props.outerStyle || @props.style)
 	
 	
-		if @context.isVisible && !@context.isVisible(@)
+		if hidden
 			h 'div',
 				outer_props
 		else

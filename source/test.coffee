@@ -1,6 +1,6 @@
 {h,render,Component} = require 'preact'
 Slide = require './preact-slide.coffee'
-_ = require 'lodash'
+# _ = require 'lodash'
 require './site.less'
 nums = require './random.json'
 window.log = console.log.bind(console)

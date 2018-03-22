@@ -1,6 +1,6 @@
 {
   "name": "preact-slide",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "📏 Preact Universal Layout Sliding Component",
   "main": "source/preact-slide.coffee",
   "scripts": {
@@ -32,9 +32,9 @@
     "preact": "^8.2.7",
     "webpack": "*",
     "coffeescript": "^2.2.2",
-    "less": "^2.7.3",
+    "less": "*",
     "css-loader": "*",
-    "less-loader": "^4.0.5",
+    "less-loader": "*",
     "style-loader": "*",
     "coffee-loader": "*"
   },
@@ -45,8 +45,8 @@
     "express": "^4.16.2",
     "file-loader": "^1.1.11",
     "glsl-template-loader": "^1.1.0",
-    "less": "^2.7.3",
-    "less-loader": "^4.0.6",
+    "less": "^3.0.1",
+    "less-loader": "^4.1.0",
     "lodash": "^4.17.4",
     "preact": "^8.2.7",
     "preact-markdown": "^0.4.0",

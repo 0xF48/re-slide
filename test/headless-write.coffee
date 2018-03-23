@@ -10,7 +10,7 @@ app.listen 3002, ()->
 	page  = await browser.newPage()
 	page.on 'console', (msg)->
 		console.log 'PAGE LOG:', msg.text()
-	await page.goto('http://localhost:3002/test/test.html')
+	await page.goto('http://localhost:3002/test.html')
 	html = await page.evaluate ()->
 		return document.body.innerHTML
 	await browser.close()

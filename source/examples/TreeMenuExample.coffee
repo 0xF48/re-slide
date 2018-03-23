@@ -141,10 +141,10 @@ class TreeMenu extends Component
 
 	
 	componentDidMount: ->
-		setInterval ()=>
-			@setState
-				size: @_root._outer.querySelectorAll('*').length
-		,500
+		# setInterval ()=>
+		# 	@setState
+		# 		size: @_root._outer.querySelectorAll('*').length
+		# ,500
 	
 	render: ->
 		items = @state.items

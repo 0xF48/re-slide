@@ -18,8 +18,8 @@ class CarouselExample extends Component
 				vert: yes
 				inverse: !!(i%2)
 				pos: @state["c_#{i}"]
-				onMouseLeave: =>
-					@setState "c_#{i}": 0
+				# onMouseLeave: =>
+				# 	@setState "c_#{i}": 0
 				h Slide,
 					className: 'carousel-example-top center'
 					style:

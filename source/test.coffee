@@ -56,7 +56,7 @@ class Card extends Component
 			return h Slide,
 				center: yes
 				style: @state.rbg1
-				@state.rc1
+				@state.rc1 || 'a'
 		else
 			return h Slide,
 				slide: true
@@ -70,7 +70,7 @@ class Card extends Component
 				h Slide,
 					center: true
 					style: @state.rbg1
-					@state.rc1
+					@state.rc1 || 'a'
 				h Slide,
 					center: true
 					style: @state.rbg2

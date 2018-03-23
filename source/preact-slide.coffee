@@ -10,7 +10,7 @@ DEFAULT_PROPS =
 	auto: false #auto dim based on content
 	dim: 0 #dim is width/height if parent vert is true then this is the height, otherwise it is the width.
 	animate: false #transitions
-	ease: '0.3s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
+	ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
 	width: 0 #slide width manual override
 	height: 0 #slide height manual override
 	ratio: 0 #ratio dim helper
@@ -65,10 +65,14 @@ class Slide extends Component
 	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
 	###
 	componentDidMount: ()=>
-		if @context.dim != 0
+		if @isRoot()
 			addEventListener 'resize',@resizeEvent
-		if @context.dim != 0 || @props.slide
-			@forceUpdate()
+	
+		if @isRoot() || @props.slide
+			if @props.slide && @_inner
+				return @setXY(@getIndexXY(@props.pos))
+			
+		@forceUpdate()
 
 
 
@@ -92,11 +96,7 @@ class Slide extends Component
 		if !@props.slide || !@base.isConnected
 			return
 		
-		if !@state.initial
-			@state.initial = true
-			@setXY(@getIndexXY(@props.pos))
-		else
-			@checkSlideUpdate(p_props,p_state)
+		@checkSlideUpdate(p_props,p_state)
 
 
 
@@ -104,6 +104,7 @@ class Slide extends Component
 	@componentWillUnmount method
 	###	
 	componentWillUnmount: ()=>
+		@state.visible = false
 		removeEventListener 'resize',@resizeEvent
 	
 
@@ -117,11 +118,19 @@ class Slide extends Component
 	
 
 
-	isVisible: (child)=>
-		if @visibility_map.get(child._outer) == false && @props.hide == true
-			return false
-		else
+	isChildVisible: (child)=>
+		if !@props.slide
 			return true
+
+		if @visibility_map.get(child._outer) == true || @props.hide == false
+			return true
+		else if child._outer
+			if @props.vert && @inViewBounds(child._outer.offsetTop,child._outer.clientHeight,@state.y,@outer_rect.height)
+				return true
+			else if !@props.vert && @inViewBounds(child._outer.offsetLeft,child._outer.clientWidth,@state.x,@outer_rect.width)
+				return true
+
+		return false
 			
 		
 
@@ -135,7 +144,7 @@ class Slide extends Component
 		outer_height: @outer_rect.height
 		vert: @props.vert || @props.vert || false
 		count: @props.children.length
-		isVisible: @isVisible
+		isChildVisible: @isChildVisible
 		dim: if @props.vert then @outer_rect.width else @outer_rect.height
 		slide: @props.slide
 		_i_slide: true
@@ -180,12 +189,15 @@ class Slide extends Component
 		@calculateBounds()
 		for child,i in @_inner.children
 			if (!@props.vert && !@inViewBounds(child.offsetLeft,child.clientWidth,@state.x,@outer_rect.width) ) || ( @props.vert && !@inViewBounds(child.offsetTop,child.clientHeight,@state.y,@outer_rect.height) )
-				
-				# hide
-				@visibility_map.set(child,false)
 				child.style.visibility = 'hidden'
 				while child.firstChild
 					child.removeChild(child.firstChild)
+				@visibility_map.set(child,false)
+			else
+				@visibility_map.set(child,true)
+				# hide
+				
+				
 		
 	
 	# decide whcih slides to render before the transition.
@@ -197,29 +209,28 @@ class Slide extends Component
 			if @props.vert
 				next_inbounds = @inViewBounds(child.offsetTop,child.clientHeight,pos.y,@outer_rect.height)
 				current_inbounds =  @inViewBounds(child.offsetTop,child.clientHeight,@state.y,@outer_rect.height)
-				if !next_inbounds && !current_inbounds
-					@visibility_map.set(child,false)
+				if next_inbounds || current_inbounds
+					@visibility_map.set(child,true)
 			else
 				next_inbounds = @inViewBounds(child.offsetLeft,child.clientWidth,pos.x,@outer_rect.width)
 				current_inbounds =  @inViewBounds(child.offsetLeft,child.clientWidth,@state.x,@outer_rect.width)
-				if !next_inbounds && !current_inbounds
-					@visibility_map.set(child,false)
+				if next_inbounds || current_inbounds
+					@visibility_map.set(child,true)
 			
 
 		
 
 	updateSetVisibility: (pos)=>
-		
 		@calculateBounds()
 		for child,i in @_inner.children
 			if @props.vert
 				next_inbounds = @inViewBounds(child.offsetTop,child.clientHeight,pos.y,@outer_rect.height)
-				if !next_inbounds
-					@visibility_map.set(child,false)
+				if next_inbounds
+					@visibility_map.set(child,true)
 			else
 				next_inbounds = @inViewBounds(child.offsetLeft,child.clientWidth,pos.x,@outer_rect.width)
-				if !next_inbounds
-					@visibility_map.set(child,false)
+				if next_inbounds
+					@visibility_map.set(child,true)
 			
 
 
@@ -275,7 +286,8 @@ class Slide extends Component
 		if @props.x != p_props.x || @props.y != p_props.y || @props.pos != p_props.pos || @props.offset != p_props.offset
 			return @toXY pos
 
-		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto #|| (@state._dim != p_state._dim)
+
+		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto
 			return @setXY pos
 
 	
@@ -308,6 +320,8 @@ class Slide extends Component
 		if @props.hide
 			@visibility_map = new Map
 			@updateSetVisibility(pos)
+			
+
 		@setState
 			transition: ''
 			transform: 'translate('+(-pos.x) + 'px,' + (-pos.y) + 'px)'
@@ -478,8 +492,10 @@ class Slide extends Component
 	get outer height and width.
 	###
 	getOuterHW: ()=>
+		
 		# square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
 		if @props.ratio
+			
 			dim = {}
 			if @context.vert
 				dim.height = @context.dim*@props.ratio
@@ -542,6 +558,19 @@ class Slide extends Component
 	outer_ref: (e)=>
 		@_outer = e
 
+	isRoot: ->
+		!@context._i_slide
+
+	isVisible: ->
+		if @isRoot()
+			@state.visible = true
+			return true
+		if @context.isChildVisible && @context.isChildVisible(@)
+			@state.visible = true
+			return true
+		@state.visible = false
+		return false
+
 
 	###
 	@renderSlide method
@@ -578,19 +607,23 @@ class Slide extends Component
 		if @props.outerStyle || @props.style
 			slide_props.style = Object.assign slide_props.style,(@props.outerStyle || @props.style)
 
-		hidden = @context.isVisible && !@context.isVisible(@) || false
+		visible = @isVisible()
 		
-		if hidden
+		
+		if !visible
 			slide_props.style.visibility = 'hidden'
 		else
 			slide_props.style.visibility = ''
+
+
+
 	
 		h 'div',
 			slide_props
-			!hidden && h 'div',
+			visible && h 'div',
 				inner_props
 				@props.children
-			!hidden && @props.outerChildren
+			visible && @props.outerChildren
 
 
 
@@ -599,7 +632,7 @@ class Slide extends Component
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
 	###	
 	renderStatic: =>
-		# inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
+		
 		c_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''
 		class_vert = @props.vert && ' -i-s-vertical' || ''
@@ -607,23 +640,26 @@ class Slide extends Component
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
 		outer_props = @pass_props || {}
-		hidden = @context.isVisible && !@context.isVisible(@) || false
+		visible = @isVisible()
+		
 		
 		if @context._i_slide || @props.height || @props.width
 			outer_props.style = @getOuterHW()
-			if hidden
-				outer_props.style.visibility = 'hidden'
-			else
+			if visible
 				outer_props.style.visibility = ''
+			else
+				outer_props.style.visibility = 'hidden'
+				
 		outer_props.className = "-i-s-static"+c_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
 		outer_props.id = @props.id
 		outer_props.ref = @outer_ref
 
 		if @props.outerStyle || @props.style
 			outer_props.style = Object.assign outer_props.style || {},(@props.outerStyle || @props.style)
-	
-	
-		if hidden
+		
+
+		
+		if !visible
 			h 'div',
 				outer_props
 		else

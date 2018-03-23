@@ -16,7 +16,7 @@ tap.test 'diff innerHTML', (test)->
 			console.log 'PAGE LOG:', msg.text()
 		page.on 'error', (msg)->
 			console.log 'PAGE ERROR:', msg.text()
-		await page.goto('http://localhost:3002/test/test.html')
+		await page.goto('http://localhost:3002/test.html')
 		html = await page.evaluate ()->
 			return document.body.innerHTML
 		await browser.close()

@@ -165,8 +165,8 @@ class Slide extends Component
 	calculate and store position and size.
 	###	
 	calculateBounds: ()->
-		@outer_rect = @_outer.getBoundingClientRect()
-
+		@outer_rect.width = @_outer.clientWidth
+		@outer_rect.height = @_outer.clientHeight
 
 
 	###
@@ -644,8 +644,10 @@ class Slide extends Component
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
 	###	
 	renderStatic: =>
-
-
+		if @props.className == 'icon report-box-icon'
+			log 'REPORT BOX ICON',@context.dim
+		if @props.className == 'report-box-top'
+			log 'RENDER TOP'
 
 		class_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''

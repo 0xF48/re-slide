@@ -1,6 +1,6 @@
 require './site.less'
 require './examples.less'
-
+window.log = console.log.bind(console)
 
 {h,render,Component} = require 'preact'
 Slide = require './preact-slide.coffee'

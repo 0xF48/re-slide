@@ -139,13 +139,25 @@ class TreeMenu extends Component
 			else
 				return children
 
+	setSize: =>
+		s = @_root._outer.querySelectorAll('*').length
+		if @state.size != s
+			@setState
+				size: s 
 	
+	componentDidUpdate: ->
+		clearTimeout @setSize
+		setTimeout @setSize,500
+		
+	
+
 	componentDidMount: ->
-		# setInterval ()=>
-		# 	@setState
-		# 		size: @_root._outer.querySelectorAll('*').length
-		# ,500
-	
+		s = @_root._outer.querySelectorAll('*').length
+		if @state.size != s
+			@setState
+				size: s 
+
+
 	render: ->
 		items = @state.items
 		h Slide,

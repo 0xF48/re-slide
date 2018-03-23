@@ -95,6 +95,7 @@ class Slide extends Component
 		# @state._dim = @props.vert && @_outer.clientHeight || @_outer.clientWidth 
 		if !@props.slide || !@base.isConnected
 			return
+
 		
 		@checkSlideUpdate(p_props,p_state)
 
@@ -118,16 +119,25 @@ class Slide extends Component
 	
 
 
-	isChildVisible: (child)=>
+	isChildVisible: (child,t)=>
+
 		if !@props.slide
 			return true
+
+		if t
+			console.log @outer_rect.width
+
+		# console.log child._outer
 
 		if @visibility_map.get(child._outer) == true || @props.hide == false
 			return true
 		else if child._outer
-			if @props.vert && @inViewBounds(child._outer.offsetTop,child._outer.clientHeight,@state.y,@outer_rect.height)
+			# console.log child._outer.clientWidth
+			if @props.vert && @inViewBounds(child._outer.offsetTop,child._outer.clientHeight||1,@state.y,@outer_rect.height)
+				# console.log child._outer.clientHeight
 				return true
-			else if !@props.vert && @inViewBounds(child._outer.offsetLeft,child._outer.clientWidth,@state.x,@outer_rect.width)
+			else if !@props.vert && @inViewBounds(child._outer.offsetLeft,child._outer.clientWidth||1,@state.x,@outer_rect.width)
+				# console.log child._outer.clientWidth
 				return true
 
 		return false
@@ -343,27 +353,29 @@ class Slide extends Component
 				@pass_props[prop_name] = prop 
 	
 
+	# round the dim
 	roundDim: (d)->
 		rd = (Math.round(d) - d)
 		if rd > -0.5 && rd < 0
 			d = Math.round(d+0.5)
 		else
 			d = Math.round(d)
-
 		return d
 
+
+	# get child height
 	getChildHeight: (c)->
 		b = (c.attributes && c.attributes.beta) || 100
 		(c.attributes && c.attributes.height) || (@outer_rect.height / 100 * b)
 
+
+	# get child width
 	getChildWidth: (c)->
 		b = (c.attributes && c.attributes.beta) || 100
 		(c.attributes && c.attributes.width) || (@outer_rect.width / 100 * b)
 
-	###
-	@getIndexXY method
-	Get the index x and y position of where we want to slide/pan
-	###
+
+	# get index x/y
 	getIndexXY: (index)->
 		if !index?
 			throw new Error 'index position is undefined'
@@ -377,6 +389,7 @@ class Slide extends Component
 		_cc = @props.children[Math.floor(index)]
 		cc_rect = cc.getBoundingClientRect()
 		@calculateBounds()	
+
 
 		o_h = @outer_rect.height || @props.height
 		o_w = @outer_rect.width || @props.width
@@ -437,10 +450,8 @@ class Slide extends Component
 
 		
 
-	###
-	@getBeta method
-	get beta dimention variable for the slide, either in pixels or percentages.
-	###
+	
+	# get beta dimention variable for the slide, either in pixels or percentages.
 	getBeta: ()=>
 
 		if !@props.beta || @props.beta < 0
@@ -487,10 +498,7 @@ class Slide extends Component
 
 
 
-	###
-	@getOuterHW method
-	get outer height and width.
-	###
+	# get outer div width and height.
 	getOuterHW: ()=>
 		
 		# square slides copy the context width/height based on split direction, great for square divs...will resize automatically!
@@ -561,11 +569,11 @@ class Slide extends Component
 	isRoot: ->
 		!@context._i_slide
 
-	isVisible: ->
+	isVisible: (t)->
 		if @isRoot()
 			@state.visible = true
 			return true
-		if @context.isChildVisible && @context.isChildVisible(@)
+		if @context.isChildVisible && @context.isChildVisible(@,t)
 			@state.visible = true
 			return true
 		@state.visible = false
@@ -577,8 +585,8 @@ class Slide extends Component
 	render component as a slideable, when props.slide is enabled, an extra div is rendered for panning/sliding.
 	###		
 	renderSlide: =>
-		inner_c_name = @props.iclassName && (" "+@props.iclassName) || ''
-		c_name = @props.className  && (" "+@props.className ) || ''
+		inner_class_name = @props.iclassName && (" "+@props.iclassName) || ''
+		class_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''
 		class_vert = @props.vert && ' -i-s-vertical' || ''
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
@@ -589,7 +597,7 @@ class Slide extends Component
 			ref: @inner_ref
 			style:
 				transform: @state.transform
-			className: "-i-s-inner"+class_vert+inner_c_name+class_center+class_reverse+class_auto
+			className: "-i-s-inner"+class_vert+inner_class_name+class_center+class_reverse+class_auto
 		if @state.transition
 			inner_props.style.transition = @state.transition
 		if @props.innerStyle
@@ -598,11 +606,15 @@ class Slide extends Component
 		slide_props = @pass_props
 		
 		slide_props.ref = @outer_ref
-		slide_props.className = "-i-s-outer"+c_name+class_fixed
+		slide_props.className = "-i-s-outer"+class_name+class_fixed
 		slide_props.style = {}
 
 		if @context._i_slide || @props.height || @props.width
 			slide_props.style = @getOuterHW()
+			if typeof slide_props.style.width == 'number'
+				@outer_rect.width = slide_props.style.width
+			if typeof slide_props.style.height == 'number'
+				@outer_rect.height = slide_props.style.height
 
 		if @props.outerStyle || @props.style
 			slide_props.style = Object.assign slide_props.style,(@props.outerStyle || @props.style)
@@ -632,8 +644,10 @@ class Slide extends Component
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
 	###	
 	renderStatic: =>
-		
-		c_name = @props.className  && (" "+@props.className ) || ''
+
+
+
+		class_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''
 		class_vert = @props.vert && ' -i-s-vertical' || ''
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
@@ -650,7 +664,7 @@ class Slide extends Component
 			else
 				outer_props.style.visibility = 'hidden'
 				
-		outer_props.className = "-i-s-static"+c_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
+		outer_props.className = "-i-s-static"+class_name+class_fixed+class_vert+class_center+class_reverse+class_scroll
 		outer_props.id = @props.id
 		outer_props.ref = @outer_ref
 
@@ -669,9 +683,7 @@ class Slide extends Component
 				@props.outerChildren
 		
 
-	###
-	@render method
-	###	
+	
 	render: =>
 		if @props.slide
 			return @renderSlide()	

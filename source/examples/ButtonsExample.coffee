@@ -59,7 +59,7 @@ class ButtonsExample extends Component
 				onMouseLeave: ()=>
 					@setState pos_c:0
 				h Slide,
-					className:'center'
+					className: 'btn-example-light center'
 					'#C'
 				h Slide,
 					className: 'btn-example-dark center'

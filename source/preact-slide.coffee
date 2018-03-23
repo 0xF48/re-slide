@@ -124,20 +124,13 @@ class Slide extends Component
 		if !@props.slide
 			return true
 
-		if t
-			console.log @outer_rect.width
-
-		# console.log child._outer
 
 		if @visibility_map.get(child._outer) == true || @props.hide == false
 			return true
 		else if child._outer
-			# console.log child._outer.clientWidth
 			if @props.vert && @inViewBounds(child._outer.offsetTop,child._outer.clientHeight||1,@state.y,@outer_rect.height)
-				# console.log child._outer.clientHeight
 				return true
 			else if !@props.vert && @inViewBounds(child._outer.offsetLeft,child._outer.clientWidth||1,@state.x,@outer_rect.width)
-				# console.log child._outer.clientWidth
 				return true
 
 		return false
@@ -644,10 +637,6 @@ class Slide extends Component
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
 	###	
 	renderStatic: =>
-		if @props.className == 'icon report-box-icon'
-			log 'REPORT BOX ICON',@context.dim
-		if @props.className == 'report-box-top'
-			log 'RENDER TOP'
 
 		class_name = @props.className  && (" "+@props.className ) || ''
 		class_center = @props.center && ' -i-s-center' || ''

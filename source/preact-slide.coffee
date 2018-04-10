@@ -11,6 +11,7 @@ DEFAULT_PROPS =
 	dim: 0 #dim is width/height if parent vert is true then this is the height, otherwise it is the width.
 	animate: false #transitions
 	ease: '0.4s cubic-bezier(0.25, 0.35, 0, 1)' #slide easing
+	ease_duration: 400
 	width: 0 #slide width manual override
 	height: 0 #slide height manual override
 	ratio: 0 #ratio dim helper
@@ -253,7 +254,7 @@ class Slide extends Component
 		if @props.hide
 			# @visibility_map = new Map
 			@updatePostVisibility()
-		
+		@_timeout = null
 		@props.onSlideDone?(@props.pos)
 
 	###
@@ -307,19 +308,22 @@ class Slide extends Component
 	CSS translate inner div to pos <x,y>
 	###
 	toXY: (pos)->
+		@_timeout && clearTimeout @_timeout
 		@onSlideStart(pos)
 		@setState
 			transition: @getTransition()
 			transform: 'translate('+(-pos.x) + 'px,' + (-pos.y) + 'px)'
 			x: pos.x
 			y: pos.y
+		,()=>
+			@_timeout = setTimeout @onSlideDone,@props.ease_duration+100
 
 	###
 	@setXY method
 	same as toXY but instant.
 	###
 	setXY: (pos)->
-		
+		@_timeout && clearTimeout @_timeout
 		if @props.hide
 			@visibility_map = new Map
 			@updateSetVisibility(pos)
@@ -331,7 +335,7 @@ class Slide extends Component
 			x: pos.x
 			y: pos.y
 		,()=>
-			setTimeout @props.onSlideDone,0
+			@_timeout = setTimeout @onSlideDone,0
 
 
 
@@ -595,7 +599,7 @@ class Slide extends Component
 			inner_props.style.transition = @state.transition
 		if @props.innerStyle
 			inner_props.style = Object.assign inner_props.style,@props.innerStyle
-		inner_props.onTransitionEnd = @onSlideDone
+		# inner_props.onTransitionEnd = @onSlideDone
 		slide_props = @pass_props
 		
 		slide_props.ref = @outer_ref
@@ -661,7 +665,6 @@ class Slide extends Component
 
 		if @props.outerStyle || @props.style
 			outer_props.style = Object.assign outer_props.style || {},(@props.outerStyle || @props.style)
-		
 
 		
 		if !visible
@@ -672,7 +675,6 @@ class Slide extends Component
 				outer_props
 				@props.children
 				@props.outerChildren
-		
 
 	
 	render: =>

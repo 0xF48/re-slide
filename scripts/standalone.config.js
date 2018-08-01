@@ -19,7 +19,7 @@ var cfg = {
 	output: {
 		filename: "preact-slide.js",
 		// library: 'Slide',
-		libraryTarget: 'commonjs'
+		libraryTarget: 'commonjs2'
 	}
 }
 module.exports = cfg;

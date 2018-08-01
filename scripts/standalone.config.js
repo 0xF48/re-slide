@@ -18,7 +18,7 @@ var cfg = {
 	externals: ["preact"],
 	output: {
 		filename: "preact-slide.js",
-		library: 'Slide',
+		// library: 'Slide',
 		libraryTarget: 'commonjs'
 	}
 }

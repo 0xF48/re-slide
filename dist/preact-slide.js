@@ -1,14 +1,5 @@
-(function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("preact"));
-	else if(typeof define === 'function' && define.amd)
-		define(["preact"], factory);
-	else if(typeof exports === 'object')
-		exports["Slide"] = factory(require("preact"));
-	else
-		root["Slide"] = factory(root["preact"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_preact__) {
-return /******/ (function(modules) { // webpackBootstrap
+exports["Slide"] =
+/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -1442,10 +1433,9 @@ if(false) {}
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_preact__;
+module.exports = require("preact");
 
 /***/ })
 
 /******/ });
-});
 //# sourceMappingURL=preact-slide.js.map

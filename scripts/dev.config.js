@@ -1,6 +1,5 @@
 var webpack = require("webpack");
 var path = require("path");
-const MinifyPlugin = require("babel-minify-webpack-plugin");
 var cfg = {
 	devtool: 'source-map',
 	module: {

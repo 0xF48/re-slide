@@ -1,12 +1,12 @@
 {
   "name": "preact-slide",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "📏 Preact Universal Layout Sliding Component",
-  "main": "source/preact-slide.coffee",
+  "main": "dist/preact-slide.js",
   "scripts": {
     "test": "node test/eval.js",
     "dev": "webpack-dev-server --config scripts/site.config.js --mode development",
-    "prod": "webpack --progress --config scripts/site.config.js --mode production && webpack --progress --config scripts/standalone.config.js --mode production",
+    "prod": "webpack --progress --config scripts/site.config.js --mode production && webpack --progress --config scripts/standalone.config.js --mode development",
     "write": "node test/write.js",
     "prepublishOnly": "npm run prod && npm run test"
   },
@@ -28,16 +28,6 @@
     "url": "https://github.com/arxii/preact-slide/issues"
   },
   "homepage": "http://arxii.github.io/preact-slide",
-  "peerDependencies": {
-    "preact": "^8.2.7",
-    "webpack": "*",
-    "coffeescript": "^2.2.2",
-    "less": "*",
-    "css-loader": "*",
-    "less-loader": "*",
-    "style-loader": "*",
-    "coffee-loader": "*"
-  },
   "devDependencies": {
     "coffee-loader": "^0.9.0",
     "coffeescript": "^2.2.2",

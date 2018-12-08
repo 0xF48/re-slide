@@ -66,8 +66,8 @@ class Slide extends Component
 	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
 	###
 	componentDidMount: ()=>
-		if @isRoot()
-			addEventListener 'resize',@resizeEvent
+		# if @isRoot()
+		# 	addEventListener 'resize',@resizeEvent
 	
 		if @isRoot() || @props.slide
 			if @props.slide && @_inner
@@ -107,7 +107,7 @@ class Slide extends Component
 	###	
 	componentWillUnmount: ()=>
 		@state.visible = false
-		removeEventListener 'resize',@resizeEvent
+		# removeEventListener 'resize',@resizeEvent
 	
 
 	###

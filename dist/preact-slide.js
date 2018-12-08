@@ -786,9 +786,8 @@ Slide = class Slide extends Component {
 
   componentDidMount() {
     boundMethodCheck(this, Slide);
-    if (this.isRoot()) {
-      addEventListener('resize', this.resizeEvent);
-    }
+    // if @isRoot()
+    // 	addEventListener 'resize',@resizeEvent
     if (this.isRoot() || this.props.slide) {
       if (this.props.slide && this._inner) {
         return this.setXY(this.getIndexXY(this.props.pos));
@@ -817,10 +816,10 @@ Slide = class Slide extends Component {
 
   componentWillUnmount() {
     boundMethodCheck(this, Slide);
-    this.state.visible = false;
-    return removeEventListener('resize', this.resizeEvent);
+    return this.state.visible = false;
   }
 
+  // removeEventListener 'resize',@resizeEvent
   /*
   @componentWillReceiveProps method
   */

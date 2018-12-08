@@ -1348,7 +1348,13 @@ Slide = class Slide extends Component {
     } else {
       slide_props.style.visibility = '';
     }
-    return h('div', slide_props, visible && h('div', inner_props, this.props.children), visible && this.props.outerChildren);
+    if (!visible) {
+      return h('div', slide_props);
+    } else if (this.props.outerChildren) {
+      return h('div', slide_props, h('div', inner_props, this.props.children), this.props.outerChildren);
+    } else {
+      return h('div', slide_props, h('div', inner_props, this.props.children));
+    }
   }
 
   renderStatic() {
@@ -1378,8 +1384,10 @@ Slide = class Slide extends Component {
     }
     if (!visible) {
       return h('div', outer_props);
-    } else {
+    } else if (this.props.outerChildren) {
       return h('div', outer_props, this.props.children, this.props.outerChildren);
+    } else {
+      return h('div', outer_props, this.props.children);
     }
   }
 

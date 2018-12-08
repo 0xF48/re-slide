@@ -625,15 +625,21 @@ class Slide extends Component
 			slide_props.style.visibility = ''
 
 
-
-	
-		h 'div',
-			slide_props
-			visible && h 'div',
-				inner_props
-				@props.children
-			visible && @props.outerChildren
-
+		if !visible
+			return h 'div',slide_props
+		else if @props.outerChildren
+			return	h 'div',
+				slide_props
+				h 'div',
+					inner_props
+					@props.children
+				@props.outerChildren
+		else
+			return	h 'div',
+				slide_props
+				h 'div',
+					inner_props
+					@props.children
 
 
 	###
@@ -666,17 +672,21 @@ class Slide extends Component
 		if @props.outerStyle || @props.style
 			outer_props.style = Object.assign outer_props.style || {},(@props.outerStyle || @props.style)
 
-		
+
 		if !visible
-			h 'div',
+			return h 'div',
 				outer_props
-		else
-			h 'div',
+		else if @props.outerChildren
+			return h 'div',
 				outer_props
 				@props.children
 				@props.outerChildren
+		else
+			return h 'div',
+				outer_props
+				@props.children
 
-	
+
 	render: =>
 		if @props.slide
 			return @renderSlide()	

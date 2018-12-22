@@ -39,6 +39,7 @@
     "less-loader": "^4.1.0",
     "lodash": "^4.17.4",
     "preact": "^8.2.7",
+    "preact-compat": "^3.18.4",
     "preact-markdown": "^0.4.0",
     "preact-markup": "^1.6.0",
     "puppeteer": "^1.0.0",

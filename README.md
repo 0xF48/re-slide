@@ -1,35 +1,35 @@
-<p align="center"><a href="http://arxii.github.io/preact-slide" alt="logo"><img src="/site/logo.png" /></a></p>
+<p align="center"><a href="http://arxii.github.io/re-slide" alt="logo"><img src="/site/logo.png" /></a></p>
 <p align="center">
-<a href="https://npmjs.com/package/preact-slide" alt="npm link"><img src="https://img.shields.io/npm/v/preact-slide.svg?style=flat-square" /></a>
-<a href="https://github.com/developit/preact" alt="preact dependency v8.2.7"><img src="https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=flat-square" /></a>
-<a href="https://travis-ci.org/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/preact-slide.svg?style=flat-square" /></a>
-<a href="https://coveralls.io/github/arxii/preact-slide" alt="travis ci build and test"><img src="https://img.shields.io/coveralls/arxii/preact-slide.svg?style=flat-square" /></a>
+<a href="https://npmjs.com/package/re-slide" alt="npm link"><img src="https://img.shields.io/npm/v/re-slide.svg?style=flat-square" /></a>
+<a href="https://github.com/facebook/react" alt="react dependency v16.7.0"><img src="https://img.shields.io/badge/react-v16.7.0-blue.svg?style=flat-square" /></a>
+<a href="https://travis-ci.org/arxii/re-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/re-slide.svg?style=flat-square" /></a>
+<a href="https://coveralls.io/github/arxii/re-slide" alt="travis ci build and test"><img src="https://img.shields.io/coveralls/arxii/re-slide.svg?style=flat-square" /></a>
 
 </p>
 
-`preact-slide` is a universal layout component used to rapidly develop modularized and animated UIs, enabling the creation of high quality interfaces that are easy to scale and refactor.
+`re-slide` is a universal layout component used to rapidly develop modularized and animated UIs, enabling the creation of high quality interfaces that are easy to scale and refactor.
 
-[documentation / examples / demos](http://arxii.github.io/preact-slide)
+[documentation / examples / demos](http://arxii.github.io/re-slide)
 
 
 **this library is still in alpha, I am actively fixing issues and bugs.**
 
 
-`npm i preact-slide`
+`npm i re-slide`
 
 
 ### normal version
-`require("preact-slide")` this will require the coffee and less files assuming you have everything set up in `webpack`.
+`require("re-slide")` this will require the coffee and less files assuming you have everything set up in `webpack`.
 
-### standalone compiled version without preact:
-`require("preact-slide/build/preact-slide.js")`
+### standalone compiled version without react:
+`require("re-slide/build/re-slide.js")`
 
 
 ## About
 > Sliders....sliders everywhere.
 
 
-`preact-slide` is an opinionated way to rapidly develop modularized and animated UIs, enabling the creation of both performant and polished interfaces that are easy to scale and refactor.
+`re-slide` is an opinionated way to rapidly develop modularized and animated UIs, enabling the creation of both performant and polished interfaces that are easy to scale and refactor.
 
 
 # Props
@@ -144,7 +144,7 @@ h Slide,
 ## Development
 `npm run dev` - fire up dev server, edit source coffee files and navigate to `http://localhost:3000/test/test.html` to view the changes or `http://localhost:3000` to view the homepage. 
 
-`npm run prod` - build and minify the site and the bundled UMD version of the library (/dist/preact-slide.js)
+`npm run prod` - build and minify the site and the bundled UMD version of the library (/dist/re-slide.js)
 
 `npm run test` - run the tests (just basic diff for breaking changes for now)
 

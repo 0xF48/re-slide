@@ -3,7 +3,7 @@
 h = createElement
 
 
-Slide = require './react-slide.coffee'
+Slide = require './re-slide.coffee'
 # _ = require 'lodash'
 require './site.less'
 nums = require './random.json'

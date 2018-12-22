@@ -13,11 +13,11 @@ var cfg = {
 		]
 	},
 	entry: {
-		main: "./source/preact-slide.coffee",
+		main: "./source/re-slide.coffee",
 	},
-	externals: ["preact"],
+	externals: ["react"],
 	output: {
-		filename: "preact-slide.js",
+		filename: "re-slide.js",
 		// library: 'Slide',
 		libraryTarget: 'commonjs2'
 	}

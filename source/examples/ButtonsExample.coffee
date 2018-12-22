@@ -1,7 +1,3 @@
-{h,render,Component} = require 'preact'
-Slide = require '../preact-slide.coffee'
-
-
 class ButtonsExample extends Component
 	constructor: (props)->
 		super(props)

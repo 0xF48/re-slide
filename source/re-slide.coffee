@@ -1,4 +1,4 @@
-require './react-slide.less'
+require './re-slide.less'
 {createElement,Component,createContext} = require 'react'
 h = createElement
 

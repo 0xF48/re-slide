@@ -1,5 +1,3 @@
-{h,render,Component} = require 'preact'
-Slide = require '../preact-slide.coffee'
 
 
 class TreeMenu extends Component
@@ -63,8 +61,9 @@ class TreeMenu extends Component
 
 		return item
 
-	item: (item)->
+	item: (item,i)->
 		h Slide,
+			key: i
 			onClick: =>
 				if item.level == 0
 					for it in item.parent.items
@@ -75,7 +74,7 @@ class TreeMenu extends Component
 			height: 30
 			style:
 				'cursor': item.items.length && 'pointer'
-				'padding-left':10+10*item.level
+				'paddingLeft':10+10*item.level
 			item.name
 	
 	list: (items)->
@@ -84,8 +83,8 @@ class TreeMenu extends Component
 		h Slide,
 			vert: yes
 			height: items.length*30
-			items.map (item)=>
-				@item(item)
+			items.map (item,i)=>
+				@item(item,i)
 
 	makeItem: (item,remainder=[],render_self)->			
 		if item.size == 0 && !remainder.length
@@ -169,7 +168,7 @@ class TreeMenu extends Component
 			h 'blockquote',
 				style:
 					height: 100
-					'font-family':'monospace'
+					fontFamily:'monospace'
 				ref: (e)=>
 					@_count = e
 				className: 'center'

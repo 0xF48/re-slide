@@ -1,8 +1,8 @@
 {
-  "name": "preact-slide",
+  "name": "re-slide",
   "version": "0.4.7",
-  "description": "📏 Preact Universal Layout Sliding Component",
-  "main": "dist/preact-slide.js",
+  "description": "React Sliding Layout Component",
+  "main": "dist/re-slide.js",
   "scripts": {
     "test": "node test/eval.js",
     "dev": "webpack-dev-server --config scripts/site.config.js --mode development",
@@ -12,10 +12,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/arxii/preact-slide.git"
+    "url": "git+ssh://git@github.com/arxii/re-slide.git"
   },
   "keywords": [
-    "preact",
     "react",
     "carousel",
     "layout",
@@ -25,9 +24,9 @@
   "author": "arxii",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/arxii/preact-slide/issues"
+    "url": "https://github.com/arxii/re-slide/issues"
   },
-  "homepage": "http://arxii.github.io/preact-slide",
+  "homepage": "http://arxii.github.io/re-slide",
   "devDependencies": {
     "coffee-loader": "^0.9.0",
     "coffeescript": "^2.2.2",
@@ -47,6 +46,7 @@
     "raw-loader": "^0.5.1",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
+    "react-markdown": "^4.0.4",
     "seed-random": "^2.2.0",
     "shader-box": "^1.1.1",
     "style-loader": "^0.19.1",

@@ -1,7 +1,3 @@
-{h,render,Component} = require 'preact'
-Slide = require '../preact-slide.coffee'
-
-
 class LayoutExample extends Component
 	render: ->
 		h Slide,

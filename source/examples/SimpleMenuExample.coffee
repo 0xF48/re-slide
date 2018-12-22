@@ -1,7 +1,5 @@
-{h,render,Component} = require 'preact'
-Slide = require '../preact-slide.coffee'
-Markup = require 'preact-markup'
-
+Markdown = require 'react-markdown'
+text = require('./random-text.txt')
 
 class SimpleMenuExample extends Component
 	constructor: (props)->
@@ -32,8 +30,8 @@ class SimpleMenuExample extends Component
 					scroll:true
 					vert: yes
 					className: 'simple-menu-example-main'
-					h Markup,
-						markup: require('./random-text.txt')
+					h Markdown,
+						source: text
 			h Slide,
 				beta: 20
 				vert: yes

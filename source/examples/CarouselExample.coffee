@@ -1,6 +1,3 @@
-{h,render,Component} = require 'preact'
-Slide = require '../preact-slide.coffee'
-
 class CarouselExample extends Component
 	constructor: (props)->
 		super(props)
@@ -12,6 +9,7 @@ class CarouselExample extends Component
 	slides: (count)->
 		[0...count].map (i)=>
 			h Slide,
+				key: i
 				beta: i%2 && 50 || 100
 				className: 'carousel-example'
 				slide: yes
@@ -35,10 +33,12 @@ class CarouselExample extends Component
 	ctrl: (count)->
 		squares = [0...count].map (i)=>
 			h Slide,
+				key: i
 				className: 'carousel-example-square center'
 				i
 		dots = [0...count].map (i)=>
 			h Slide,
+				key:i
 				width: 30
 				onClick: =>
 					@setState c_pos:i

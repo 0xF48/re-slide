@@ -1,14 +1,19 @@
 require './site.less'
 require './examples.less'
-window.log = console.log.bind(console)
+global.log = console.log.bind(console)
 
-{h,render,Component} = require 'preact'
-Slide = require './preact-slide.coffee'
+{createElement,Component} = require 'react'
+{render} = require 'react-dom'
+h = createElement 
+Slide = require './re-slide.coffee'
 {Box,Shader} = require 'shader-box'
-Markdown = require 'preact-markdown'
-Markup = require 'preact-markup'
+Markdown = require 'react-markdown'
 gradient_shader = require('./gradient.glsl')
-
+global.Markdown = Markdown
+global.render = render
+global.Slide = Slide
+global.h = createElement
+global.Component = Component
 
 
 SimpleMenuExample = require './examples/SimpleMenuExample.coffee'
@@ -20,11 +25,11 @@ TreeMenuExample = require './examples/TreeMenuExample.coffee'
 
 
 EXAMPLES = [
-	['Layout',require('./examples/LayoutExample.md'),LayoutExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
-	['Simple Menu',require('./examples/SimpleMenuExample.md'),SimpleMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
-	['Buttons',require('./examples/ButtonsExample.md'),ButtonsExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
-	['Carousel',require('./examples/CarouselExample.md'),CarouselExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
-	['Tree Menu',require('./examples/TreeMenuExample.md'),TreeMenuExample,'https://github.com/arxii/preact-slide/blob/master/source/examples/TreeMenuExample.coffee?ts=4'],
+	['Layout',require('./examples/LayoutExample.md'),LayoutExample,'https://github.com/arxii/re-slide/blob/master/source/examples/LayoutExample.coffee?ts=4']
+	['Simple Menu',require('./examples/SimpleMenuExample.md'),SimpleMenuExample,'https://github.com/arxii/re-slide/blob/master/source/examples/SimpleMenuExample.coffee?ts=4'],
+	['Buttons',require('./examples/ButtonsExample.md'),ButtonsExample,'https://github.com/arxii/re-slide/blob/master/source/examples/ButtonsExample.coffee?ts=4'],
+	['Carousel',require('./examples/CarouselExample.md'),CarouselExample,'https://github.com/arxii/re-slide/blob/master/source/examples/CarouselExample.coffee?ts=4'],
+	['Tree Menu',require('./examples/TreeMenuExample.md'),TreeMenuExample,'https://github.com/arxii/re-slide/blob/master/source/examples/TreeMenuExample.coffee?ts=4'],
 ]
 
 
@@ -142,7 +147,7 @@ class Header extends Component
 				h 'div',
 					className: 'title center'
 					h 'a',
-						href: "https://github.com/arxii/preact-slide"
+						href: "https://github.com/arxii/re-slide"
 						className: 'title-name'
 						'Slide'
 
@@ -150,35 +155,34 @@ class Header extends Component
 						className: 'title-snippet'
 						vert: true
 						center: yes
-						'npm i preact preact-slide'
+						'npm i re-slide'
 					h 'a',
-						href: "https://github.com/arxii/preact-slide"
+						href: "https://github.com/arxii/re-slide"
 						className: 'center github-link'
 						h 'img',
 							src: './site/github.svg'
 				h 'p',
 					className:'header-description-sub'
 					'About'
-				h 'p',
+				h 'div',
 					className:'header-description-text'
 					h Markdown,
-						markupOpts:
-							className: 'section-text'
-						markdown: ABOUT
+						className: 'section-text'
+						source: ABOUT
 					h 'div',
 						className: 'shields'
 						h 'a',
-							href:'https://npmjs.com/package/preact-slide'
+							href:'https://npmjs.com/package/re-slide'
 							h 'img',
-								src: 'https://img.shields.io/npm/v/preact-slide.svg?style=for-the-badge'
+								src: 'https://img.shields.io/npm/v/re-slide.svg?style=for-the-badge'
 						h 'a',
-							href:'https://github.com/developit/preact'
+							href:'https://github.com/facebook/react'
 							h 'img',
 								src: 'https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=for-the-badge'
 						h 'a',
-							href:'https://travis-ci.org/arxii/preact-slide'
+							href:'https://travis-ci.org/arxii/re-slide'
 							h 'img',
-								src: 'https://img.shields.io/travis/arxii/preact-slide.svg?style=for-the-badge'
+								src: 'https://img.shields.io/travis/arxii/re-slide.svg?style=for-the-badge'
 
 
 
@@ -186,7 +190,7 @@ class Header extends Component
 
 ABOUT = require './about.md'
 
-class Docs 
+class Docs extends Component
 	render: ->
 		h 'div',
 			className: 'docs'
@@ -194,8 +198,9 @@ class Docs
 			h 'div',
 				className: 'section'
 				h 'h1',{},'Props'
-				PROPS.map (prop)->
+				PROPS.map (prop,i)->
 					h 'div',
+						key: 'prop-'+i
 						className: 'prop'
 						h 'div',
 							className: 'prop-name'
@@ -204,9 +209,8 @@ class Docs
 							className: 'prop-default'
 							prop[1]
 						h Markdown,
-							markdown: prop[2]
-							markupOpts:
-								className: 'prop-text'
+							source: prop[2]
+							className: 'prop-text'
 		
 
 			h 'div',
@@ -214,8 +218,9 @@ class Docs
 				h 'h1',
 					margin: 10
 					'Examples'
-				EXAMPLES.map (example)->
+				EXAMPLES.map (example,i)->
 					h 'div',
+						key: 'ex-'+i
 						className: 'example-section'
 						h 'a',
 							href: example[3]
@@ -225,9 +230,8 @@ class Docs
 								className: 'section-title-name'
 								example[0]
 						h Markdown,
-							markdown: example[1]
-							markupOpts:
-								className: 'section-text'
+							source: example[1]
+							className: 'section-text'
 						h example[2]
 						example[3] && h 'a',
 							href: example[3]
@@ -237,11 +241,11 @@ class Docs
 			h 'footer',
 				className: 'footer'
 				h 'a',
-					href: "https://github.com/arxii/preact-slide"
+					href: "https://github.com/arxii/re-slide"
 					className: 'footer-text'
 					'Source'
 				h 'a',
-					href: "https://github.com/arxii/preact-slide/blob/master/LICENSE"
+					href: "https://github.com/arxii/re-slide/blob/master/LICENSE"
 					className: 'footer-text'
 					'Apache License 2.0'
 

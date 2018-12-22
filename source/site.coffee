@@ -178,7 +178,7 @@ class Header extends Component
 						h 'a',
 							href:'https://github.com/facebook/react'
 							h 'img',
-								src: 'https://img.shields.io/badge/preact-v8.2.7-blue.svg?style=for-the-badge'
+								src: 'https://img.shields.io/badge/react-v16.7.0-blue.svg?style=for-the-badge'
 						h 'a',
 							href:'https://travis-ci.org/arxii/re-slide'
 							h 'img',

@@ -44,6 +44,8 @@
     "puppeteer": "^1.0.0",
     "random-color": "^1.0.1",
     "raw-loader": "^0.5.1",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
     "seed-random": "^2.2.0",
     "shader-box": "^1.1.1",
     "style-loader": "^0.19.1",

@@ -1,5 +1,9 @@
-{h,render,Component} = require 'preact'
-Slide = require './preact-slide.coffee'
+{createElement,Component} = require 'react'
+{render} = require 'react-dom'
+h = createElement
+
+
+Slide = require './react-slide.coffee'
 # _ = require 'lodash'
 require './site.less'
 nums = require './random.json'
@@ -90,10 +94,12 @@ class Test extends Component
 	componentDidMount: ->
 		@setState
 			count: document.body.querySelectorAll("*").length
-		
+		window.addEventListener 'resize',()=>
+			@forceUpdate()
 
 
 	render: ->
+		# log 'render'
 		h Slide,
 			className: 'test'
 			vert: false
@@ -126,19 +132,24 @@ class Test extends Component
 			h Slide,
 				offset: -50
 				vert: yes
+				className: 'test-wrap'
 				h Slide,
 					dim: 50
-					slide:yes
+					className: 'test-wrap-a'
+					# slide:yes
 					vert:no
 					h Slide,
+						className: 'test1'
 						ratio: 2
 						h Card
 					h Slide,
+						className: 'test2'
 						ratio: 1
 						h Card
 						
 				h Slide,
-					beta: 0
+					beta: 100
+					className: 'test-wrap-b'
 					h Slide,
 						vert: yes
 						dim: 50

@@ -11,7 +11,7 @@ var cfg = {
 		]
 	},
 	entry: {
-		main: "./source/site.coffee",
+		// main: "./source/site.coffee",
 		test: "./source/test.coffee",
 	},
 	resolve: {

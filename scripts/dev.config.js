@@ -12,8 +12,8 @@ var cfg = {
 		]
 	},
 	entry: {
-		main: "./source/site.coffee",
-		test: "./source/test.coffee",
+		// main: "./source/site.coffee",
+		main: "./source/test.coffee"
 	},
 	resolve: {
 		// "modules": [__dirname+"/node_modules"],

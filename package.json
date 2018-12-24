@@ -1,6 +1,6 @@
 {
   "name": "re-slide",
-  "version": "1.0.01",
+  "version": "1.0.1",
   "description": "React Sliding Layout Component",
   "main": "dist/re-slide.js",
   "scripts": {
@@ -48,8 +48,8 @@
     "style-loader": "^0.19.1",
     "tap": "^11.1.1",
     "url-loader": "^0.6.2",
-    "webpack": "^4.1.0",
-    "webpack-cli": "^2.0.10",
-    "webpack-dev-server": "^3.1.0"
+    "webpack": "^4.28.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.12"
   }
 }

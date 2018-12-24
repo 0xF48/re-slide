@@ -1,1 +1,1 @@
-`re-slide` is a recursive sliding component. It can be used both as an animated replacement for a router type element supporting nesting and making ui layouts. Scroll down to view examples and props.
+`re-slide` is a recursive sliding component, It is used for building animated ui layouts and modules. Scroll down to view examples and props.

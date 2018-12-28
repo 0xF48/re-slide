@@ -650,7 +650,7 @@ class Slide extends Component
 				@outer_rect.height = slide_props.style.height
 
 		if @props.outerStyle || @props.style
-			slide_props.style = Object.assign {},slide_props.style,(@props.outerStyle || @props.style)
+			slide_props.style = Object.assign slide_props.style,(@props.outerStyle || @props.style)
 
 		visible = @isVisible()
 		
@@ -707,7 +707,7 @@ class Slide extends Component
 		outer_props.ref = @outer_ref
 
 		if @props.outerStyle || @props.style
-			outer_props.style = Object.assign outer_props.style || {},(@props.outerStyle || @props.style)
+			outer_props.style = Object.assign {},outer_props.style,(@props.outerStyle || @props.style)
 
 
 		if !visible || @_initial_render

@@ -1379,7 +1379,7 @@ Slide = class Slide extends Component {
       }
     }
     if (this.props.outerStyle || this.props.style) {
-      slide_props.style = Object.assign({}, slide_props.style, this.props.outerStyle || this.props.style);
+      slide_props.style = Object.assign(slide_props.style, this.props.outerStyle || this.props.style);
     }
     visible = this.isVisible();
     if (!visible) {
@@ -1420,7 +1420,7 @@ Slide = class Slide extends Component {
     outer_props.id = this.props.id;
     outer_props.ref = this.outer_ref;
     if (this.props.outerStyle || this.props.style) {
-      outer_props.style = Object.assign(outer_props.style || {}, this.props.outerStyle || this.props.style);
+      outer_props.style = Object.assign({}, outer_props.style, this.props.outerStyle || this.props.style);
     }
     if (!visible || this._initial_render) {
       return h('div', outer_props);

@@ -1379,7 +1379,7 @@ Slide = class Slide extends Component {
       }
     }
     if (this.props.outerStyle || this.props.style) {
-      slide_props.style = Object.assign(slide_props.style, this.props.outerStyle || this.props.style);
+      slide_props.style = Object.assign({}, slide_props.style, this.props.outerStyle || this.props.style);
     }
     visible = this.isVisible();
     if (!visible) {

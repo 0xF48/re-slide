@@ -1,6 +1,6 @@
 {
   "name": "re-slide",
-  "version": "1.0.1",
+  "version": "1.0.1a",
   "description": "React Sliding Layout Component",
   "main": "dist/re-slide.js",
   "scripts": {

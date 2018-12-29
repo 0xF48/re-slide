@@ -147,11 +147,7 @@ class Slide extends Component
 
 	isChildVisible: (child,t)=>
 		# log 'is child visible',@visibility_map
-		if !@props.slide
-			return true
-
-
-		if @visibility_map.get(child._outer) == true || @props.hide == false
+		if !@props.slide || @visibility_map.get(child._outer) == true || @props.hide == false
 			return true
 		else if child._outer
 			if @props.vert && @inViewBounds(child._outer.offsetTop,child._outer.clientHeight||1,@state.y,@outer_rect.height)
@@ -217,6 +213,7 @@ class Slide extends Component
 
 	# decide whcih slides to render after the transition.
 	updatePostVisibility: =>
+
 		
 		@calculateBounds()
 		for child,i in @_inner.children
@@ -346,7 +343,9 @@ class Slide extends Component
 			x: pos.x
 			y: pos.y
 		,()=>
-			@_timeout = setTimeout @onSlideDone,@props.ease_duration+100
+			if @props.hide
+				# log 'log on slide done'
+				@_timeout = setTimeout @onSlideDone,@props.ease_duration+100
 
 	###
 	@setXY method

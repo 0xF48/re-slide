@@ -1,12 +1,12 @@
 {
   "name": "re-slide",
-  "version": "1.0.2b",
+  "version": "1.0.4",
   "description": "React Sliding Layout Component",
   "main": "dist/re-slide.js",
   "scripts": {
     "test": "node test/eval.js",
     "dev": "webpack-dev-server --config scripts/site.config.js --mode development",
-    "prod": "webpack --progress --config scripts/site.config.js --mode production && webpack --progress --config scripts/standalone.config.js --mode development",
+    "prod": "webpack --progress --config scripts/site.config.js --mode production && webpack --progress --config scripts/standalone.config.js --mode production",
     "write": "node test/write.js",
     "prepublishOnly": "npm run prod && npm run test"
   },

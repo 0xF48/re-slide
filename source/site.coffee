@@ -90,23 +90,23 @@ class Header extends Component
 				antialias: false
 				depth: false
 		@gradient = new Shader
-			code: gradient_shader
+			source: gradient_shader
 			uniforms:
 				pos:
 					type:'2fv'
-					val: [0.5,0.5]
+					value: [0.5,0.5]
 				seed:
 					type:'3fv'
-					val: [1.1,1.3,1.2]
+					value: [1.1,1.3,1.2]
 				speed:
 					type:'1f'
-					val:1.0
+					value:1.0
 				fade:
 					type:'1f'
-					val:1.0
+					value:1.0
 				iTime:
 					type:'1f'
-					val: @t
+					value: @t
 
 		@box.add(@gradient)
 		@box.clear().draw(@gradient)

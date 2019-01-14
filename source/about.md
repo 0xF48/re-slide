@@ -1,1 +1,1 @@
-`re-slide` is a recursive sliding component, It is used for building animated ui layouts and modules. Scroll down to view examples and props.
+`re-slide` is a recursive sliding component, use it to build sliding ui layouts and modules. Scroll down to view examples and props.

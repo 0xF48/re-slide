@@ -67,7 +67,7 @@ class Slide extends Component
 	componentWillMount: ->
 		# if @isRoot()
 		@_initial_render = true
-		@passProps(@props) #do stuff with props 
+		# @passProps(@props) #do stuff with props 
 		# @legacyProps(@props) #legacy props support
 	
 
@@ -139,7 +139,7 @@ class Slide extends Component
 	@componentWillReceiveProps method
 	###	
 	componentWillReceiveProps: (props)->
-		@passProps(props)
+		# @passProps(props)
 		# @legacyProps(props)
 		# @checkProps(props)
 	
@@ -371,14 +371,14 @@ class Slide extends Component
 
 
 	###
-	@passProps method
+	#@passProps method
 	Extract events from props and pass them down to underlying div if nessesary.
 	###
-	passProps: (props)->
-		@pass_props = {}
-		for prop_name,prop of props
-			if EVENT_REGEX.test(prop_name)
-				@pass_props[prop_name] = prop 
+	# passProps: (props)->
+	# 	@pass_props = {}
+	# 	for prop_name,prop of props
+	# 		if EVENT_REGEX.test(prop_name)
+	# 			@pass_props[prop_name] = prop 
 	
 
 	# round the dim
@@ -635,7 +635,7 @@ class Slide extends Component
 		if @props.innerStyle
 			inner_props.style = Object.assign inner_props.style,@props.innerStyle
 		# inner_props.onTransitionEnd = @onSlideDone
-		slide_props = @pass_props
+		slide_props = {}
 		
 		slide_props.ref = @outer_ref
 		slide_props.className = "-i-s-outer"+class_name+class_fixed
@@ -660,6 +660,11 @@ class Slide extends Component
 			slide_props.style.visibility = ''
 
 
+		@attachCommonEvents(slide_props)
+		if @props.pass_props
+			Object.assign slide_props,@props.pass_props
+
+
 		if !visible || @_initial_render
 			return h 'div',slide_props
 		else if @props.outerChildren
@@ -677,6 +682,18 @@ class Slide extends Component
 					@props.children
 
 
+	attachCommonEvents: (props)->
+		if @props.onClick
+			props.onClick = @props.onClick
+		if @props.onMouseEnter
+			props.onMouseEnter = @props.onMouseEnter
+		if @props.onMouseLeave
+			props.onMouseLeave = @props.onMouseLeave
+		if @props.onMouseDown
+			props.onMouseDown = @props.onMouseDown
+		if @props.onMouseUp
+			props.onMouseUp = @props.onMouseUp
+
 	###
 	@renderStatic method
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
@@ -689,7 +706,8 @@ class Slide extends Component
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
-		outer_props = @pass_props || {}
+		outer_props = @props.pass_props || {}
+		@attachCommonEvents(outer_props)
 		visible = @isVisible()
 		# log 'RENDER STATIC',visible
 		

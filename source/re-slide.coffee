@@ -31,14 +31,8 @@ DEFAULT_PROPS =
 EVENT_REGEX = new RegExp('^on[A-Z]')
 
 SlideContext = createContext({_i_slide: null})
-	# outer_width: 0
-	# outer_height: 0
-	# vert: false
-	# count: 0
-	# # isChildVisible: @isChildVisible
-	# dim: 0
-	# slide: false
-	# _i_slide: true
+
+
 
 ###
 @Slide class
@@ -76,30 +70,16 @@ class Slide extends Component
 	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
 	###
 	componentDidMount: ()=>
-		# if @isRoot()
-		# 	addEventListener 'resize',@resizeEvent
-	
-		
 		if @props.slide && @_inner
 			return @setXY(@getIndexXY(@props.pos))
-		
-		
 		@forceUpdate()
-
-
-
-
 
 	###
 	@componentWillUpdate method
 	###
 	componentWillUpdate: ()=>
 		@_initial_render = false
-		# if !@base.isConnected
-		# 	return
-
 		@calculateBounds()
-		# log 'will udpate',@outer_rect
 		@_context = {}
 		@_context.outer_width = @outer_rect.width
 		@_context.outer_height = @outer_rect.height
@@ -115,24 +95,23 @@ class Slide extends Component
 	@componentDidUpdate method
 	###
 	componentDidUpdate: (p_props,p_state)->
-		# @state._dim = @props.vert && @_outer.clientHeight || @_outer.clientWidth 
 		if !@props.slide
 			return
-
-		
+		if p_props.vert != @props.vert && @props.slide
+			# need to force re render twice when switching vert alignments on slideable divs - bad on performance needs fix
+			setTimeout ()=>
+				@forceUpdate()
+			,0
 		@checkSlideUpdate(p_props,p_state)
-
-
+		
 
 	###
 	@componentWillUnmount method
 	###	
 	componentWillUnmount: ()=>
 		@state.visible = false
-		
 		clearTimeout @_timeout
 		@_timeout = null
-		# removeEventListener 'resize',@resizeEvent
 	
 
 	###
@@ -146,7 +125,6 @@ class Slide extends Component
 
 
 	isChildVisible: (child,t)=>
-		# log 'is child visible',@visibility_map
 		if !@props.slide || @visibility_map.get(child._outer) == true || @props.hide == false
 			return true
 		else if child._outer
@@ -250,8 +228,8 @@ class Slide extends Component
 		
 
 	updateSetVisibility: (pos)=>
+		@visibility_map = new Map
 		@calculateBounds()
-		# log @_inner.children
 		for child,i in @_inner.children
 			if @props.vert
 				next_inbounds = @inViewBounds(child.offsetTop,child.clientHeight,pos.y,@outer_rect.height)
@@ -260,7 +238,6 @@ class Slide extends Component
 			if next_inbounds
 				@visibility_map.set(child,true)
 
-		# log @visibility_map
 			
 
 
@@ -318,7 +295,7 @@ class Slide extends Component
 			return @toXY pos
 
 
-		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto
+		if @state.x != pos.x || @state.y != pos.y || @props.height != p_props.height || @props.width != p_props.width || @props.auto != p_props.auto || @props.beta != p_props.beta || @props.dim != p_props.dim || @props.vert != p_props.vert
 			return @setXY pos
 
 	
@@ -344,7 +321,6 @@ class Slide extends Component
 			y: pos.y
 		,()=>
 			if @props.hide
-				# log 'log on slide done'
 				@_timeout = setTimeout @onSlideDone,@props.ease_duration+100
 
 	###
@@ -352,10 +328,9 @@ class Slide extends Component
 	same as toXY but instant.
 	###
 	setXY: (pos)->
-		# log 'setXY',pos
 		@_timeout && clearTimeout @_timeout
 		if @props.hide
-			@visibility_map = new Map
+			
 			@updateSetVisibility(pos)
 			
 
@@ -365,7 +340,6 @@ class Slide extends Component
 			x: pos.x
 			y: pos.y
 		,()=>
-			# log 'set xy'
 			@_timeout = setTimeout @onSlideDone,0
 
 
@@ -539,7 +513,7 @@ class Slide extends Component
 			else
 				dim.height = '100%' #CSS is weird...
 				dim.width = @context.dim*@props.ratio
-			# log dim,@context.vert,@context.dim,@props.className
+
 			return dim
 
 		# w/h passed down from props override
@@ -596,17 +570,15 @@ class Slide extends Component
 		@_outer = e
 
 	isRoot: ->
-		# log @context
 		!@context._i_slide
 
 	isVisible: (t)->
 		if @isRoot()
 			@state.visible = true
 			return true
-		# log @context.isChildVisible
+
 		if @context.isChildVisible && @context.isChildVisible(@,t)
 			@state.visible = true
-			# log 'VISIBLE',@_outer
 			return true
 		@state.visible = false
 		return false
@@ -623,18 +595,19 @@ class Slide extends Component
 		class_vert = @props.vert && ' -i-s-vertical' || ''
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
-		# class_scroll = @props.scroll && ' -i-s-scroll' || ''
+		
 		class_auto = @props.auto && ' -i-s-auto' || ''
 		inner_props = 
 			ref: @inner_ref
 			style:
 				transform: @state.transform
 			className: "-i-s-inner"+class_vert+inner_class_name+class_center+class_reverse+class_auto
+
 		if @state.transition
 			inner_props.style.transition = @state.transition
 		if @props.innerStyle
 			inner_props.style = Object.assign inner_props.style,@props.innerStyle
-		# inner_props.onTransitionEnd = @onSlideDone
+		
 		slide_props = {}
 		
 		slide_props.ref = @outer_ref
@@ -667,19 +640,13 @@ class Slide extends Component
 
 		if !visible || @_initial_render
 			return h 'div',slide_props
-		else if @props.outerChildren
-			return	h 'div',
-				slide_props
-				h 'div',
-					inner_props
-					@props.children
-				@props.outerChildren
 		else
-			return	h 'div',
+			return h 'div',
 				slide_props
 				h 'div',
 					inner_props
 					@props.children
+				@props.outerChildren || null
 
 
 	attachCommonEvents: (props)->
@@ -709,8 +676,6 @@ class Slide extends Component
 		outer_props = @props.pass_props || {}
 		@attachCommonEvents(outer_props)
 		visible = @isVisible()
-		# log 'RENDER STATIC',visible
-		
 		
 		if @context._i_slide || @props.height || @props.width
 			outer_props.style = @getOuterHW()
@@ -748,7 +713,6 @@ class Slide extends Component
 			slide = @renderSlide()	
 		else
 			slide = @renderStatic()
-		# log 'render',@props.className,@outer_rect
 		h SlideContext.Provider,
 			value: @_context
 			slide

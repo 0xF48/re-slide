@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/arxii/re-slide.git"
+    "url": "git+ssh://git@github.com/lerp-io/re-slide.git"
   },
   "keywords": [
     "react",
@@ -22,12 +22,12 @@
     "slide",
     "component"
   ],
-  "author": "arxii",
+  "author": "lerp-io",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/arxii/re-slide/issues"
+    "url": "https://github.com/lerp-io/re-slide/issues"
   },
-  "homepage": "http://arxii.github.io/re-slide",
+  "homepage": "http://lerp-io.github.io/re-slide",
   "devDependencies": {
     "coffee-loader": "^0.9.0",
     "coffeescript": "^2.3.2",

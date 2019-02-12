@@ -1,15 +1,15 @@
-<p align="center"><a href="http://arxii.github.io/re-slide" alt="logo"><img src="/site/logo.png" /></a></p>
+<p align="center"><a href="http://lerp-io.github.io/re-slide" alt="logo"><img src="/site/logo.png" /></a></p>
 <p align="center">
 <a href="https://npmjs.com/package/re-slide" alt="npm link"><img src="https://img.shields.io/npm/v/re-slide.svg?style=flat-square" /></a>
 <a href="https://github.com/facebook/react" alt="react dependency v16.7.0"><img src="https://img.shields.io/badge/react-v16.7.0-blue.svg?style=flat-square" /></a>
-<a href="https://travis-ci.org/arxii/re-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/arxii/re-slide.svg?style=flat-square" /></a>
-<a href="https://coveralls.io/github/arxii/re-slide" alt="travis ci build and test"><img src="https://img.shields.io/coveralls/arxii/re-slide.svg?style=flat-square" /></a>
+<a href="https://travis-ci.org/lerp-io/re-slide" alt="travis ci build and test"><img src="https://img.shields.io/travis/lerp-io/re-slide.svg?style=flat-square" /></a>
+<a href="https://coveralls.io/github/lerp-io/re-slide" alt="travis ci build and test"><img src="https://img.shields.io/coveralls/lerp-io/re-slide.svg?style=flat-square" /></a>
 
 </p>
 
 `re-slide` is a universal layout component used to rapidly develop modularized and animated UIs, enabling the creation of high quality interfaces that are easy to scale and refactor.
 
-[documentation / examples / demos](http://arxii.github.io/re-slide)
+[documentation / examples / demos](http://lerp-io.github.io/re-slide)
 
 
 **this library is still in alpha, I am actively fixing issues and bugs.**

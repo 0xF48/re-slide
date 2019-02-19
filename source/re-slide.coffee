@@ -605,8 +605,16 @@ class Slide extends Component
 
 		if @state.transition
 			inner_props.style.transition = @state.transition
+		
+
+		if @props.inner_props
+			inner_props = Object.assign inner_props,@props.inner_props
+
+
 		if @props.innerStyle
 			inner_props.style = Object.assign inner_props.style,@props.innerStyle
+
+
 		
 		slide_props = {}
 		
@@ -634,8 +642,8 @@ class Slide extends Component
 
 
 		@attachCommonEvents(slide_props)
-		if @props.pass_props
-			Object.assign slide_props,@props.pass_props
+		if @props.pass_props || @props.outer_props
+			Object.assign slide_props,(@props.pass_props || @props.outer_props)
 
 
 		if !visible || @_initial_render
@@ -673,7 +681,7 @@ class Slide extends Component
 		class_fixed = ( (@props.ratio || @props.dim || @props.width || @props.height) && ' -i-s-fixed') || ''
 		class_reverse = @props.inverse && ' -i-s-reverse' || ''
 		class_scroll = @props.scroll && ' -i-s-scroll' || ''
-		outer_props = @props.pass_props || {}
+		outer_props = @props.pass_props || @props.outer_props || {}
 		@attachCommonEvents(outer_props)
 		visible = @isVisible()
 		

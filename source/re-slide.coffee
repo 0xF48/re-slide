@@ -654,7 +654,7 @@ class Slide extends Component
 				h 'div',
 					inner_props
 					@props.children
-				@props.outerChildren || null
+				@props.outerChildren || @props.outer_children || null
 
 
 	attachCommonEvents: (props)->
@@ -704,11 +704,11 @@ class Slide extends Component
 			return h 'div',
 				outer_props
 		
-		else if @props.outerChildren
+		else if @props.outerChildren || @props.outer_children
 			return h 'div',
 				outer_props
 				@props.children
-				@props.outerChildren
+				@props.outerChildren || @props.outer_children
 		
 		else
 			return h 'div',

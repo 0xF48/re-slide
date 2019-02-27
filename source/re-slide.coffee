@@ -699,16 +699,16 @@ class Slide extends Component
 		if @props.outerStyle || @props.style
 			outer_props.style = Object.assign {},outer_props.style,(@props.outerStyle || @props.style)
 
-
+		
 		if !visible || @_initial_render
 			return h 'div',
 				outer_props
 		
 		
-		else if @props.renderChilden
+		else if @props.renderChildren
 			return h 'div',
 				outer_props
-				@props.renderChilden()
+				@props.renderChildren()
 				@props.outerChildren || @props.outer_children
 	
 		else if @props.outerChildren || @props.outer_children

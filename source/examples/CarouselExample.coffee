@@ -24,7 +24,8 @@ class CarouselExample extends Component
 						background: i%2 && '#E2E2E2' || '#F3F3F3'
 					onClick: =>
 						@setState "c_#{i}": 1 - @state["c_#{i}"]
-					"##{i}.top (click me!)"
+					renderChildren: ->
+						"##{i}.top (click me!)"
 				h Slide,
 					height: 50
 					className: 'carousel-example-bot center'

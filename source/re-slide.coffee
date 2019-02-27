@@ -704,6 +704,13 @@ class Slide extends Component
 			return h 'div',
 				outer_props
 		
+		
+		if @props.render
+			return h 'div',
+				outer_props
+				@props.render()
+				@props.outerChildren || @props.outer_children
+	
 		else if @props.outerChildren || @props.outer_children
 			return h 'div',
 				outer_props

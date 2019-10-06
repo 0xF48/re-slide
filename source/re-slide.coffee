@@ -194,11 +194,15 @@ class Slide extends Component
 
 		
 		@calculateBounds()
+		# log @outer_rect
 		for child,i in @_inner.children
 			if (!@props.vert && !@inViewBounds(child.offsetLeft,child.clientWidth,@state.x,@outer_rect.width) ) || ( @props.vert && !@inViewBounds(child.offsetTop,child.clientHeight,@state.y,@outer_rect.height) )
 				child.style.visibility = 'hidden'
 				# while child.firstChild
-				# 	child.removeChild(child.firstChild)
+				# 	try
+				# 		child.removeChild(child.firstChild)
+				# 	catch
+				# 		continue
 				@visibility_map.set(child,false)
 			else
 				@visibility_map.set(child,true)

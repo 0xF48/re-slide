@@ -53,42 +53,17 @@ class Slide extends Component
 			height: 0 #height of _outer
 		@_context = {}
 		@visibility_map = new Map()
-	
-
-	###
-	@componentWillMount method
-	###
-	componentWillMount: ->
-		# if @isRoot()
 		@_initial_render = true
-		# @passProps(@props) #do stuff with props 
-		# @legacyProps(@props) #legacy props support
 	
 
-	###
-	@componentDidMount method
-	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
-	###
+
 	componentDidMount: ()=>
 		if @props.slide && @_inner
 			return @setXY(@getIndexXY(@props.pos))
 		@forceUpdate()
 
-	###
-	@componentWillUpdate method
-	###
-	componentWillUpdate: ()=>
-		@_initial_render = false
-		@calculateBounds()
-		@_context = {}
-		@_context.outer_width = @outer_rect.width
-		@_context.outer_height = @outer_rect.height
-		@_context.vert = @props.vert
-		@_context.count = @props.children?.length
-		@_context.isChildVisible = @isChildVisible
-		@_context.dim = if @props.vert then @outer_rect.width else @outer_rect.height
-		@_context.slide = @props.slide
-		@_context._i_slide = true
+
+
 
 
 	###
@@ -673,6 +648,8 @@ class Slide extends Component
 		if @props.onMouseUp
 			props.onMouseUp = @props.onMouseUp
 
+
+
 	###
 	@renderStatic method
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
@@ -728,6 +705,20 @@ class Slide extends Component
 
 
 	render: =>
+		@_context = @_context || {}
+		if @_outer
+			@calculateBounds()
+			@_context.outer_width = @outer_rect.width
+			@_context.outer_height = @outer_rect.height
+			@_context.vert = @props.vert
+			@_context.count = @props.children?.length
+			@_context.isChildVisible = @isChildVisible
+			@_context.dim = if @props.vert then @outer_rect.width else @outer_rect.height
+			@_context.slide = @props.slide
+			@_context._i_slide = true
+
+
+
 		if @props.slide
 			slide = @renderSlide()	
 		else

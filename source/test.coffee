@@ -200,6 +200,6 @@ class Test extends Component
 							h Card,slide:false
 
 
-			
 
-@docs_el = render(h(Test),document.body,@docs_el)
+
+@docs_el = render(h(Test),window.test_el,@docs_el)

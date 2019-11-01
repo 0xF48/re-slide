@@ -6,10 +6,10 @@
   "scripts": {
     "test": "node test/eval.js",
     "dev": "webpack-dev-server --config scripts/site.config.js --mode development",
-    "prod": "webpack --progress --config scripts/site.config.js --mode production && webpack --progress --config scripts/standalone.config.js --mode production",
+    "prod": "webpack --progress --config scripts/site.config.js --mode production && webpack --progress --config scripts/standalone.config.js --mode production && yarn test",
     "lib": "webpack --watch --progress --config scripts/standalone.config.js --mode production",
     "write": "node test/write.js",
-    "prepublishOnly": "npm run prod && npm run test"
+    "prepublishOnly": "yarn prod"
   },
   "repository": {
     "type": "git",
@@ -41,8 +41,8 @@
     "puppeteer": "^1.11.0",
     "random-color": "^1.0.1",
     "raw-loader": "^0.5.1",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
     "react-markdown": "^4.0.6",
     "seed-random": "^2.2.0",
     "shader-box": "^1.2.2",

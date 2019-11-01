@@ -54,15 +54,17 @@ class Slide extends Component
 		@_context = {}
 		@visibility_map = new Map()
 		@_initial_render = true
-	
 
 
+	###
+	@componentDidMount method
+	Mounting is double effort because calculating certain properties such as slide position is only possible after the component is mounted  If anyone knows a more performant way to ensure initial state integrity with a react based approach let me know.
+	###
 	componentDidMount: ()=>
 		if @props.slide && @_inner
 			return @setXY(@getIndexXY(@props.pos))
-		@forceUpdate()
-
-
+		@_initial_render = false
+		@setState({})
 
 
 
@@ -78,6 +80,8 @@ class Slide extends Component
 				@forceUpdate()
 			,0
 		@checkSlideUpdate(p_props,p_state)
+		@_initial_render = false
+		
 		
 
 	###
@@ -89,14 +93,6 @@ class Slide extends Component
 		@_timeout = null
 	
 
-	###
-	@componentWillReceiveProps method
-	###	
-	componentWillReceiveProps: (props)->
-		# @passProps(props)
-		# @legacyProps(props)
-		# @checkProps(props)
-	
 
 
 	isChildVisible: (child,t)=>
@@ -648,8 +644,6 @@ class Slide extends Component
 		if @props.onMouseUp
 			props.onMouseUp = @props.onMouseUp
 
-
-
 	###
 	@renderStatic method
 	render component as a static and not slidable, this gets rendered when props.slide is not set. Just a static div with the same CSS.
@@ -705,7 +699,8 @@ class Slide extends Component
 
 
 	render: =>
-		@_context = @_context || {}
+		
+		@_context = {}
 		if @_outer
 			@calculateBounds()
 			@_context.outer_width = @outer_rect.width
@@ -717,12 +712,11 @@ class Slide extends Component
 			@_context.slide = @props.slide
 			@_context._i_slide = true
 
-
-
 		if @props.slide
 			slide = @renderSlide()	
 		else
 			slide = @renderStatic()
+		
 		h SlideContext.Provider,
 			value: @_context
 			slide

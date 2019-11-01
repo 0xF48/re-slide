@@ -20,7 +20,7 @@ var cfg = {
 	},
 	output: {
 		path: path.join(__dirname,'..','/site/'),
-		publicPath: '/site/',
+		publicPath: '/',
 		filename: "[name].js"
 	},
 	devServer: {

@@ -9,7 +9,7 @@
 
 `re-slide` is a universal layout component used to rapidly develop modularized and animated UIs, enabling the creation of high quality interfaces that are easy to scale and refactor.
 
-[documentation / examples / demos](http://lerp-io.github.io/re-slide)
+[documentation / examples / demos](https://0xf48.github.io/re-slide/)
 
 
 **this library is still in alpha, I am actively fixing issues and bugs.**
